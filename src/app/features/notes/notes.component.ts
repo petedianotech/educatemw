@@ -82,10 +82,10 @@ export class NotesComponent implements OnInit, OnDestroy {
     this.dataService.unsubscribeFromNotes();
   }
 
-  getNoteDate(createdAt: any): Date | null {
+  getNoteDate(createdAt: unknown): Date | null {
     if (!createdAt) return null;
     if (createdAt instanceof Timestamp) return createdAt.toDate();
     if (createdAt instanceof Date) return createdAt;
-    return new Date(createdAt);
+    return new Date(createdAt as string | number);
   }
 }

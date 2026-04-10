@@ -1,6 +1,5 @@
 import {Routes} from '@angular/router';
 import {authGuard} from './core/guards/auth.guard';
-import {proGuard} from './core/guards/pro.guard';
 import {adminGuard} from './core/guards/admin.guard';
 
 export const routes: Routes = [
@@ -21,6 +20,16 @@ export const routes: Routes = [
   {
     path: 'notes',
     loadComponent: () => import('./features/notes/notes.component').then(m => m.NotesComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'quizzes',
+    loadComponent: () => import('./features/quizzes/quizzes.component').then(m => m.QuizzesComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'flashcards',
+    loadComponent: () => import('./features/flashcards/flashcards.component').then(m => m.FlashcardsComponent),
     canActivate: [authGuard]
   },
   {

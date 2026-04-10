@@ -11,6 +11,8 @@
         "photoURL": { "type": "string", "format": "uri" },
         "role": { "type": "string", "enum": ["student", "admin"] },
         "isPro": { "type": "boolean", "description": "Whether the user has Pro access." },
+        "aiCredits": { "type": "number", "description": "Remaining AI credits." },
+        "pwaInstalled": { "type": "boolean", "description": "Whether the user has installed the PWA." },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["uid", "email", "role", "isPro", "createdAt"]
@@ -43,6 +45,33 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["postId", "authorId", "authorName", "content", "createdAt"]
+    },
+    "Quiz": {
+      "title": "Quiz",
+      "description": "An educational quiz.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "timeLimit": { "type": "number", "description": "Time limit in minutes." },
+        "isProOnly": { "type": "boolean" },
+        "questions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": { "type": "string" },
+              "type": { "type": "string", "enum": ["multiple-choice", "true-false"] },
+              "options": { "type": "array", "items": { "type": "string" } },
+              "correctAnswer": { "type": "string" }
+            },
+            "required": ["text", "type", "correctAnswer"]
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "category", "timeLimit", "isProOnly", "questions", "createdAt"]
     },
     "QuizResult": {
       "title": "QuizResult",
@@ -83,6 +112,10 @@
     "/posts/{postId}/comments/{commentId}": {
       "schema": { "$ref": "#/entities/Comment" },
       "description": "Comments on a post."
+    },
+    "/quizzes/{quizId}": {
+      "schema": { "$ref": "#/entities/Quiz" },
+      "description": "Educational quizzes."
     },
     "/quizResults/{resultId}": {
       "schema": { "$ref": "#/entities/QuizResult" },

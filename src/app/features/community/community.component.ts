@@ -177,11 +177,11 @@ export class CommunityComponent implements OnInit, OnDestroy {
     }
   }
 
-  getPostDate(createdAt: any): Date | null {
+  getPostDate(createdAt: unknown): Date | null {
     if (!createdAt) return null;
     if (createdAt instanceof Timestamp) return createdAt.toDate();
     if (createdAt instanceof Date) return createdAt;
-    return new Date(createdAt);
+    return new Date(createdAt as string | number);
   }
 
   // Generate consistent colors for different users based on their ID

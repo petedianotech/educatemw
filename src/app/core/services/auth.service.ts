@@ -12,6 +12,7 @@ export interface UserProfile {
   role: 'student' | 'admin';
   isPro: boolean;
   aiCredits?: number;
+  pwaInstalled?: boolean;
   createdAt: Date;
 }
 
@@ -143,5 +144,25 @@ export class AuthService {
       await updateDoc(userRef, { aiCredits: newCredits });
       this.currentUser.set({ ...user, aiCredits: newCredits });
     }
+  }
+
+  async claimPwaReward() {
+    const user = this.currentUser();
+    if (!user || user.pwaInstalled) return;
+
+    const currentCredits = user.aiCredits !== undefined ? user.aiCredits : 5;
+    const newCredits = currentCredits + 10;
+    const userRef = doc(db, 'users', user.uid);
+    
+    await updateDoc(userRef, { 
+      aiCredits: newCredits,
+      pwaInstalled: true
+    });
+    
+    this.currentUser.set({ 
+      ...user, 
+      aiCredits: newCredits,
+      pwaInstalled: true 
+    });
   }
 }

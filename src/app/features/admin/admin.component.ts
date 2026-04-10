@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DataService } from '../../core/services/data.service';
+import { DataService, Quiz, QuizQuestion, Note } from '../../core/services/data.service';
+import { Timestamp } from 'firebase/firestore';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
 
@@ -67,6 +68,15 @@ import { DatePipe } from '@angular/common';
               <mat-icon class="!w-4 !h-4 !text-[16px] md:!w-5 md:!h-5 md:!text-[20px]">people</mat-icon>
               <span>Students</span>
             </button>
+            <button (click)="activeTab.set('quizzes')" 
+                    [class.bg-white]="activeTab() === 'quizzes'" 
+                    [class.text-indigo-600]="activeTab() === 'quizzes'"
+                    [class.shadow-sm]="activeTab() === 'quizzes'"
+                    [class.text-indigo-100]="activeTab() !== 'quizzes'"
+                    class="flex-1 py-2 text-[11px] md:text-sm font-semibold rounded-lg transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2">
+              <mat-icon class="!w-4 !h-4 !text-[16px] md:!w-5 md:!h-5 md:!text-[20px]">quiz</mat-icon>
+              <span>Quizzes</span>
+            </button>
           </div>
         </div>
       </header>
@@ -97,10 +107,10 @@ import { DatePipe } from '@angular/common';
             <!-- Stat Card 3 -->
             <div class="card-modern p-4">
               <div class="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mb-3 border border-purple-100">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">auto_awesome</mat-icon>
+                <mat-icon class="!w-5 !h-5 !text-[20px]">quiz</mat-icon>
               </div>
-              <p class="text-xs text-slate-500 font-semibold mb-1">Free Users</p>
-              <h3 class="text-2xl font-bold text-slate-900">{{ totalStudents() - proSubscribers() }}</h3>
+              <p class="text-xs text-slate-500 font-semibold mb-1">Total Quizzes</p>
+              <h3 class="text-2xl font-bold text-slate-900">{{ totalQuizzes() }}</h3>
             </div>
 
             <!-- Stat Card 4 -->
@@ -305,6 +315,162 @@ import { DatePipe } from '@angular/common';
           </div>
         }
 
+        @if (activeTab() === 'quizzes') {
+          <div class="max-w-4xl mx-auto">
+            <!-- Quiz Creation Form -->
+            <div class="card-modern p-5 md:p-8 mb-8">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center border border-indigo-100">
+                  <mat-icon>{{ editingQuizId() ? 'edit' : 'quiz' }}</mat-icon>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-slate-900">{{ editingQuizId() ? 'Edit Quiz' : 'Create New Quiz' }}</h3>
+                  <p class="text-xs text-slate-500 font-medium">Design interactive assessments for students</p>
+                </div>
+              </div>
+
+              <div class="space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label for="quizTitle" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 ml-1">Quiz Title</label>
+                    <input type="text" id="quizTitle" [(ngModel)]="quizTitle" placeholder="e.g. Biology Mid-term Quiz" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white outline-none transition-all font-medium text-slate-900">
+                  </div>
+                  <div>
+                    <label for="quizCategory" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 ml-1">Category</label>
+                    <select id="quizCategory" [(ngModel)]="quizCategory" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white outline-none transition-all font-medium text-slate-900">
+                      <option value="Mathematics">Mathematics</option>
+                      <option value="Science">Science</option>
+                      <option value="Biology">Biology</option>
+                      <option value="English">English</option>
+                      <option value="History">History</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label for="quizTimeLimit" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 ml-1">Time Limit (Minutes)</label>
+                    <input type="number" id="quizTimeLimit" [(ngModel)]="quizTimeLimit" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white outline-none transition-all font-medium text-slate-900">
+                  </div>
+                  <div class="flex items-center pt-6">
+                    <label class="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-slate-200 w-full hover:bg-slate-50 transition-colors">
+                      <input type="checkbox" [(ngModel)]="quizIsProOnly" class="w-5 h-5 border border-slate-300 rounded checked:bg-sky-500">
+                      <span class="text-sm font-semibold text-slate-900">Pro Only Quiz</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="quizDescription" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 ml-1">Description</label>
+                  <textarea id="quizDescription" [(ngModel)]="quizDescription" rows="2" placeholder="Briefly describe what this quiz covers..." class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white outline-none transition-all text-sm text-slate-800 resize-none"></textarea>
+                </div>
+
+                <!-- Questions Builder -->
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Questions ({{quizQuestions().length}})</h4>
+                    <button (click)="addQuestion()" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 hover:bg-indigo-100 transition-colors flex items-center gap-1">
+                      <mat-icon class="text-[16px] !w-[16px] !h-[16px]">add</mat-icon>
+                      Add Question
+                    </button>
+                  </div>
+
+                  @for (q of quizQuestions(); track $index; let i = $index) {
+                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-4 relative group">
+                      <button (click)="removeQuestion(i)" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors">
+                        <mat-icon class="text-[20px]">delete</mat-icon>
+                      </button>
+
+                      <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-500 flex-shrink-0">
+                          {{i + 1}}
+                        </div>
+                        <div class="flex-1 space-y-4">
+                          <input type="text" [(ngModel)]="q.text" placeholder="Enter question text..." class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-sm font-medium">
+                          
+                          <div class="flex gap-4">
+                            <button (click)="updateQuestionType(i, 'multiple-choice')" 
+                                    [class.bg-indigo-600]="q.type === 'multiple-choice'"
+                                    [class.text-white]="q.type === 'multiple-choice'"
+                                    class="px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all"
+                                    [class.bg-white]="q.type !== 'multiple-choice'"
+                                    [class.text-slate-500]="q.type !== 'multiple-choice'">
+                              Multiple Choice
+                            </button>
+                            <button (click)="updateQuestionType(i, 'true-false')" 
+                                    [class.bg-indigo-600]="q.type === 'true-false'"
+                                    [class.text-white]="q.type === 'true-false'"
+                                    class="px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all"
+                                    [class.bg-white]="q.type !== 'true-false'"
+                                    [class.text-slate-500]="q.type !== 'true-false'">
+                              True/False
+                            </button>
+                          </div>
+
+                          @if (q.type === 'multiple-choice') {
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              @for (opt of q.options; track $index; let optIdx = $index) {
+                                <div class="flex items-center gap-2">
+                                  <input type="radio" [name]="'correct_' + i" [value]="opt" [(ngModel)]="q.correctAnswer" class="w-4 h-4 text-indigo-600">
+                                  <input type="text" [(ngModel)]="q.options![optIdx]" [placeholder]="'Option ' + (optIdx + 1)" class="flex-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs">
+                                </div>
+                              }
+                            </div>
+                          } @else {
+                            <div class="flex gap-4">
+                              <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" [name]="'correct_' + i" value="True" [(ngModel)]="q.correctAnswer" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm font-medium">True</span>
+                              </label>
+                              <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" [name]="'correct_' + i" value="False" [(ngModel)]="q.correctAnswer" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm font-medium">False</span>
+                              </label>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <div class="pt-4 flex gap-3">
+                  @if (editingQuizId()) {
+                    <button (click)="resetQuizForm()" class="btn-secondary px-6 py-3">Cancel</button>
+                  }
+                  <button (click)="saveQuiz()" [disabled]="!quizTitle().trim() || quizQuestions().length === 0 || isSubmitting()" class="btn-primary flex-1 py-3.5">
+                    {{ isSubmitting() ? 'Saving...' : (editingQuizId() ? 'Update Quiz' : 'Publish Quiz') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Existing Quizzes List -->
+            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 px-1">Existing Quizzes</h3>
+            <div class="space-y-3">
+              @for (quiz of dataService.quizzes(); track quiz.id) {
+                <div class="card-modern p-4 flex items-center justify-between gap-4">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded-md uppercase border border-indigo-100">{{quiz.category}}</span>
+                      <span class="text-xs text-slate-400 font-medium">{{quiz.questions.length}} Qs • {{quiz.timeLimit}}m</span>
+                    </div>
+                    <h4 class="font-semibold text-slate-900 truncate">{{ quiz.title }}</h4>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button (click)="editQuiz(quiz)" class="w-9 h-9 rounded-lg bg-slate-50 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 flex items-center justify-center border border-slate-200">
+                      <mat-icon class="text-[18px]">edit</mat-icon>
+                    </button>
+                    <button (click)="deleteQuiz(quiz.id)" class="w-9 h-9 rounded-lg bg-slate-50 text-slate-600 hover:bg-red-50 hover:text-red-600 flex items-center justify-center border border-slate-200">
+                      <mat-icon class="text-[18px]">delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         @if (activeTab() === 'students') {
           <div class="max-w-3xl mx-auto">
             <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 px-1">Student Directory</h3>
@@ -329,8 +495,8 @@ import { DatePipe } from '@angular/common';
                           {{ student.isPro ? 'PRO' : 'FREE' }}
                         </span>
                         <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                          <input type="checkbox" [checked]="student.isPro" (change)="toggleProStatus(student.uid, !student.isPro)" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 appearance-none cursor-pointer transition-transform duration-200 ease-in-out" [class.translate-x-5]="student.isPro" [class.border-sky-500]="student.isPro" [class.border-slate-300]="!student.isPro"/>
-                          <label class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer transition-colors duration-200 ease-in-out" [class.bg-sky-400]="student.isPro"></label>
+                          <input type="checkbox" [id]="'pro_' + student.uid" [checked]="student.isPro" (change)="toggleProStatus(student.uid, !student.isPro)" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 appearance-none cursor-pointer transition-transform duration-200 ease-in-out" [class.translate-x-5]="student.isPro" [class.border-sky-500]="student.isPro" [class.border-slate-300]="!student.isPro"/>
+                          <label [for]="'pro_' + student.uid" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer transition-colors duration-200 ease-in-out" [class.bg-sky-400]="student.isPro"></label>
                         </div>
                       </label>
                     }
@@ -357,7 +523,7 @@ import { DatePipe } from '@angular/common';
 export class AdminComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   
-  activeTab = signal<'overview' | 'upload' | 'manage' | 'students'>('overview');
+  activeTab = signal<'overview' | 'upload' | 'manage' | 'students' | 'quizzes'>('overview');
   
   title = signal('');
   category = signal('Mathematics');
@@ -368,24 +534,37 @@ export class AdminComponent implements OnInit, OnDestroy {
   isSubmitting = signal(false);
   editingNoteId = signal<string | null>(null);
 
+  // Quiz State
+  quizTitle = signal('');
+  quizDescription = signal('');
+  quizCategory = signal('Mathematics');
+  quizTimeLimit = signal(15);
+  quizIsProOnly = signal(false);
+  quizQuestions = signal<QuizQuestion[]>([]);
+  editingQuizId = signal<string | null>(null);
+
   totalStudents = computed(() => this.dataService.users().length);
   proSubscribers = computed(() => this.dataService.users().filter(u => u.isPro).length);
   totalMaterials = computed(() => this.dataService.notes().length);
+  totalQuizzes = computed(() => this.dataService.quizzes().length);
 
-  toDate(date: any): Date | null {
+  toDate(date: Date | Timestamp | string | null): Date | null {
     if (!date) return null;
-    if (date.toDate) return date.toDate();
-    return date as Date;
+    if (date instanceof Timestamp) return date.toDate();
+    if (date instanceof Date) return date;
+    return new Date(date);
   }
 
   ngOnInit() {
     this.dataService.subscribeToUsers();
     this.dataService.subscribeToNotes();
+    this.dataService.subscribeToQuizzes();
   }
 
   ngOnDestroy() {
     this.dataService.unsubscribeFromUsers();
     this.dataService.unsubscribeFromNotes();
+    this.dataService.unsubscribeFromQuizzes();
   }
 
   goBack() {
@@ -396,7 +575,90 @@ export class AdminComponent implements OnInit, OnDestroy {
     await this.dataService.updateUserProStatus(userId, isPro);
   }
 
-  editNote(note: any) {
+  // --- Quiz Methods ---
+  addQuestion() {
+    this.quizQuestions.update(qs => [
+      ...qs,
+      { text: '', type: 'multiple-choice', options: ['', '', '', ''], correctAnswer: '' }
+    ]);
+  }
+
+  removeQuestion(index: number) {
+    this.quizQuestions.update(qs => qs.filter((_, i) => i !== index));
+  }
+
+  updateQuestionType(index: number, type: 'multiple-choice' | 'true-false') {
+    this.quizQuestions.update(qs => qs.map((q, i) => {
+      if (i === index) {
+        return { 
+          ...q, 
+          type, 
+          options: type === 'multiple-choice' ? ['', '', '', ''] : undefined,
+          correctAnswer: ''
+        };
+      }
+      return q;
+    }));
+  }
+
+  async saveQuiz() {
+    if (!this.quizTitle().trim() || this.quizQuestions().length === 0 || this.isSubmitting()) return;
+    
+    this.isSubmitting.set(true);
+    try {
+      const quizData = {
+        title: this.quizTitle(),
+        description: this.quizDescription(),
+        category: this.quizCategory(),
+        timeLimit: this.quizTimeLimit(),
+        isProOnly: this.quizIsProOnly(),
+        questions: this.quizQuestions()
+      };
+
+      if (this.editingQuizId()) {
+        await this.dataService.updateQuiz(this.editingQuizId()!, quizData);
+        alert('Quiz updated successfully!');
+      } else {
+        await this.dataService.createQuiz(quizData);
+        alert('Quiz published successfully!');
+      }
+      this.resetQuizForm();
+    } catch (error) {
+      console.error(error);
+      alert('Failed to save quiz.');
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
+
+  editQuiz(quiz: Quiz) {
+    this.quizTitle.set(quiz.title);
+    this.quizDescription.set(quiz.description || '');
+    this.quizCategory.set(quiz.category);
+    this.quizTimeLimit.set(quiz.timeLimit);
+    this.quizIsProOnly.set(quiz.isProOnly);
+    this.quizQuestions.set(quiz.questions);
+    this.editingQuizId.set(quiz.id);
+    this.activeTab.set('quizzes');
+  }
+
+  async deleteQuiz(quizId: string) {
+    if (confirm('Are you sure you want to delete this quiz?')) {
+      await this.dataService.deleteQuiz(quizId);
+    }
+  }
+
+  resetQuizForm() {
+    this.quizTitle.set('');
+    this.quizDescription.set('');
+    this.quizCategory.set('Mathematics');
+    this.quizTimeLimit.set(15);
+    this.quizIsProOnly.set(false);
+    this.quizQuestions.set([]);
+    this.editingQuizId.set(null);
+  }
+
+  editNote(note: Note) {
     this.title.set(note.title);
     this.category.set(note.category);
     this.content.set(note.content || '');

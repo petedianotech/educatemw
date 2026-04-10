@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { db } from '../../../firebase';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc, where } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../../../firebase';
 import { UserProfile } from './auth.service';
 
@@ -26,15 +26,47 @@ export interface Note {
   youtubeUrl?: string;
 }
 
+export interface QuizQuestion {
+  text: string;
+  type: 'multiple-choice' | 'true-false';
+  options?: string[];
+  correctAnswer: string;
+}
+
+export interface Quiz {
+  id: string;
+  title: string;
+  description?: string;
+  category: string;
+  timeLimit: number;
+  isProOnly: boolean;
+  questions: QuizQuestion[];
+  createdAt: Date | Timestamp;
+}
+
+export interface QuizResult {
+  id: string;
+  userId: string;
+  quizId: string;
+  quizTitle: string;
+  score: number;
+  total: number;
+  completedAt: Date | Timestamp;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DataService {
   posts = signal<Post[]>([]);
   notes = signal<Note[]>([]);
   users = signal<UserProfile[]>([]);
+  quizzes = signal<Quiz[]>([]);
+  quizResults = signal<QuizResult[]>([]);
   
   private postsUnsubscribe: (() => void) | null = null;
   private notesUnsubscribe: (() => void) | null = null;
   private usersUnsubscribe: (() => void) | null = null;
+  private quizzesUnsubscribe: (() => void) | null = null;
+  private quizResultsUnsubscribe: (() => void) | null = null;
 
   // --- Users ---
   subscribeToUsers() {
@@ -160,6 +192,88 @@ export class DataService {
       await deleteDoc(doc(db, 'notes', noteId));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `notes/${noteId}`);
+    }
+  }
+
+  // --- Quizzes ---
+  subscribeToQuizzes() {
+    if (this.quizzesUnsubscribe) return;
+    const q = query(collection(db, 'quizzes'), orderBy('createdAt', 'desc'));
+    this.quizzesUnsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedQuizzes = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Quiz));
+      this.quizzes.set(loadedQuizzes);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'quizzes');
+    });
+  }
+
+  unsubscribeFromQuizzes() {
+    if (this.quizzesUnsubscribe) {
+      this.quizzesUnsubscribe();
+      this.quizzesUnsubscribe = null;
+    }
+  }
+
+  async createQuiz(quiz: Omit<Quiz, 'id' | 'createdAt'>) {
+    try {
+      await addDoc(collection(db, 'quizzes'), {
+        ...quiz,
+        createdAt: serverTimestamp()
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'quizzes');
+    }
+  }
+
+  async updateQuiz(quizId: string, quiz: Partial<Quiz>) {
+    try {
+      await updateDoc(doc(db, 'quizzes', quizId), quiz);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `quizzes/${quizId}`);
+    }
+  }
+
+  async deleteQuiz(quizId: string) {
+    try {
+      await deleteDoc(doc(db, 'quizzes', quizId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `quizzes/${quizId}`);
+    }
+  }
+
+  // --- Quiz Results ---
+  subscribeToQuizResults(userId: string) {
+    if (this.quizResultsUnsubscribe) return;
+    const q = query(collection(db, 'quizResults'), where('userId', '==', userId), orderBy('completedAt', 'desc'));
+    this.quizResultsUnsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedResults = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as QuizResult));
+      this.quizResults.set(loadedResults);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'quizResults');
+    });
+  }
+
+  unsubscribeFromQuizResults() {
+    if (this.quizResultsUnsubscribe) {
+      this.quizResultsUnsubscribe();
+      this.quizResultsUnsubscribe = null;
+    }
+  }
+
+  async saveQuizResult(result: Omit<QuizResult, 'id' | 'completedAt'>) {
+    try {
+      await addDoc(collection(db, 'quizResults'), {
+        ...result,
+        completedAt: serverTimestamp()
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'quizResults');
     }
   }
 }

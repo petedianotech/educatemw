@@ -32,9 +32,9 @@ import { Router } from '@angular/router';
           </div>
           
           <div class="p-4">
-            <label class="block text-sm font-bold text-slate-700 mb-2">Username</label>
+            <label for="username" class="block text-sm font-bold text-slate-700 mb-2">Username</label>
             <div class="flex gap-2">
-              <input type="text" [(ngModel)]="newUsername" placeholder="Enter new username" class="flex-1 appearance-none px-4 py-3 border border-slate-200 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors bg-slate-50 focus:bg-white shadow-sm">
+              <input type="text" id="username" [(ngModel)]="newUsername" placeholder="Enter new username" class="flex-1 appearance-none px-4 py-3 border border-slate-200 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors bg-slate-50 focus:bg-white shadow-sm">
               <button (click)="updateUsername()" [disabled]="!newUsername().trim() || isUpdating()" class="btn-primary px-6 py-3">
                 Save
               </button>

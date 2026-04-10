@@ -22,6 +22,20 @@ export interface ChatMessage {
   timestamp: number;
 }
 
+export interface GeneratedQuiz {
+  title: string;
+  description: string;
+  category: string;
+  timeLimit: number;
+  isProOnly: boolean;
+  questions: {
+    text: string;
+    type: 'multiple-choice' | 'true-false';
+    options?: string[];
+    correctAnswer: string;
+  }[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class GeminiService {
   private ai: GoogleGenAI;
@@ -79,10 +93,28 @@ export class GeminiService {
       }));
 
       const chat = this.ai.chats.create({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         history,
         config: {
-          systemInstruction: 'You are a helpful, encouraging AI tutor for students in Malawi. Keep answers concise, educational, and easy to understand.',
+          systemInstruction: `You are Cleo AI, a specialized AI tutor for secondary school students in Malawi. 
+Strict adherence to the Malawi Secondary School Curriculum (MSCE) is mandatory. 
+Do not provide information outside the scope of the Malawi secondary syllabus.
+Your goal is to help students grasp concepts quickly and remember them effectively.
+
+Guidelines for your responses:
+1. **Curriculum Focus**: Only answer questions related to Malawi secondary school subjects (Biology, Chemistry, Physics, Mathematics, English, Geography, History, Social Studies, etc.).
+2. **Mathematical Notation**: **CRITICAL**: Do NOT use the dollar sign ($) for mathematical formulas or notation. Use plain text, standard symbols (like ^ for powers, / for division), or clear Unicode characters.
+3. **Pedagogy**: Use simple, clear language. Break down complex topics into digestible parts.
+4. **Formatting**: Use Markdown to structure your responses. 
+   - Use **bold** for key terms and definitions.
+   - Use bullet points for lists.
+   - Use blockquotes for important formulas or laws.
+5. **Examples**: Always provide relevant examples, preferably localized to the Malawi context where applicable.
+6. **Memory Aids**: Use mnemonics, analogies, or simple summaries to help students remember concepts.
+7. **Emojis**: Use professional educational emojis sparingly to help visualization (e.g., ☀️🌦️🌧️ for geography/weather, 🧪🧬 for science, 📐🔢 for math). 
+   - **STRICTLY PROHIBITED**: Do not use non-educational or unprofessional emojis like 👄, 💞, 😲, etc.
+8. **Secondary Level**: Ensure the depth of explanation is appropriate for MSCE students.
+9. **Strictness**: If a user asks something outside the Malawi secondary curriculum, politely inform them that you are specialized in the Malawi curriculum and redirect them to a relevant school topic.`,
         }
       });
 
@@ -118,5 +150,39 @@ export class GeminiService {
     const db = await this.dbPromise;
     await db.clear('messages');
     this.messages.set([]);
+  }
+
+  async generateQuiz(topic: string): Promise<GeneratedQuiz> {
+    const prompt = `Generate a high-quality MSCE (Malawi Secondary School Curriculum) quiz about "${topic}".
+    The quiz must be strictly based on the Malawi secondary syllabus.
+    Return ONLY a JSON object with the following structure:
+    {
+      "title": "Quiz Title",
+      "description": "Brief description",
+      "category": "Subject Name",
+      "timeLimit": 15,
+      "isProOnly": false,
+      "questions": [
+        {
+          "text": "Question text?",
+          "type": "multiple-choice",
+          "options": ["Option A", "Option B", "Option C", "Option D"],
+          "correctAnswer": "Option A"
+        }
+      ]
+    }
+    Generate 5 challenging questions. Do not include any other text or markdown formatting.`;
+
+    try {
+      const model = this.ai.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      // Clean up potential markdown code blocks
+      const jsonStr = text.replace(/```json|```/g, '').trim();
+      return JSON.parse(jsonStr) as GeneratedQuiz;
+    } catch (error) {
+      console.error('Error generating quiz:', error);
+      throw error;
+    }
   }
 }

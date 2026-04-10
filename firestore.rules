@@ -14,8 +14,10 @@ service cloud.firestore {
     
     function isAdmin() {
       return isAuthenticated() && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-        ((request.auth.token.email == "petedianotech@gmail.com" || request.auth.token.email == "mscepreparation@gmail.com") && request.auth.token.email_verified == true));
+        (
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+          ((request.auth.token.email == "petedianotech@gmail.com" || request.auth.token.email == "mscepreparation@gmail.com") && request.auth.token.email_verified == true)
+        );
     }
     
     function hasOnlyAllowedFields(fields) {
@@ -43,7 +45,7 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'createdAt']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'aiCredits', 'pwaInstalled', 'createdAt']) &&
              hasRequiredFields(['uid', 'email', 'role', 'isPro', 'createdAt']) &&
              data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
              data.email is string && data.email.size() > 0 && data.email.size() < 100 &&
@@ -51,7 +53,9 @@ service cloud.firestore {
              data.isPro is bool &&
              data.createdAt is timestamp &&
              isValidOptionalString('displayName', 1, 100) &&
-             isValidOptionalString('photoURL', 1, 500);
+             isValidOptionalString('photoURL', 1, 500) &&
+             (!('aiCredits' in data) || data.aiCredits is number) &&
+             (!('pwaInstalled' in data) || data.pwaInstalled is bool);
     }
 
     function isValidPost(data) {
@@ -78,13 +82,26 @@ service cloud.firestore {
     }
 
     function isValidQuizResult(data) {
-      return hasOnlyAllowedFields(['userId', 'quizId', 'score', 'total', 'completedAt']) &&
-             hasRequiredFields(['userId', 'quizId', 'score', 'total', 'completedAt']) &&
+      return hasOnlyAllowedFields(['userId', 'quizId', 'quizTitle', 'score', 'total', 'completedAt']) &&
+             hasRequiredFields(['userId', 'quizId', 'quizTitle', 'score', 'total', 'completedAt']) &&
              data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
              data.quizId is string && data.quizId.size() > 0 && data.quizId.size() < 100 &&
+             data.quizTitle is string && data.quizTitle.size() > 0 && data.quizTitle.size() < 200 &&
              data.score is number && data.score >= 0 &&
              data.total is number && data.total > 0 &&
              data.completedAt is timestamp;
+    }
+
+    function isValidQuiz(data) {
+      return hasOnlyAllowedFields(['title', 'description', 'category', 'timeLimit', 'isProOnly', 'questions', 'createdAt']) &&
+             hasRequiredFields(['title', 'category', 'timeLimit', 'isProOnly', 'questions', 'createdAt']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.category is string && data.category.size() > 0 && data.category.size() < 100 &&
+             data.timeLimit is number && data.timeLimit > 0 &&
+             data.isProOnly is bool &&
+             data.questions is list && data.questions.size() > 0 && data.questions.size() <= 100 &&
+             data.createdAt is timestamp &&
+             isValidOptionalString('description', 0, 1000);
     }
 
     function isValidNote(data) {
@@ -111,7 +128,8 @@ service cloud.firestore {
                     ((isOwner(userId) && request.resource.data.uid == resource.data.uid && 
                       request.resource.data.role == resource.data.role && 
                       request.resource.data.isPro == resource.data.isPro &&
-                      request.resource.data.createdAt == resource.data.createdAt) || isAdmin());
+                      request.resource.data.createdAt == resource.data.createdAt &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'aiCredits', 'pwaInstalled'])) || isAdmin());
     }
 
     match /posts/{postId} {
@@ -149,8 +167,15 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    match /quizzes/{quizId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() && isValidQuiz(request.resource.data);
+      allow update: if isAdmin() && isValidQuiz(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
     match /notes/{noteId} {
-      allow read: if isAuthenticated() && (!resource.data.isProOnly || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isPro == true || isAdmin());
+      allow read: if isAuthenticated();
       allow create: if isAdmin() && isValidNote(request.resource.data);
       allow update: if isAdmin() && isValidNote(request.resource.data);
       allow delete: if isAdmin();
