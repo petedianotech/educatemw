@@ -3,12 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { DataService, Quiz, QuizQuestion, Note } from '../../core/services/data.service';
 import { Timestamp } from 'firebase/firestore';
 import { MatIconModule } from '@angular/material/icon';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [FormsModule, MatIconModule, DatePipe],
+  imports: [FormsModule, MatIconModule, DatePipe, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-slate-50 pb-safe">
@@ -76,6 +76,24 @@ import { DatePipe } from '@angular/common';
                     class="flex-1 py-2 text-[11px] md:text-sm font-semibold rounded-lg transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2">
               <mat-icon class="!w-4 !h-4 !text-[16px] md:!w-5 md:!h-5 md:!text-[20px]">quiz</mat-icon>
               <span>Quizzes</span>
+            </button>
+            <button (click)="activeTab.set('revenue')" 
+                    [class.bg-white]="activeTab() === 'revenue'" 
+                    [class.text-indigo-600]="activeTab() === 'revenue'"
+                    [class.shadow-sm]="activeTab() === 'revenue'"
+                    [class.text-indigo-100]="activeTab() !== 'revenue'"
+                    class="flex-1 py-2 text-[11px] md:text-sm font-semibold rounded-lg transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2">
+              <mat-icon class="!w-4 !h-4 !text-[16px] md:!w-5 md:!h-5 md:!text-[20px]">payments</mat-icon>
+              <span>Revenue</span>
+            </button>
+            <button (click)="activeTab.set('updates')" 
+                    [class.bg-white]="activeTab() === 'updates'" 
+                    [class.text-indigo-600]="activeTab() === 'updates'"
+                    [class.shadow-sm]="activeTab() === 'updates'"
+                    [class.text-indigo-100]="activeTab() !== 'updates'"
+                    class="flex-1 py-2 text-[11px] md:text-sm font-semibold rounded-lg transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2">
+              <mat-icon class="!w-4 !h-4 !text-[16px] md:!w-5 md:!h-5 md:!text-[20px]">campaign</mat-icon>
+              <span>Updates</span>
             </button>
           </div>
         </div>
@@ -471,6 +489,109 @@ import { DatePipe } from '@angular/common';
           </div>
         }
 
+        @if (activeTab() === 'revenue') {
+          <div class="max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div class="card-modern p-6 bg-emerald-50 border-emerald-100">
+                <p class="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">Total Revenue</p>
+                <h3 class="text-3xl font-black text-emerald-900">MWK {{ totalRevenue() | number }}</h3>
+                <p class="text-[10px] text-emerald-500 font-bold mt-1">+12% from last month</p>
+              </div>
+              <div class="card-modern p-6 bg-sky-50 border-sky-100">
+                <p class="text-xs font-bold text-sky-600 uppercase tracking-widest mb-2">Active Subs</p>
+                <h3 class="text-3xl font-black text-sky-900">{{ proSubscribers() }}</h3>
+                <p class="text-[10px] text-sky-500 font-bold mt-1">Retention rate: 94%</p>
+              </div>
+              <div class="card-modern p-6 bg-indigo-50 border-indigo-100">
+                <p class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-2">Avg. Ticket</p>
+                <h3 class="text-3xl font-black text-indigo-900">MWK {{ (totalRevenue() / (revenueRecords().length || 1)) | number:'1.0-0' }}</h3>
+                <p class="text-[10px] text-indigo-500 font-bold mt-1">Per transaction</p>
+              </div>
+            </div>
+
+            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 px-1">Recent Transactions</h3>
+            <div class="card-modern overflow-hidden">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-100">
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Student</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Plan</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                  @for (record of revenueRecords(); track record.id) {
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                      <td class="px-6 py-4">
+                        <p class="text-sm font-bold text-slate-900">{{ record.userName }}</p>
+                        <p class="text-[10px] text-slate-400 font-medium">{{ record.userId }}</p>
+                      </td>
+                      <td class="px-6 py-4">
+                        <span class="px-2 py-1 bg-sky-50 text-sky-600 text-[10px] font-black rounded-lg border border-sky-100 uppercase">{{ record.plan }}</span>
+                      </td>
+                      <td class="px-6 py-4 text-sm font-black text-slate-900">MWK {{ record.amount | number }}</td>
+                      <td class="px-6 py-4 text-xs text-slate-500 font-medium">{{ toDate(record.createdAt) | date:'short' }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="4" class="px-6 py-12 text-center text-slate-400 font-medium italic">No transactions recorded yet.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'updates') {
+          <div class="max-w-3xl mx-auto">
+            <div class="card-modern p-6 mb-8">
+              <h3 class="text-lg font-black text-slate-900 mb-6">Post App Update</h3>
+              <div class="space-y-4">
+                <div>
+                  <label for="updateTitle" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 ml-1">Update Title</label>
+                  <input id="updateTitle" type="text" [(ngModel)]="updateTitle" placeholder="e.g. New Biology Quizzes Added!" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:border-indigo-500 outline-none transition-all font-medium text-slate-900">
+                </div>
+                <div>
+                  <label for="updateType" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 ml-1">Type</label>
+                  <select id="updateType" [(ngModel)]="updateType" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:border-indigo-500 outline-none transition-all font-medium text-slate-900">
+                    <option value="feature">New Feature</option>
+                    <option value="announcement">Announcement</option>
+                    <option value="maintenance">Maintenance</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="updateContent" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 ml-1">Content</label>
+                  <textarea id="updateContent" [(ngModel)]="updateContent" rows="4" placeholder="Describe the update..." class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:border-indigo-500 outline-none transition-all text-sm text-slate-800 resize-none"></textarea>
+                </div>
+                <button (click)="postUpdate()" [disabled]="!updateTitle().trim() || !updateContent().trim() || isSubmitting()" class="btn-primary w-full py-4 shadow-lg shadow-indigo-100">
+                  {{ isSubmitting() ? 'Publishing...' : 'Publish Update' }}
+                </button>
+              </div>
+            </div>
+
+            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 px-1">Past Updates</h3>
+            <div class="space-y-3">
+              @for (update of dataService.appUpdates(); track update.id) {
+                <div class="card-modern p-4">
+                  <div class="flex items-center justify-between mb-2">
+                    <span [class]="'px-2 py-0.5 text-[10px] font-black rounded-md uppercase border ' + 
+                      (update.type === 'feature' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
+                       update.type === 'maintenance' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
+                       'bg-blue-50 text-blue-600 border-blue-100')">
+                      {{ update.type }}
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-bold">{{ toDate(update.createdAt) | date:'mediumDate' }}</span>
+                  </div>
+                  <h4 class="font-black text-slate-900 mb-1">{{ update.title }}</h4>
+                  <p class="text-sm text-slate-600 leading-relaxed">{{ update.content }}</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         @if (activeTab() === 'students') {
           <div class="max-w-3xl mx-auto">
             <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 px-1">Student Directory</h3>
@@ -523,7 +644,7 @@ import { DatePipe } from '@angular/common';
 export class AdminComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   
-  activeTab = signal<'overview' | 'upload' | 'manage' | 'students' | 'quizzes'>('overview');
+  activeTab = signal<'overview' | 'upload' | 'manage' | 'students' | 'quizzes' | 'revenue' | 'updates'>('overview');
   
   title = signal('');
   category = signal('Mathematics');
@@ -543,10 +664,17 @@ export class AdminComponent implements OnInit, OnDestroy {
   quizQuestions = signal<QuizQuestion[]>([]);
   editingQuizId = signal<string | null>(null);
 
+  // Updates State
+  updateTitle = signal('');
+  updateContent = signal('');
+  updateType = signal<'feature' | 'maintenance' | 'announcement'>('feature');
+
   totalStudents = computed(() => this.dataService.users().length);
   proSubscribers = computed(() => this.dataService.users().filter(u => u.isPro).length);
   totalMaterials = computed(() => this.dataService.notes().length);
   totalQuizzes = computed(() => this.dataService.quizzes().length);
+  revenueRecords = computed(() => this.dataService.revenueRecords());
+  totalRevenue = computed(() => this.revenueRecords().reduce((acc, curr) => acc + curr.amount, 0));
 
   toDate(date: Date | Timestamp | string | null): Date | null {
     if (!date) return null;
@@ -559,12 +687,16 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.dataService.subscribeToUsers();
     this.dataService.subscribeToNotes();
     this.dataService.subscribeToQuizzes();
+    this.dataService.subscribeToRevenue();
+    this.dataService.subscribeToAppUpdates();
   }
 
   ngOnDestroy() {
     this.dataService.unsubscribeFromUsers();
     this.dataService.unsubscribeFromNotes();
     this.dataService.unsubscribeFromQuizzes();
+    this.dataService.unsubscribeFromRevenue();
+    this.dataService.unsubscribeFromAppUpdates();
   }
 
   goBack() {
@@ -573,6 +705,27 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   async toggleProStatus(userId: string, isPro: boolean) {
     await this.dataService.updateUserProStatus(userId, isPro);
+  }
+
+  // --- Update Methods ---
+  async postUpdate() {
+    if (!this.updateTitle().trim() || !this.updateContent().trim() || this.isSubmitting()) return;
+    this.isSubmitting.set(true);
+    try {
+      await this.dataService.createAppUpdate({
+        title: this.updateTitle(),
+        content: this.updateContent(),
+        type: this.updateType()
+      });
+      alert('Update published successfully!');
+      this.updateTitle.set('');
+      this.updateContent.set('');
+    } catch (error) {
+      console.error(error);
+      alert('Failed to publish update.');
+    } finally {
+      this.isSubmitting.set(false);
+    }
   }
 
   // --- Quiz Methods ---

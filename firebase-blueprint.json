@@ -98,6 +98,31 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["title", "content", "category", "isProOnly", "createdAt"]
+    },
+    "AppUpdate": {
+      "title": "AppUpdate",
+      "description": "An update announcement for the application.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "type": { "type": "string", "enum": ["feature", "maintenance", "announcement"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "content", "type", "createdAt"]
+    },
+    "RevenueRecord": {
+      "title": "RevenueRecord",
+      "description": "A record of a premium subscription purchase.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "amount": { "type": "number" },
+        "plan": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "amount", "plan", "createdAt"]
     }
   },
   "firestore": {
@@ -124,6 +149,14 @@
     "/notes/{noteId}": {
       "schema": { "$ref": "#/entities/Note" },
       "description": "Educational notes and past papers."
+    },
+    "/appUpdates/{updateId}": {
+      "schema": { "$ref": "#/entities/AppUpdate" },
+      "description": "Application update announcements."
+    },
+    "/revenue/{recordId}": {
+      "schema": { "$ref": "#/entities/RevenueRecord" },
+      "description": "Revenue records for premium subscriptions."
     }
   }
 }

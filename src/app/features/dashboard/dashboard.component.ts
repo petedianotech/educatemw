@@ -1,12 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { DataService } from '../../core/services/data.service';
 import { MatIconModule } from '@angular/material/icon';
+import { DatePipe } from '@angular/common';
+import { Timestamp } from 'firebase/firestore';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, MatIconModule],
+  imports: [RouterLink, MatIconModule, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="h-full overflow-y-auto bg-slate-50 pb-24 relative">
@@ -18,10 +21,35 @@ import { MatIconModule } from '@angular/material/icon';
 
       <div class="relative z-10 p-4 md:p-8">
         <!-- Greeting Section -->
-        <div class="mb-8 mt-4 px-2">
-          <h2 class="text-sm font-semibold text-indigo-100 uppercase tracking-wider mb-1">Welcome Back</h2>
-          <h1 class="text-3xl font-bold text-white tracking-tight">{{authService.currentUser()?.displayName}}</h1>
+        <div class="mb-8 mt-4 px-2 flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-semibold text-indigo-100 uppercase tracking-wider mb-1">Welcome Back</h2>
+            <h1 class="text-3xl font-bold text-white tracking-tight">{{authService.currentUser()?.displayName}}</h1>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white">
+            <mat-icon>notifications_none</mat-icon>
+          </div>
         </div>
+
+        <!-- App Updates Section -->
+        @if (dataService.appUpdates().length > 0) {
+          <div class="max-w-2xl mx-auto mb-8">
+            <div class="bg-white rounded-3xl p-6 shadow-xl border border-indigo-50 relative overflow-hidden">
+              <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full -mr-12 -mt-12 blur-2xl"></div>
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
+                  <mat-icon class="!w-5 !h-5 !text-[20px]">campaign</mat-icon>
+                </div>
+                <div>
+                  <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">Latest Update</h3>
+                  <p class="text-[10px] text-slate-400 font-bold">{{ toDate(dataService.appUpdates()[0].createdAt) | date:'mediumDate' }}</p>
+                </div>
+              </div>
+              <h4 class="text-lg font-black text-slate-900 mb-2">{{ dataService.appUpdates()[0].title }}</h4>
+              <p class="text-sm text-slate-600 leading-relaxed line-clamp-2">{{ dataService.appUpdates()[0].content }}</p>
+            </div>
+          </div>
+        }
 
         <!-- Quick Actions Grid (App Style) -->
         <div class="grid grid-cols-2 gap-4 mb-8 max-w-2xl mx-auto">
@@ -117,7 +145,7 @@ import { MatIconModule } from '@angular/material/icon';
                 </div>
                 
                 <h3 class="text-3xl font-bold mb-3 tracking-tight">Unlock Your Potential</h3>
-                <p class="text-slate-300 text-sm mb-8 font-medium leading-relaxed max-w-[90%]">Get unlimited access to Cleo AI and premium past papers to ace your exams.</p>
+                <p class="text-slate-300 text-sm mb-8 font-medium leading-relaxed max-w-[90%]">Pay K5,000 once and access everything till your exams. Get unlimited Cleo AI and premium papers.</p>
                 
                 <a routerLink="/upgrade" class="btn-accent w-full py-3.5 text-[15px]">
                   Upgrade Now
@@ -130,6 +158,22 @@ import { MatIconModule } from '@angular/material/icon';
     </div>
   `
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
+  dataService = inject(DataService);
+
+  ngOnInit() {
+    this.dataService.subscribeToAppUpdates();
+  }
+
+  ngOnDestroy() {
+    this.dataService.unsubscribeFromAppUpdates();
+  }
+
+  toDate(date: Date | Timestamp | string | null): Date | null {
+    if (!date) return null;
+    if (date instanceof Timestamp) return date.toDate();
+    if (date instanceof Date) return date;
+    return new Date(date);
+  }
 }

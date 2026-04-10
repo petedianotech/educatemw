@@ -35,12 +35,17 @@ import {MatIconModule} from '@angular/material/icon';
       </div>
     } @else {
       @if (authService.currentUser()) {
-        <div class="flex flex-col h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden relative">
+        <div class="flex flex-col h-[100dvh] bg-slate-50 font-sans text-slate-900 overflow-hidden relative">
           
           <!-- Top App Bar -->
           @if (router.url !== '/chat' && router.url !== '/quizzes' && router.url !== '/notes' && router.url !== '/flashcards') {
             <header class="bg-white/80 backdrop-blur-xl border-b border-slate-200 h-20 flex-shrink-0 flex items-center justify-between px-6 z-30 pt-safe">
               <div class="flex items-center gap-4">
+                @if (router.url !== '/') {
+                  <button (click)="goBack()" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-all active:scale-90">
+                    <mat-icon>arrow_back</mat-icon>
+                  </button>
+                }
                 <button (click)="toggleMenu()" class="w-14 h-14 rounded-full bg-white shadow-xl border border-slate-100 flex items-center justify-center hover:bg-slate-50 active:scale-95 transition-all group">
                   <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
                     <mat-icon class="scale-110">menu</mat-icon>
@@ -67,11 +72,6 @@ import {MatIconModule} from '@angular/material/icon';
 
           <!-- Main Content Area -->
           <main class="flex-1 overflow-hidden relative pb-safe">
-            @if (router.url === '/chat' || router.url === '/quizzes' || router.url === '/notes' || router.url === '/flashcards') {
-              <button (click)="toggleMenu()" class="fixed top-6 left-6 z-50 w-12 h-12 rounded-full bg-white/80 backdrop-blur-md shadow-xl border border-white/20 flex items-center justify-center text-slate-900 hover:bg-white transition-all active:scale-90">
-                <mat-icon>menu</mat-icon>
-              </button>
-            }
             <router-outlet></router-outlet>
           </main>
 
@@ -90,102 +90,130 @@ import {MatIconModule} from '@angular/material/icon';
                  [class.translate-x-0]="isMobileMenuOpen()"
                  [class.-translate-x-full]="!isMobileMenuOpen()">
             
-            <!-- Swipe/Toggle Handle -->
-            <button (click)="closeMenu()" class="absolute top-1/2 -right-4 w-8 h-20 bg-white border border-slate-200 rounded-r-3xl shadow-xl flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all z-50 group">
-              <mat-icon class="group-hover:-translate-x-1 transition-transform">chevron_left</mat-icon>
-            </button>
-            
-            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <div class="flex items-center gap-4">
-                <div class="relative">
-                  <img [src]="authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid" alt="Profile" class="w-12 h-12 rounded-2xl bg-white border-2 border-white shadow-md ring-1 ring-slate-200" referrerpolicy="no-referrer">
-                  @if (authService.currentUser()?.isPro) {
-                    <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-sky-500 text-white rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                      <mat-icon class="text-[10px] !w-[10px] !h-[10px]">workspace_premium</mat-icon>
-                    </div>
-                  }
+            <!-- Sidebar Header -->
+            <div class="px-4 py-3 flex items-center justify-between border-b border-slate-50">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-md shadow-indigo-200">
+                  <mat-icon class="!w-5 !h-5 !text-[20px]">school</mat-icon>
+                </div>
+                <h2 class="text-lg font-black text-indigo-600 tracking-tight">Educate MW</h2>
+              </div>
+              <button (click)="closeMenu()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">close</mat-icon>
+              </button>
+            </div>
+
+            <!-- User Profile Section -->
+            <div class="p-4">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-emerald-700 flex items-center justify-center text-white text-lg font-bold shadow-inner">
+                  {{authService.currentUser()?.displayName?.charAt(0)}}
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-base font-bold text-slate-900 truncate">{{authService.currentUser()?.displayName}}</p>
-                  <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{{authService.currentUser()?.role}}</p>
+                  <p class="text-sm font-black text-slate-900 truncate leading-tight">{{authService.currentUser()?.displayName}}</p>
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                    {{authService.currentUser()?.isPro ? 'PRO ACCOUNT' : 'FREE ACCOUNT'}}
+                  </p>
                 </div>
               </div>
-              <button (click)="closeMenu()" class="w-8 h-8 flex items-center justify-center text-slate-400 rounded-xl hover:bg-slate-200 transition-colors">
-                <mat-icon class="text-[20px]">close</mat-icon>
-              </button>
-            </div>
-            
-            <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-              <div class="px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Navigation</div>
               
-              <a routerLink="/" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-200" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-4 px-4 py-3.5 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all group">
-                <mat-icon [class.text-white]="router.url === '/'" class="group-hover:scale-110 transition-transform">dashboard</mat-icon>
-                <span class="text-[15px]">Dashboard</span>
-              </a>
-              
-              <a routerLink="/chat" (click)="closeMenu()" routerLinkActive="bg-slate-900 text-white shadow-xl shadow-slate-200" class="flex items-center gap-4 px-4 py-4 text-slate-600 font-black rounded-[1.5rem] hover:bg-slate-50 transition-all group relative overflow-hidden border border-transparent hover:border-indigo-100">
-                <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm" [class.bg-indigo-500]="router.url.includes('/chat')" [class.text-white]="router.url.includes('/chat')">
-                  <mat-icon class="scale-90 group-hover:animate-pulse">auto_awesome</mat-icon>
-                </div>
-                <div class="flex flex-col">
-                  <span class="text-[15px] leading-none">Cleo AI</span>
-                  <span class="text-[9px] uppercase tracking-widest text-slate-400 group-hover:text-indigo-400 transition-colors mt-1">Intelligent Tutor</span>
-                </div>
-                @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 5) <= 0) {
-                  <mat-icon class="text-amber-500 text-sm ml-auto">lock</mat-icon>
-                } @else {
-                  <div class="ml-auto flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+              @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
+                <a routerLink="/upgrade" (click)="closeMenu()" class="flex flex-col items-center justify-center gap-1 w-full py-2.5 bg-amber-500 text-white rounded-xl font-black shadow-lg shadow-amber-200 hover:bg-amber-600 transition-all active:scale-[0.98] mb-2">
+                  <div class="flex items-center gap-1">
+                    <mat-icon class="scale-75">bolt</mat-icon>
+                    <span class="text-sm">Upgrade to Pro</span>
                   </div>
-                }
-              </a>
-
-              <div class="px-4 pt-6 pb-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Learning</div>
-              
-              <a routerLink="/notes" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-200" class="flex items-center gap-4 px-4 py-3.5 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all group">
-                <mat-icon [class.text-white]="router.url.includes('/notes')" class="group-hover:scale-110 transition-transform">library_books</mat-icon>
-                <span class="text-[15px]">Library & Papers</span>
-              </a>
-              
-              <a routerLink="/quizzes" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-200" class="flex items-center gap-4 px-4 py-3.5 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all group">
-                <mat-icon [class.text-white]="router.url.includes('/quizzes')" class="group-hover:scale-110 transition-transform">quiz</mat-icon>
-                <span class="text-[15px]">Quizzes</span>
-              </a>
-
-              <a routerLink="/flashcards" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-200" class="flex items-center gap-4 px-4 py-3.5 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all group">
-                <mat-icon [class.text-white]="router.url.includes('/flashcards')" class="group-hover:scale-110 transition-transform">style</mat-icon>
-                <span class="text-[15px]">Flashcards</span>
-              </a>
-              
-              <a routerLink="/community" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-200" class="flex items-center gap-4 px-4 py-3.5 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all group">
-                <mat-icon [class.text-white]="router.url.includes('/community')" class="group-hover:scale-110 transition-transform">forum</mat-icon>
-                <span class="text-[15px]">Community</span>
-              </a>
-              
-              <a routerLink="/career-guidance" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-200" class="flex items-center gap-4 px-4 py-3.5 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all group">
-                <mat-icon [class.text-white]="router.url.includes('/career-guidance')" class="group-hover:scale-110 transition-transform">explore</mat-icon>
-                <span class="text-[15px]">Career Guidance</span>
-              </a>
-
-              <div class="px-4 pt-6 pb-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Account</div>
-              
-              <a routerLink="/upgrade" (click)="closeMenu()" routerLinkActive="bg-amber-500 text-white shadow-lg shadow-amber-200" class="flex items-center gap-4 px-4 py-3.5 text-amber-600 font-black rounded-2xl hover:bg-amber-50 transition-all group border border-amber-100">
-                <mat-icon [class.text-white]="router.url.includes('/upgrade')" class="group-hover:scale-110 transition-transform">workspace_premium</mat-icon>
-                <span class="text-[15px]">Buy Premium</span>
-              </a>
-
-              <a routerLink="/settings" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-200" class="flex items-center gap-4 px-4 py-3.5 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all group">
-                <mat-icon [class.text-white]="router.url.includes('/settings')" class="group-hover:scale-110 transition-transform">settings</mat-icon>
-                <span class="text-[15px]">Settings</span>
-              </a>
-            </nav>
-            
-            <div class="p-6 border-t border-slate-100 pb-safe">
-              <button (click)="logout()" class="w-full py-4 text-[15px] font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all flex items-center justify-center group">
-                <mat-icon class="text-[20px] !w-[20px] !h-[20px] mr-3 group-hover:rotate-12 transition-transform">logout</mat-icon>
-                Sign Out
-              </button>
+                  <span class="text-[9px] opacity-90 font-bold">K5000 once till exams</span>
+                </a>
+              }
             </div>
+            
+            <!-- Navigation Items -->
+            <nav class="flex-1 px-2 space-y-0.5 overflow-y-auto pb-10">
+              <a routerLink="/" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">home</mat-icon>
+                <span class="text-sm">Dashboard</span>
+              </a>
+              
+              <a routerLink="/video-lessons" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">play_circle_outline</mat-icon>
+                <span class="text-sm">Video Lessons</span>
+              </a>
+
+              <a routerLink="/notes" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">menu_book</mat-icon>
+                <span class="text-sm">Past Papers</span>
+              </a>
+
+              <a routerLink="/quizzes" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">help_outline</mat-icon>
+                <span class="text-sm">Quizzes</span>
+              </a>
+
+              <a routerLink="/flashcards" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">layers</mat-icon>
+                <span class="text-sm">Flashcards</span>
+              </a>
+
+              <a routerLink="/study-plan" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">access_time</mat-icon>
+                <span class="text-sm">Study Plan</span>
+              </a>
+
+              <a routerLink="/resources" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">inventory_2</mat-icon>
+                <span class="text-sm">Resources</span>
+              </a>
+
+              <a routerLink="/leaderboard" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">emoji_events</mat-icon>
+                <span class="text-sm">Leaderboard</span>
+              </a>
+
+              <a routerLink="/exam-countdown" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">calendar_today</mat-icon>
+                <span class="text-sm">Exam Countdown</span>
+              </a>
+
+              <a routerLink="/community" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">people_outline</mat-icon>
+                <span class="text-sm">Community</span>
+              </a>
+
+              <a routerLink="/premium-students" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">star_outline</mat-icon>
+                <span class="text-sm">Premium Students</span>
+              </a>
+
+              <a routerLink="/timetable" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">calendar_month</mat-icon>
+                <span class="text-sm">Student Timetable</span>
+              </a>
+
+              <a routerLink="/chat" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">chat_bubble_outline</mat-icon>
+                <span class="text-sm">Cleo AI Assistant</span>
+              </a>
+
+              @if (authService.currentUser()?.role === 'admin') {
+                <a routerLink="/admin" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                  <mat-icon class="!w-5 !h-5 !text-[20px]">admin_panel_settings</mat-icon>
+                  <span class="text-sm">Admin Dashboard</span>
+                </a>
+              }
+
+              <div class="pt-2 mt-2 border-t border-slate-50">
+                <a routerLink="/settings" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
+                  <mat-icon class="!w-5 !h-5 !text-[20px]">settings</mat-icon>
+                  <span class="text-sm">Settings</span>
+                </a>
+
+                <button (click)="logout()" class="w-full flex items-center gap-3 px-3 py-2 text-rose-500 font-bold rounded-lg hover:bg-rose-50 transition-all group">
+                  <mat-icon class="!w-5 !h-5 !text-[20px]">logout</mat-icon>
+                  <span class="text-sm">Logout</span>
+                </button>
+              </div>
+            </nav>
           </aside>
           
           <!-- PWA Install Popup -->
@@ -232,6 +260,7 @@ export class App {
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
   isMobileMenuOpen = signal(false);
+  isControlsHidden = signal(false);
   deferredPrompt = signal<BeforeInstallPromptEvent | null>(null);
   showInstallPopup = signal(false);
 
@@ -264,6 +293,10 @@ export class App {
 
   closeMenu() {
     this.isMobileMenuOpen.set(false);
+  }
+
+  goBack() {
+    window.history.back();
   }
 
   async installPwa() {

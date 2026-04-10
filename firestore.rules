@@ -35,7 +35,7 @@ service cloud.firestore {
     }
     
     function isValidOptionalString(field, minLen, maxLen) {
-      return !('field' in request.resource.data) ||
+      return !(field in request.resource.data) ||
              (request.resource.data[field] is string &&
               request.resource.data[field].size() >= minLen &&
               request.resource.data[field].size() <= maxLen);
@@ -116,6 +116,25 @@ service cloud.firestore {
              isValidOptionalString('youtubeUrl', 1, 1000);
     }
 
+    function isValidAppUpdate(data) {
+      return hasOnlyAllowedFields(['title', 'content', 'type', 'createdAt']) &&
+             hasRequiredFields(['title', 'content', 'type', 'createdAt']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.content is string && data.content.size() > 0 && data.content.size() < 5000 &&
+             data.type in ['feature', 'maintenance', 'announcement'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidRevenueRecord(data) {
+      return hasOnlyAllowedFields(['userId', 'userName', 'amount', 'plan', 'createdAt']) &&
+             hasRequiredFields(['userId', 'userName', 'amount', 'plan', 'createdAt']) &&
+             data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
+             data.userName is string && data.userName.size() > 0 && data.userName.size() < 100 &&
+             data.amount is number && data.amount >= 0 &&
+             data.plan is string && data.plan.size() > 0 && data.plan.size() < 50 &&
+             data.createdAt is timestamp;
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
@@ -178,6 +197,20 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAdmin() && isValidNote(request.resource.data);
       allow update: if isAdmin() && isValidNote(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /appUpdates/{updateId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() && isValidAppUpdate(request.resource.data);
+      allow update: if isAdmin() && isValidAppUpdate(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /revenue/{recordId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && isValidRevenueRecord(request.resource.data);
+      allow update: if isAdmin() && isValidRevenueRecord(request.resource.data);
       allow delete: if isAdmin();
     }
   }

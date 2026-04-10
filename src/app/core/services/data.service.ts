@@ -54,6 +54,23 @@ export interface QuizResult {
   completedAt: Date | Timestamp;
 }
 
+export interface AppUpdate {
+  id: string;
+  title: string;
+  content: string;
+  type: 'feature' | 'maintenance' | 'announcement';
+  createdAt: Date | Timestamp;
+}
+
+export interface RevenueRecord {
+  id: string;
+  userId: string;
+  userName: string;
+  amount: number;
+  plan: string;
+  createdAt: Date | Timestamp;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DataService {
   posts = signal<Post[]>([]);
@@ -61,12 +78,16 @@ export class DataService {
   users = signal<UserProfile[]>([]);
   quizzes = signal<Quiz[]>([]);
   quizResults = signal<QuizResult[]>([]);
+  appUpdates = signal<AppUpdate[]>([]);
+  revenueRecords = signal<RevenueRecord[]>([]);
   
   private postsUnsubscribe: (() => void) | null = null;
   private notesUnsubscribe: (() => void) | null = null;
   private usersUnsubscribe: (() => void) | null = null;
   private quizzesUnsubscribe: (() => void) | null = null;
   private quizResultsUnsubscribe: (() => void) | null = null;
+  private appUpdatesUnsubscribe: (() => void) | null = null;
+  private revenueUnsubscribe: (() => void) | null = null;
 
   // --- Users ---
   subscribeToUsers() {
@@ -274,6 +295,72 @@ export class DataService {
       });
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'quizResults');
+    }
+  }
+
+  // --- App Updates ---
+  subscribeToAppUpdates() {
+    if (this.appUpdatesUnsubscribe) return;
+    const q = query(collection(db, 'appUpdates'), orderBy('createdAt', 'desc'));
+    this.appUpdatesUnsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedUpdates = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as AppUpdate));
+      this.appUpdates.set(loadedUpdates);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'appUpdates');
+    });
+  }
+
+  unsubscribeFromAppUpdates() {
+    if (this.appUpdatesUnsubscribe) {
+      this.appUpdatesUnsubscribe();
+      this.appUpdatesUnsubscribe = null;
+    }
+  }
+
+  async createAppUpdate(update: Omit<AppUpdate, 'id' | 'createdAt'>) {
+    try {
+      await addDoc(collection(db, 'appUpdates'), {
+        ...update,
+        createdAt: serverTimestamp()
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'appUpdates');
+    }
+  }
+
+  // --- Revenue ---
+  subscribeToRevenue() {
+    if (this.revenueUnsubscribe) return;
+    const q = query(collection(db, 'revenue'), orderBy('createdAt', 'desc'));
+    this.revenueUnsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedRevenue = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as RevenueRecord));
+      this.revenueRecords.set(loadedRevenue);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'revenue');
+    });
+  }
+
+  unsubscribeFromRevenue() {
+    if (this.revenueUnsubscribe) {
+      this.revenueUnsubscribe();
+      this.revenueUnsubscribe = null;
+    }
+  }
+
+  async recordRevenue(record: Omit<RevenueRecord, 'id' | 'createdAt'>) {
+    try {
+      await addDoc(collection(db, 'revenue'), {
+        ...record,
+        createdAt: serverTimestamp()
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'revenue');
     }
   }
 }

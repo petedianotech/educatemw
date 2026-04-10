@@ -18,6 +18,41 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'video-lessons',
+    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'study-plan',
+    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'resources',
+    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'leaderboard',
+    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'exam-countdown',
+    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'premium-students',
+    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'timetable',
+    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'notes',
     loadComponent: () => import('./features/notes/notes.component').then(m => m.NotesComponent),
     canActivate: [authGuard]
