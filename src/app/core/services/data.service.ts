@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { db } from '../../../firebase';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc, where } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc, where, arrayUnion, arrayRemove, increment, limit, getDocs } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../../../firebase';
 import { UserProfile } from './auth.service';
 
@@ -12,7 +12,18 @@ export interface Post {
   content: string;
   createdAt: Date | Timestamp;
   likesCount: number;
+  likedBy: string[];
   commentsCount: number;
+}
+
+export interface Reply {
+  id: string;
+  postId: string;
+  authorId: string;
+  authorName: string;
+  authorPhoto?: string;
+  content: string;
+  createdAt: Date | Timestamp;
 }
 
 export interface Note {
@@ -193,10 +204,41 @@ export class DataService {
         content,
         createdAt: serverTimestamp(),
         likesCount: 0,
+        likedBy: [],
         commentsCount: 0
       });
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'posts');
+    }
+  }
+
+  async likePost(postId: string, userId: string, liked: boolean) {
+    try {
+      const postRef = doc(db, 'posts', postId);
+      await updateDoc(postRef, {
+        likesCount: increment(liked ? 1 : -1),
+        likedBy: liked ? arrayUnion(userId) : arrayRemove(userId)
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `posts/${postId}`);
+    }
+  }
+
+  async createReply(postId: string, authorId: string, authorName: string, authorPhoto: string, content: string) {
+    try {
+      await addDoc(collection(db, 'replies'), {
+        postId,
+        authorId,
+        authorName,
+        authorPhoto,
+        content,
+        createdAt: serverTimestamp()
+      });
+      await updateDoc(doc(db, 'posts', postId), {
+        commentsCount: increment(1)
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'replies');
     }
   }
 
@@ -326,6 +368,30 @@ export class DataService {
     if (this.quizResultsUnsubscribe) {
       this.quizResultsUnsubscribe();
       this.quizResultsUnsubscribe = null;
+    }
+  }
+
+  replies = signal<Reply[]>([]);
+  private repliesUnsubscribe: (() => void) | null = null;
+
+  subscribeToReplies(postId: string) {
+    if (this.repliesUnsubscribe) this.unsubscribeFromReplies();
+    const q = query(collection(db, 'replies'), where('postId', '==', postId), orderBy('createdAt', 'asc'));
+    this.repliesUnsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedReplies = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Reply));
+      this.replies.set(loadedReplies);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'replies');
+    });
+  }
+
+  unsubscribeFromReplies() {
+    if (this.repliesUnsubscribe) {
+      this.repliesUnsubscribe();
+      this.repliesUnsubscribe = null;
     }
   }
 
@@ -527,6 +593,18 @@ export class DataService {
       await deleteDoc(doc(db, 'flashcards', cardId));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `flashcards/${cardId}`);
+    }
+  }
+
+  // --- Leaderboard ---
+  async getTopStudents(limitCount = 10) {
+    try {
+      const q = query(collection(db, 'users'), orderBy('aiCredits', 'desc'), limit(limitCount));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'users');
+      return [];
     }
   }
 }

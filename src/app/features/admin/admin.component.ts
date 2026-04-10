@@ -13,8 +13,12 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
   template: `
     <div class="flex h-screen bg-slate-50 overflow-hidden">
       <!-- Admin Sidebar -->
-      <aside class="w-64 bg-slate-900 text-white flex flex-col shrink-0 z-30">
-        <div class="p-6 border-b border-slate-800">
+      <aside class="bg-slate-900 text-white flex flex-col shrink-0 z-30 transition-all duration-300"
+             [class.w-64]="isSidebarOpen()"
+             [class.w-0]="!isSidebarOpen()"
+             [class.opacity-0]="!isSidebarOpen()"
+             [class.overflow-hidden]="!isSidebarOpen()">
+        <div class="p-6 border-b border-slate-800 flex items-center justify-between w-64">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
               <mat-icon>security</mat-icon>
@@ -24,91 +28,101 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
               <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Control Center</p>
             </div>
           </div>
-        </div>
-
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-          <button (click)="activeTab.set('overview')" 
-                  [class.bg-indigo-600]="activeTab() === 'overview'"
-                  [class.text-white]="activeTab() === 'overview'"
-                  class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
-            <mat-icon>dashboard</mat-icon>
-            <span>Overview</span>
-          </button>
-
-          <div class="pt-4 pb-2 px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Content</div>
-          
-          <button (click)="activeTab.set('upload')" 
-                  [class.bg-indigo-600]="activeTab() === 'upload'"
-                  [class.text-white]="activeTab() === 'upload'"
-                  class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
-            <mat-icon>library_add</mat-icon>
-            <span>Upload Material</span>
-          </button>
-
-          <button (click)="activeTab.set('manage')" 
-                  [class.bg-indigo-600]="activeTab() === 'manage'"
-                  [class.text-white]="activeTab() === 'manage'"
-                  class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
-            <mat-icon>folder_managed</mat-icon>
-            <span>Manage Library</span>
-          </button>
-
-          <button (click)="activeTab.set('quizzes')" 
-                  [class.bg-indigo-600]="activeTab() === 'quizzes'"
-                  [class.text-white]="activeTab() === 'quizzes'"
-                  class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
-            <mat-icon>quiz</mat-icon>
-            <span>Quizzes</span>
-          </button>
-
-          <button (click)="activeTab.set('exams')" 
-                  [class.bg-indigo-600]="activeTab() === 'exams'"
-                  [class.text-white]="activeTab() === 'exams'"
-                  class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
-            <mat-icon>event</mat-icon>
-            <span>Exam Dates</span>
-          </button>
-
-          <div class="pt-4 pb-2 px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Users & Stats</div>
-
-          <button (click)="activeTab.set('students')" 
-                  [class.bg-indigo-600]="activeTab() === 'students'"
-                  [class.text-white]="activeTab() === 'students'"
-                  class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
-            <mat-icon>people</mat-icon>
-            <span>Students</span>
-          </button>
-
-          <button (click)="activeTab.set('revenue')" 
-                  [class.bg-indigo-600]="activeTab() === 'revenue'"
-                  [class.text-white]="activeTab() === 'revenue'"
-                  class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
-            <mat-icon>payments</mat-icon>
-            <span>Revenue</span>
-          </button>
-
-          <button (click)="activeTab.set('updates')" 
-                  [class.bg-indigo-600]="activeTab() === 'updates'"
-                  [class.text-white]="activeTab() === 'updates'"
-                  class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
-            <mat-icon>campaign</mat-icon>
-            <span>App Updates</span>
-          </button>
-        </nav>
-
-        <div class="p-4 border-t border-slate-800">
-          <button (click)="goBack()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
-            <mat-icon>arrow_back</mat-icon>
-            <span>Back to App</span>
+          <button (click)="isSidebarOpen.set(false)" class="text-slate-400 hover:text-white">
+            <mat-icon>chevron_left</mat-icon>
           </button>
         </div>
-      </aside>
+
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto w-64">
+            <button (click)="activeTab.set('overview')" 
+                    [class.bg-indigo-600]="activeTab() === 'overview'"
+                    [class.text-white]="activeTab() === 'overview'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
+              <mat-icon>dashboard</mat-icon>
+              <span>Overview</span>
+            </button>
+
+            <div class="pt-4 pb-2 px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Content</div>
+            
+            <button (click)="activeTab.set('upload')" 
+                    [class.bg-indigo-600]="activeTab() === 'upload'"
+                    [class.text-white]="activeTab() === 'upload'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
+              <mat-icon>library_add</mat-icon>
+              <span>Upload Material</span>
+            </button>
+
+            <button (click)="activeTab.set('manage')" 
+                    [class.bg-indigo-600]="activeTab() === 'manage'"
+                    [class.text-white]="activeTab() === 'manage'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
+              <mat-icon>folder_managed</mat-icon>
+              <span>Manage Library</span>
+            </button>
+
+            <button (click)="activeTab.set('quizzes')" 
+                    [class.bg-indigo-600]="activeTab() === 'quizzes'"
+                    [class.text-white]="activeTab() === 'quizzes'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
+              <mat-icon>quiz</mat-icon>
+              <span>Quizzes</span>
+            </button>
+
+            <button (click)="activeTab.set('exams')" 
+                    [class.bg-indigo-600]="activeTab() === 'exams'"
+                    [class.text-white]="activeTab() === 'exams'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
+              <mat-icon>event</mat-icon>
+              <span>Exam Dates</span>
+            </button>
+
+            <div class="pt-4 pb-2 px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Users & Stats</div>
+
+            <button (click)="activeTab.set('students')" 
+                    [class.bg-indigo-600]="activeTab() === 'students'"
+                    [class.text-white]="activeTab() === 'students'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
+              <mat-icon>people</mat-icon>
+              <span>Students</span>
+            </button>
+
+            <button (click)="activeTab.set('revenue')" 
+                    [class.bg-indigo-600]="activeTab() === 'revenue'"
+                    [class.text-white]="activeTab() === 'revenue'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
+              <mat-icon>payments</mat-icon>
+              <span>Revenue</span>
+            </button>
+
+            <button (click)="activeTab.set('updates')" 
+                    [class.bg-indigo-600]="activeTab() === 'updates'"
+                    [class.text-white]="activeTab() === 'updates'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
+              <mat-icon>campaign</mat-icon>
+              <span>App Updates</span>
+            </button>
+          </nav>
+
+          <div class="p-4 border-t border-slate-800 w-64">
+            <button (click)="goBack()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
+              <mat-icon>arrow_back</mat-icon>
+              <span>Back to App</span>
+            </button>
+          </div>
+        </aside>
 
       <!-- Main Content -->
       <main class="flex-1 flex flex-col overflow-hidden">
         <!-- Top Bar -->
         <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
-          <h2 class="text-xl font-black text-slate-900 tracking-tight capitalize">{{ activeTab() }}</h2>
+          <div class="flex items-center gap-4">
+            @if (!isSidebarOpen()) {
+              <button (click)="isSidebarOpen.set(true)" class="text-slate-500 hover:text-indigo-600">
+                <mat-icon>menu</mat-icon>
+              </button>
+            }
+            <h2 class="text-xl font-black text-slate-900 tracking-tight capitalize">{{ activeTab() }}</h2>
+          </div>
           <div class="flex items-center gap-4">
             <div class="flex flex-col items-end">
               <span class="text-sm font-black text-slate-900">Administrator</span>
@@ -561,6 +575,7 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
 export class AdminComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   
+  isSidebarOpen = signal(true);
   activeTab = signal<'overview' | 'upload' | 'manage' | 'students' | 'quizzes' | 'revenue' | 'updates' | 'exams'>('overview');
   
   title = signal('');

@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, ViewChild, ElementRef, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, ViewChild, ElementRef, effect, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DataService } from '../../core/services/data.service';
+import { DataService, Post } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
@@ -29,26 +29,16 @@ import { Timestamp } from 'firebase/firestore';
           </div>
         </div>
         <div class="flex items-center gap-1">
-          <button class="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-colors">
-            <mat-icon>search</mat-icon>
-          </button>
-          <button class="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-colors">
-            <mat-icon>more_vert</mat-icon>
-          </button>
+          <select [(ngModel)]="sortOrder" class="bg-white/10 text-white text-xs rounded-lg px-2 py-1 outline-none">
+            <option value="recency">Newest</option>
+            <option value="popularity">Popular</option>
+          </select>
         </div>
       </header>
 
       <!-- Chat Area -->
       <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50" #scrollContainer>
-        
-        <div class="flex justify-center mb-6 mt-2">
-          <div class="bg-indigo-50 text-indigo-700 text-xs px-3 py-1.5 rounded-lg shadow-sm border border-indigo-100 text-center max-w-xs">
-            <mat-icon class="!w-3 !h-3 !text-[12px] inline-block align-text-bottom mr-1">lock</mat-icon>
-            Messages are end-to-end encrypted. No one outside of this chat, not even EduMalawi, can read or listen to them.
-          </div>
-        </div>
-
-        @for (post of dataService.posts(); track post.id) {
+        @for (post of sortedPosts(); track post.id) {
           <div class="flex w-full" [class.justify-end]="post.authorId === authService.currentUser()?.uid">
             <div class="relative max-w-[85%] md:max-w-[70%] px-2 pt-1.5 pb-2 shadow-sm rounded-lg border"
                  [class.bg-white]="post.authorId !== authService.currentUser()?.uid"
@@ -58,24 +48,11 @@ import { Timestamp } from 'firebase/firestore';
                  [class.border-indigo-200]="post.authorId === authService.currentUser()?.uid"
                  [class.rounded-tr-none]="post.authorId === authService.currentUser()?.uid">
               
-              <!-- Tail -->
-              <div class="absolute top-0 w-4 h-4"
-                   [class.-left-2]="post.authorId !== authService.currentUser()?.uid"
-                   [class.-right-2]="post.authorId === authService.currentUser()?.uid">
-                <svg viewBox="0 0 8 13" width="8" height="13" class="block" [class.text-white]="post.authorId !== authService.currentUser()?.uid" [class.text-indigo-100]="post.authorId === authService.currentUser()?.uid">
-                  <path opacity="0.13" fill="#0000000" d="M1.533 3.118L8 20.118V0L1.533 3.118z"></path>
-                  <path opacity="0.98" fill="currentColor" d="M1.533 2.118L8 19.118V0L1.533 2.118z"></path>
-                </svg>
-              </div>
-
               @if (post.authorId !== authService.currentUser()?.uid) {
                 <div class="flex items-center gap-2 mb-1 px-1">
                   <span class="text-[13px] font-semibold" [style.color]="getAuthorColor(post.authorId)">
                     {{post.authorName}}
                   </span>
-                  @if (post.authorId === 'admin') {
-                    <span class="bg-indigo-100 text-indigo-700 text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase border border-indigo-200">Admin</span>
-                  }
                 </div>
               }
               
@@ -83,11 +60,16 @@ import { Timestamp } from 'firebase/firestore';
                 <p class="whitespace-pre-wrap text-[15px] leading-snug text-slate-900 font-medium">{{post.content}}</p>
               </div>
               
-              <div class="flex justify-end items-center gap-1 mt-1 -mb-1 px-1">
+              <div class="flex justify-end items-center gap-2 mt-1 px-1">
+                <button (click)="likePost(post)" class="flex items-center gap-0.5 text-[10px]" [class.text-red-500]="post.likedBy?.includes(authService.currentUser()?.uid || '')">
+                  <mat-icon class="text-[14px] !w-[14px] !h-[14px]">favorite</mat-icon>
+                  {{post.likesCount || 0}}
+                </button>
+                <button (click)="replyToPost(post)" class="flex items-center gap-0.5 text-[10px] text-gray-500">
+                  <mat-icon class="text-[14px] !w-[14px] !h-[14px]">reply</mat-icon>
+                  {{post.commentsCount || 0}}
+                </button>
                 <span class="text-[10px] text-gray-500">{{getPostDate(post.createdAt) | date:'shortTime'}}</span>
-                @if (post.authorId === authService.currentUser()?.uid) {
-                  <mat-icon class="text-[14px] !w-[14px] !h-[14px] text-blue-500">done_all</mat-icon>
-                }
                 
                 @if (post.authorId === authService.currentUser()?.uid || authService.currentUser()?.role === 'admin') {
                   <button (click)="deletePost(post.id)" class="ml-1 text-gray-400 hover:text-red-500 transition-colors">
@@ -108,25 +90,19 @@ import { Timestamp } from 'firebase/firestore';
       <div class="p-3 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-safe">
         <div class="max-w-3xl mx-auto relative flex items-end gap-2">
           <div class="flex-1 relative bg-slate-50 rounded-2xl border border-slate-200 flex items-center focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-all shadow-sm">
-            <button class="p-3 text-slate-400 hover:text-slate-600">
-              <mat-icon>mood</mat-icon>
-            </button>
             <textarea 
               [(ngModel)]="newPostContent"
-              placeholder="Message"
-              class="w-full py-3 bg-transparent border-transparent focus:ring-0 resize-none outline-none transition-all text-[15px] font-medium text-slate-900 placeholder-slate-400"
+              [placeholder]="replyingTo() ? 'Replying to ' + replyingTo()?.authorName : 'Message'"
+              class="w-full py-3 px-4 bg-transparent border-transparent focus:ring-0 resize-none outline-none transition-all text-[15px] font-medium text-slate-900 placeholder-slate-400"
               rows="1"
               style="min-height: 48px; max-height: 120px;"
             ></textarea>
-            <button class="p-3 text-slate-400 hover:text-slate-600">
-              <mat-icon>attach_file</mat-icon>
-            </button>
           </div>
           <button 
             (click)="createPost()"
             [disabled]="!newPostContent().trim() || isSubmitting()"
             class="flex-shrink-0 w-12 h-12 flex items-center justify-center text-white bg-gradient-to-r from-indigo-600 to-blue-500 rounded-2xl shadow-md shadow-indigo-500/20 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100 transition-all">
-            <mat-icon>{{newPostContent().trim() ? 'send' : 'mic'}}</mat-icon>
+            <mat-icon>send</mat-icon>
           </button>
         </div>
       </div>
@@ -139,8 +115,22 @@ export class CommunityComponent implements OnInit, OnDestroy {
   
   newPostContent = signal('');
   isSubmitting = signal(false);
+  sortOrder = signal<'recency' | 'popularity'>('recency');
+  replyingTo = signal<Post | null>(null);
   
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
+
+  sortedPosts = computed(() => {
+    const posts = [...this.dataService.posts()];
+    if (this.sortOrder() === 'popularity') {
+      return posts.sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0));
+    }
+    return posts.sort((a, b) => {
+      const dateA = this.getPostDate(a.createdAt)?.getTime() || 0;
+      const dateB = this.getPostDate(b.createdAt)?.getTime() || 0;
+      return dateB - dateA;
+    });
+  });
 
   constructor() {
     effect(() => {
@@ -164,11 +154,27 @@ export class CommunityComponent implements OnInit, OnDestroy {
 
     this.isSubmitting.set(true);
     try {
-      await this.dataService.createPost(user.uid, user.displayName, user.photoURL, content);
+      if (this.replyingTo()) {
+        await this.dataService.createReply(this.replyingTo()!.id, user.uid, user.displayName, user.photoURL, content);
+        this.replyingTo.set(null);
+      } else {
+        await this.dataService.createPost(user.uid, user.displayName, user.photoURL, content);
+      }
       this.newPostContent.set('');
     } finally {
       this.isSubmitting.set(false);
     }
+  }
+
+  async likePost(post: Post) {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    const liked = !post.likedBy?.includes(user.uid);
+    await this.dataService.likePost(post.id, user.uid, liked);
+  }
+
+  replyToPost(post: Post) {
+    this.replyingTo.set(post);
   }
 
   async deletePost(postId: string) {
@@ -184,7 +190,6 @@ export class CommunityComponent implements OnInit, OnDestroy {
     return new Date(createdAt as string | number);
   }
 
-  // Generate consistent colors for different users based on their ID
   getAuthorColor(authorId: string): string {
     const colors = [
       '#351c75', '#d90057', '#008000', '#ff8c00', 

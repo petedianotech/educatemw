@@ -175,6 +175,12 @@ import { CommonModule } from '@angular/common';
           </button>
         </section>
 
+        <!-- Terms and Privacy -->
+        <div class="flex items-center justify-center gap-6 py-8">
+          <a routerLink="/terms" class="text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Terms</a>
+          <a routerLink="/privacy" class="text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Privacy</a>
+        </div>
+
       </div>
     </div>
   `

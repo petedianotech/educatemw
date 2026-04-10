@@ -60,9 +60,8 @@ import { Timestamp } from 'firebase/firestore';
             <div class="absolute -right-6 -top-6 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-all duration-500"></div>
             
             <div class="flex justify-between items-start relative z-10">
-              <div class="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-200 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500 relative overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-blue-500 to-sky-400 opacity-80"></div>
-                <mat-icon class="!w-8 !h-8 !text-[32px] relative z-10 animate-pulse">auto_awesome</mat-icon>
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500 relative overflow-hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white">
+                <mat-icon class="!w-8 !h-8 !text-[32px] relative z-10">auto_awesome</mat-icon>
               </div>
               @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 5) <= 0) {
                 <div class="bg-slate-900 text-amber-400 p-2 rounded-xl border border-slate-800 shadow-lg">

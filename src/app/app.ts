@@ -81,12 +81,6 @@ import {MatIconModule} from '@angular/material/icon';
                 <mat-icon>home</mat-icon>
                 <span class="text-[10px] font-bold uppercase tracking-tighter">Home</span>
               </a>
-              <a routerLink="/chat" (click)="hideNav()" routerLinkActive="text-indigo-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30">
-                  <mat-icon class="!w-4 !h-4 !text-[16px]">auto_awesome</mat-icon>
-                </div>
-                <span class="text-[10px] font-bold uppercase tracking-tighter">Cleo AI</span>
-              </a>
               <a routerLink="/community" (click)="hideNav()" routerLinkActive="text-indigo-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
                 <mat-icon>people</mat-icon>
                 <span class="text-[10px] font-bold uppercase tracking-tighter">Forum</span>
@@ -130,14 +124,20 @@ import {MatIconModule} from '@angular/material/icon';
             </div>
 
             <!-- User Profile Section -->
-            <div class="p-6">
+            <div class="p-6 border-b border-white/5">
+              <div class="flex items-center gap-3 mb-4">
+                <img [src]="authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid" alt="Profile" class="w-12 h-12 rounded-2xl bg-slate-800 border-2 border-white/10" referrerpolicy="no-referrer">
+                <div class="flex flex-col">
+                  <h3 class="text-white font-bold">{{authService.currentUser()?.displayName}}</h3>
+                  <span class="text-xs text-slate-400">{{authService.currentUser()?.email}}</span>
+                </div>
+              </div>
               @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
-                <a routerLink="/upgrade" (click)="closeMenu()" class="flex flex-col items-center justify-center gap-1 w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl font-black shadow-xl shadow-amber-900/20 hover:scale-[1.02] transition-all active:scale-[0.98] mb-2">
+                <a routerLink="/upgrade" (click)="closeMenu()" class="flex flex-col items-center justify-center gap-1 w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl font-black shadow-xl shadow-amber-900/20 hover:scale-[1.02] transition-all active:scale-[0.98]">
                   <div class="flex items-center gap-1">
                     <mat-icon class="scale-75">bolt</mat-icon>
                     <span class="text-sm">Upgrade to Pro</span>
                   </div>
-                  <span class="text-[9px] opacity-90 font-bold">K5000 once till exams</span>
                 </a>
               }
             </div>
@@ -186,7 +186,7 @@ import {MatIconModule} from '@angular/material/icon';
 
               <a routerLink="/community" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
                 <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">people_outline</mat-icon>
-                <span class="text-sm">Community</span>
+                <span class="text-sm">Forum</span>
               </a>
 
               <a routerLink="/premium-students" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
@@ -206,24 +206,34 @@ import {MatIconModule} from '@angular/material/icon';
                 <span class="text-sm">Cleo AI Assistant</span>
               </a>
 
-              @if (authService.currentUser()?.role === 'admin') {
-                <a routerLink="/admin" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
-                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">admin_panel_settings</mat-icon>
-                  <span class="text-sm">Admin Dashboard</span>
+              <div class="pt-4 mt-4 border-t border-white/5">
+                <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Profile</p>
+                <a routerLink="/settings" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">person</mat-icon>
+                  <span class="text-sm">My Profile</span>
                 </a>
-              }
+                @if (authService.currentUser()?.role === 'admin') {
+                  <a routerLink="/admin" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                    <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">admin_panel_settings</mat-icon>
+                    <span class="text-sm">Admin Dashboard</span>
+                  </a>
+                }
+              </div>
 
               <div class="pt-4 mt-4 border-t border-white/5">
-                <a routerLink="/settings" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
-                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">settings</mat-icon>
-                  <span class="text-sm">Settings</span>
+                <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Settings</p>
+                <a routerLink="/terms" (click)="closeMenu()" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">description</mat-icon>
+                  <span class="text-sm">Terms of Service</span>
                 </a>
-
-                <div class="flex items-center gap-6 px-4 py-4">
-                  <a routerLink="/terms" (click)="closeMenu()" class="text-[10px] font-black text-slate-500 hover:text-indigo-400 uppercase tracking-widest transition-colors">Terms</a>
-                  <a routerLink="/privacy" (click)="closeMenu()" class="text-[10px] font-black text-slate-500 hover:text-indigo-400 uppercase tracking-widest transition-colors">Privacy</a>
-                </div>
-
+                <a routerLink="/privacy" (click)="closeMenu()" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">privacy_tip</mat-icon>
+                  <span class="text-sm">Privacy Policy</span>
+                </a>
+                <button class="w-full flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">palette</mat-icon>
+                  <span class="text-sm">Theme</span>
+                </button>
                 <button (click)="logout()" class="w-full flex items-center gap-3 px-4 py-3 text-rose-400 font-bold rounded-xl hover:bg-rose-500/10 transition-all group">
                   <mat-icon class="!w-5 !h-5 !text-[20px]">logout</mat-icon>
                   <span class="text-sm">Logout</span>
