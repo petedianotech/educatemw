@@ -12,12 +12,12 @@ import { DataService } from '../../core/services/data.service';
   imports: [MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div class="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden h-[100dvh] overflow-y-auto custom-scrollbar">
       <!-- Decorative Background Elements -->
       <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-400/20 blur-[100px] pointer-events-none"></div>
       <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-sky-400/20 blur-[100px] pointer-events-none"></div>
 
-      <div class="max-w-3xl mx-auto text-center relative z-10">
+      <div class="max-w-3xl mx-auto text-center relative z-10 pb-12">
         <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-3xl text-white shadow-lg shadow-indigo-500/30 mb-6 transform hover:scale-105 transition-transform duration-300">
           <mat-icon class="!w-12 !h-12 !text-[48px]">workspace_premium</mat-icon>
         </div>

@@ -452,10 +452,12 @@ export class QuizzesComponent implements OnInit, OnDestroy {
     try {
       const generatedQuiz: GeneratedQuiz = await this.gemini.generateQuiz(this.quizTopic());
       // Store the generated quiz
+      const user = this.authService.currentUser();
       await this.dataService.createQuiz({
         title: generatedQuiz.title,
         description: generatedQuiz.description,
         category: generatedQuiz.category,
+        authorId: user?.uid || 'system',
         timeLimit: generatedQuiz.timeLimit,
         isProOnly: generatedQuiz.isProOnly,
         questions: generatedQuiz.questions

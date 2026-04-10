@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { auth } from '../../../firebase';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebase';
 
 export interface UserProfile {
@@ -13,6 +13,9 @@ export interface UserProfile {
   isPro: boolean;
   aiCredits?: number;
   pwaInstalled?: boolean;
+  referralCode?: string;
+  referredBy?: string;
+  referralsCount?: number;
   createdAt: Date;
 }
 
@@ -93,6 +96,33 @@ export class AuthService {
 
   private async createNewUserProfile(user: FirebaseUser, username: string) {
     const userRef = doc(db, 'users', user.uid);
+    
+    // Check for referral code in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const referralCode = urlParams.get('ref');
+    let referredBy: string | undefined;
+
+    if (referralCode) {
+      // Find user with this referral code
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('referralCode', '==', referralCode));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const referrerDoc = querySnapshot.docs[0];
+        referredBy = referrerDoc.id;
+        
+        // Reward the referrer
+        const referrerData = referrerDoc.data();
+        const currentReferrals = referrerData['referralsCount'] || 0;
+        const currentCredits = referrerData['aiCredits'] || 0;
+        
+        await updateDoc(doc(db, 'users', referredBy), {
+          referralsCount: currentReferrals + 1,
+          aiCredits: currentCredits + 10
+        });
+      }
+    }
+
     const newUser: UserProfile = {
       uid: user.uid,
       email: user.email || '',
@@ -101,6 +131,9 @@ export class AuthService {
       role: 'student',
       isPro: false,
       aiCredits: 5,
+      referralCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+      referredBy: referredBy,
+      referralsCount: 0,
       createdAt: new Date()
     };
     await setDoc(userRef, newUser);

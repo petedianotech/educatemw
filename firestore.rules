@@ -45,7 +45,7 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'aiCredits', 'pwaInstalled', 'createdAt']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'aiCredits', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount', 'createdAt']) &&
              hasRequiredFields(['uid', 'email', 'role', 'isPro', 'createdAt']) &&
              data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
              data.email is string && data.email.size() > 0 && data.email.size() < 100 &&
@@ -55,7 +55,10 @@ service cloud.firestore {
              isValidOptionalString('displayName', 1, 100) &&
              isValidOptionalString('photoURL', 1, 500) &&
              (!('aiCredits' in data) || data.aiCredits is number) &&
-             (!('pwaInstalled' in data) || data.pwaInstalled is bool);
+             (!('pwaInstalled' in data) || data.pwaInstalled is bool) &&
+             (!('referralCode' in data) || data.referralCode is string) &&
+             (!('referredBy' in data) || data.referredBy is string) &&
+             (!('referralsCount' in data) || data.referralsCount is number);
     }
 
     function isValidPost(data) {
@@ -93,10 +96,11 @@ service cloud.firestore {
     }
 
     function isValidQuiz(data) {
-      return hasOnlyAllowedFields(['title', 'description', 'category', 'timeLimit', 'isProOnly', 'questions', 'createdAt']) &&
-             hasRequiredFields(['title', 'category', 'timeLimit', 'isProOnly', 'questions', 'createdAt']) &&
+      return hasOnlyAllowedFields(['title', 'description', 'category', 'authorId', 'timeLimit', 'isProOnly', 'questions', 'createdAt']) &&
+             hasRequiredFields(['title', 'category', 'authorId', 'timeLimit', 'isProOnly', 'questions', 'createdAt']) &&
              data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
              data.category is string && data.category.size() > 0 && data.category.size() < 100 &&
+             data.authorId is string && data.authorId.size() > 0 && data.authorId.size() < 100 &&
              data.timeLimit is number && data.timeLimit > 0 &&
              data.isProOnly is bool &&
              data.questions is list && data.questions.size() > 0 && data.questions.size() <= 100 &&
@@ -135,6 +139,36 @@ service cloud.firestore {
              data.createdAt is timestamp;
     }
 
+    function isValidExamDate(data) {
+      return hasOnlyAllowedFields(['subject', 'date', 'description', 'createdAt']) &&
+             hasRequiredFields(['subject', 'date', 'createdAt']) &&
+             data.subject is string && data.subject.size() > 0 && data.subject.size() < 200 &&
+             data.date is timestamp &&
+             data.createdAt is timestamp &&
+             isValidOptionalString('description', 0, 1000);
+    }
+
+    function isValidFlashcardSet(data) {
+      return hasOnlyAllowedFields(['title', 'description', 'category', 'authorId', 'authorName', 'isProOnly', 'createdAt']) &&
+             hasRequiredFields(['title', 'category', 'authorId', 'authorName', 'isProOnly', 'createdAt']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.category is string && data.category.size() > 0 && data.category.size() < 100 &&
+             data.authorId is string && data.authorId.size() > 0 && data.authorId.size() < 100 &&
+             data.authorName is string && data.authorName.size() > 0 && data.authorName.size() < 100 &&
+             data.isProOnly is bool &&
+             data.createdAt is timestamp &&
+             isValidOptionalString('description', 0, 1000);
+    }
+
+    function isValidFlashcard(data) {
+      return hasOnlyAllowedFields(['setId', 'front', 'back', 'createdAt']) &&
+             hasRequiredFields(['setId', 'front', 'back', 'createdAt']) &&
+             data.setId is string && data.setId.size() > 0 && data.setId.size() < 100 &&
+             data.front is string && data.front.size() > 0 && data.front.size() < 1000 &&
+             data.back is string && data.back.size() > 0 && data.back.size() < 1000 &&
+             data.createdAt is timestamp;
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
@@ -148,7 +182,7 @@ service cloud.firestore {
                       request.resource.data.role == resource.data.role && 
                       request.resource.data.isPro == resource.data.isPro &&
                       request.resource.data.createdAt == resource.data.createdAt &&
-                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'aiCredits', 'pwaInstalled'])) || isAdmin());
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'aiCredits', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount'])) || isAdmin());
     }
 
     match /posts/{postId} {
@@ -188,9 +222,11 @@ service cloud.firestore {
 
     match /quizzes/{quizId} {
       allow read: if isAuthenticated();
-      allow create: if isAdmin() && isValidQuiz(request.resource.data);
-      allow update: if isAdmin() && isValidQuiz(request.resource.data);
-      allow delete: if isAdmin();
+      allow create: if isAuthenticated() && isValidQuiz(request.resource.data) && 
+                    (request.resource.data.authorId == request.auth.uid || isAdmin());
+      allow update: if isAuthenticated() && isValidQuiz(request.resource.data) &&
+                    (resource.data.authorId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() && (resource.data.authorId == request.auth.uid || isAdmin());
     }
 
     match /notes/{noteId} {
@@ -209,9 +245,36 @@ service cloud.firestore {
 
     match /revenue/{recordId} {
       allow read: if isAdmin();
-      allow create: if isAdmin() && isValidRevenueRecord(request.resource.data);
-      allow update: if isAdmin() && isValidRevenueRecord(request.resource.data);
+      allow create: if isAuthenticated() && isValidRevenueRecord(request.resource.data) && 
+                    (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAdmin();
       allow delete: if isAdmin();
+    }
+
+    match /examDates/{dateId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() && isValidExamDate(request.resource.data);
+      allow update: if isAdmin() && isValidExamDate(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /flashcardSets {
+      allow list: if isAuthenticated();
+      match /{setId} {
+        allow get: if isAuthenticated();
+        allow create: if isAuthenticated() && isValidFlashcardSet(request.resource.data) && 
+                      (request.resource.data.authorId == request.auth.uid || isAdmin());
+        allow update: if isAuthenticated() && isValidFlashcardSet(request.resource.data) &&
+                      (resource.data.authorId == request.auth.uid || isAdmin());
+        allow delete: if isAuthenticated() && (resource.data.authorId == request.auth.uid || isAdmin());
+      }
+    }
+
+    match /flashcards/{cardId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidFlashcard(request.resource.data);
+      allow update: if isAuthenticated() && isValidFlashcard(request.resource.data);
+      allow delete: if isAuthenticated() && (isAdmin() || (exists(/databases/$(database)/documents/flashcardSets/$(resource.data.setId)) && get(/databases/$(database)/documents/flashcardSets/$(resource.data.setId)).data.authorId == request.auth.uid));
     }
   }
 }

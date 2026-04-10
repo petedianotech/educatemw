@@ -38,6 +38,7 @@ export interface Quiz {
   title: string;
   description?: string;
   category: string;
+  authorId: string;
   timeLimit: number;
   isProOnly: boolean;
   questions: QuizQuestion[];
@@ -71,6 +72,33 @@ export interface RevenueRecord {
   createdAt: Date | Timestamp;
 }
 
+export interface ExamDate {
+  id: string;
+  subject: string;
+  date: Date | Timestamp;
+  description?: string;
+  createdAt: Date | Timestamp;
+}
+
+export interface FlashcardSet {
+  id: string;
+  title: string;
+  description?: string;
+  category: string;
+  authorId: string;
+  authorName: string;
+  isProOnly: boolean;
+  createdAt: Date | Timestamp;
+}
+
+export interface Flashcard {
+  id: string;
+  setId: string;
+  front: string;
+  back: string;
+  createdAt: Date | Timestamp;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DataService {
   posts = signal<Post[]>([]);
@@ -80,6 +108,9 @@ export class DataService {
   quizResults = signal<QuizResult[]>([]);
   appUpdates = signal<AppUpdate[]>([]);
   revenueRecords = signal<RevenueRecord[]>([]);
+  examDates = signal<ExamDate[]>([]);
+  flashcardSets = signal<FlashcardSet[]>([]);
+  flashcards = signal<Flashcard[]>([]);
   
   private postsUnsubscribe: (() => void) | null = null;
   private notesUnsubscribe: (() => void) | null = null;
@@ -88,6 +119,9 @@ export class DataService {
   private quizResultsUnsubscribe: (() => void) | null = null;
   private appUpdatesUnsubscribe: (() => void) | null = null;
   private revenueUnsubscribe: (() => void) | null = null;
+  private examDatesUnsubscribe: (() => void) | null = null;
+  private flashcardSetsUnsubscribe: (() => void) | null = null;
+  private flashcardsUnsubscribe: (() => void) | null = null;
 
   // --- Users ---
   subscribeToUsers() {
@@ -114,6 +148,14 @@ export class DataService {
   async updateUserProStatus(userId: string, isPro: boolean) {
     try {
       await updateDoc(doc(db, 'users', userId), { isPro });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `users/${userId}`);
+    }
+  }
+
+  async updateUserProfile(userId: string, profile: Partial<UserProfile>) {
+    try {
+      await updateDoc(doc(db, 'users', userId), profile);
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `users/${userId}`);
     }
@@ -361,6 +403,130 @@ export class DataService {
       });
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'revenue');
+    }
+  }
+
+  // --- Exam Dates ---
+  subscribeToExamDates() {
+    if (this.examDatesUnsubscribe) return;
+    const q = query(collection(db, 'examDates'), orderBy('date', 'asc'));
+    this.examDatesUnsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedDates = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as ExamDate));
+      this.examDates.set(loadedDates);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'examDates');
+    });
+  }
+
+  unsubscribeFromExamDates() {
+    if (this.examDatesUnsubscribe) {
+      this.examDatesUnsubscribe();
+      this.examDatesUnsubscribe = null;
+    }
+  }
+
+  async createExamDate(examDate: Omit<ExamDate, 'id' | 'createdAt'>) {
+    try {
+      await addDoc(collection(db, 'examDates'), {
+        ...examDate,
+        createdAt: serverTimestamp()
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'examDates');
+    }
+  }
+
+  async deleteExamDate(dateId: string) {
+    try {
+      await deleteDoc(doc(db, 'examDates', dateId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `examDates/${dateId}`);
+    }
+  }
+
+  // --- Flashcards ---
+  subscribeToFlashcardSets() {
+    if (this.flashcardSetsUnsubscribe) return;
+    const q = query(collection(db, 'flashcardSets'), orderBy('createdAt', 'desc'));
+    this.flashcardSetsUnsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedSets = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as FlashcardSet));
+      this.flashcardSets.set(loadedSets);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'flashcardSets');
+    });
+  }
+
+  unsubscribeFromFlashcardSets() {
+    if (this.flashcardSetsUnsubscribe) {
+      this.flashcardSetsUnsubscribe();
+      this.flashcardSetsUnsubscribe = null;
+    }
+  }
+
+  async createFlashcardSet(set: Omit<FlashcardSet, 'id' | 'createdAt'>) {
+    try {
+      const docRef = await addDoc(collection(db, 'flashcardSets'), {
+        ...set,
+        createdAt: serverTimestamp()
+      });
+      return docRef.id;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'flashcardSets');
+      return null;
+    }
+  }
+
+  async deleteFlashcardSet(setId: string) {
+    try {
+      await deleteDoc(doc(db, 'flashcardSets', setId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `flashcardSets/${setId}`);
+    }
+  }
+
+  subscribeToFlashcards(setId: string) {
+    if (this.flashcardsUnsubscribe) this.unsubscribeFromFlashcards();
+    const q = query(collection(db, 'flashcards'), where('setId', '==', setId), orderBy('createdAt', 'asc'));
+    this.flashcardsUnsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedCards = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Flashcard));
+      this.flashcards.set(loadedCards);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'flashcards');
+    });
+  }
+
+  unsubscribeFromFlashcards() {
+    if (this.flashcardsUnsubscribe) {
+      this.flashcardsUnsubscribe();
+      this.flashcardsUnsubscribe = null;
+    }
+  }
+
+  async createFlashcard(card: Omit<Flashcard, 'id' | 'createdAt'>) {
+    try {
+      await addDoc(collection(db, 'flashcards'), {
+        ...card,
+        createdAt: serverTimestamp()
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'flashcards');
+    }
+  }
+
+  async deleteFlashcard(cardId: string) {
+    try {
+      await deleteDoc(doc(db, 'flashcards', cardId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `flashcards/${cardId}`);
     }
   }
 }

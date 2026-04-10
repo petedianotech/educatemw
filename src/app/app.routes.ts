@@ -19,37 +19,32 @@ export const routes: Routes = [
   },
   {
     path: 'video-lessons',
-    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    loadComponent: () => import('./features/video-lessons/video-lessons.component').then(m => m.VideoLessonsComponent),
     canActivate: [authGuard]
   },
   {
     path: 'study-plan',
-    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'resources',
-    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    loadComponent: () => import('./features/study-plan/study-plan.component').then(m => m.StudyPlanComponent),
     canActivate: [authGuard]
   },
   {
     path: 'leaderboard',
-    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    loadComponent: () => import('./features/leaderboard/leaderboard.component').then(m => m.LeaderboardComponent),
     canActivate: [authGuard]
   },
   {
     path: 'exam-countdown',
-    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    loadComponent: () => import('./features/exam-countdown/exam-countdown.component').then(m => m.ExamCountdownComponent),
     canActivate: [authGuard]
   },
   {
     path: 'premium-students',
-    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    loadComponent: () => import('./features/premium-students/premium-students.component').then(m => m.PremiumStudentsComponent),
     canActivate: [authGuard]
   },
   {
     path: 'timetable',
-    loadComponent: () => import('./features/placeholder/placeholder.component').then(m => m.PlaceholderComponent),
+    loadComponent: () => import('./features/timetable/timetable.component').then(m => m.TimetableComponent),
     canActivate: [authGuard]
   },
   {
@@ -91,6 +86,14 @@ export const routes: Routes = [
     path: 'upgrade',
     loadComponent: () => import('./features/upgrade/upgrade.component').then(m => m.UpgradeComponent),
     canActivate: [authGuard]
+  },
+  {
+    path: 'terms',
+    loadComponent: () => import('./features/terms/terms.component').then(m => m.TermsComponent)
+  },
+  {
+    path: 'privacy',
+    loadComponent: () => import('./features/privacy/privacy.component').then(m => m.PrivacyComponent)
   },
   {
     path: '**',

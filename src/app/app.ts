@@ -38,42 +38,65 @@ import {MatIconModule} from '@angular/material/icon';
         <div class="flex flex-col h-[100dvh] bg-slate-50 font-sans text-slate-900 overflow-hidden relative">
           
           <!-- Top App Bar -->
-          @if (router.url !== '/chat' && router.url !== '/quizzes' && router.url !== '/notes' && router.url !== '/flashcards') {
-            <header class="bg-white/80 backdrop-blur-xl border-b border-slate-200 h-20 flex-shrink-0 flex items-center justify-between px-6 z-30 pt-safe">
-              <div class="flex items-center gap-4">
-                @if (router.url !== '/') {
-                  <button (click)="goBack()" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-all active:scale-90">
-                    <mat-icon>arrow_back</mat-icon>
-                  </button>
-                }
-                <button (click)="toggleMenu()" class="w-14 h-14 rounded-full bg-white shadow-xl border border-slate-100 flex items-center justify-center hover:bg-slate-50 active:scale-95 transition-all group">
-                  <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
-                    <mat-icon class="scale-110">menu</mat-icon>
+          <header class="bg-white/80 backdrop-blur-xl border-b border-slate-200 h-20 flex-shrink-0 flex items-center justify-between px-6 z-30 pt-safe">
+            <div class="flex items-center gap-4">
+              @if (router.url === '/') {
+                <button (click)="toggleMenu()" class="w-10 h-10 rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center hover:bg-slate-50 active:scale-95 transition-all group">
+                  <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
+                    <mat-icon class="scale-90">menu</mat-icon>
                   </div>
                 </button>
-                <div class="flex flex-col">
-                  <h1 class="text-xl font-black text-slate-900 tracking-tight leading-none">
-                    EduMalawi
-                  </h1>
-                  <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mt-1">Learning Hub</span>
+              } @else {
+                <button (click)="goBack()" class="w-12 h-12 rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center text-slate-900 hover:bg-slate-50 transition-all active:scale-90">
+                  <mat-icon>arrow_back</mat-icon>
+                </button>
+              }
+              <div class="flex flex-col">
+                <h1 class="text-xl font-black text-slate-900 tracking-tight leading-none">
+                  EduMalawi
+                </h1>
+                <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mt-1">Learning Hub</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              @if (authService.currentUser()?.isPro) {
+                <div class="hidden md:flex items-center gap-1 bg-sky-50 text-sky-600 px-3 py-1 rounded-full border border-sky-100 text-[10px] font-black uppercase tracking-wider">
+                  <mat-icon class="text-[14px] !w-[14px] !h-[14px]">workspace_premium</mat-icon>
+                  Pro Member
                 </div>
-              </div>
-              <div class="flex items-center gap-3">
-                @if (authService.currentUser()?.isPro) {
-                  <div class="hidden md:flex items-center gap-1 bg-sky-50 text-sky-600 px-3 py-1 rounded-full border border-sky-100 text-[10px] font-black uppercase tracking-wider">
-                    <mat-icon class="text-[14px] !w-[14px] !h-[14px]">workspace_premium</mat-icon>
-                    Pro Member
-                  </div>
-                }
-                <img [src]="authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid" alt="Profile" class="w-9 h-9 rounded-2xl bg-slate-200 border-2 border-white shadow-sm ring-1 ring-slate-200" referrerpolicy="no-referrer">
-              </div>
-            </header>
-          }
+              }
+              <img [src]="authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid" alt="Profile" class="w-9 h-9 rounded-2xl bg-slate-200 border-2 border-white shadow-sm ring-1 ring-slate-200" referrerpolicy="no-referrer">
+            </div>
+          </header>
 
           <!-- Main Content Area -->
-          <main class="flex-1 overflow-hidden relative pb-safe">
+          <main class="flex-1 overflow-hidden relative pb-safe" [class.pb-24]="router.url === '/'">
             <router-outlet></router-outlet>
           </main>
+
+          <!-- Bottom Navigation (Home Screen Only) -->
+          @if (router.url === '/' && !isNavHidden()) {
+            <nav class="fixed bottom-0 left-0 right-0 h-20 bg-slate-900/95 backdrop-blur-xl z-40 flex items-center justify-around px-2 border-t border-white/10 animate-in slide-in-from-bottom-full duration-300">
+              <a routerLink="/" (click)="hideNav()" routerLinkActive="text-indigo-400" [routerLinkActiveOptions]="{exact: true}" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
+                <mat-icon>home</mat-icon>
+                <span class="text-[10px] font-bold uppercase tracking-tighter">Home</span>
+              </a>
+              <a routerLink="/chat" (click)="hideNav()" routerLinkActive="text-indigo-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30">
+                  <mat-icon class="!w-4 !h-4 !text-[16px]">auto_awesome</mat-icon>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-tighter">Cleo AI</span>
+              </a>
+              <a routerLink="/community" (click)="hideNav()" routerLinkActive="text-indigo-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
+                <mat-icon>people</mat-icon>
+                <span class="text-[10px] font-bold uppercase tracking-tighter">Forum</span>
+              </a>
+              <a routerLink="/settings" (click)="hideNav()" routerLinkActive="text-indigo-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
+                <mat-icon>person</mat-icon>
+                <span class="text-[10px] font-bold uppercase tracking-tighter">Profile</span>
+              </a>
+            </nav>
+          }
 
           <!-- Mobile Drawer Overlay -->
           @if (isMobileMenuOpen()) {
@@ -86,39 +109,30 @@ import {MatIconModule} from '@angular/material/icon';
           }
           
           <!-- Slide-over Sidebar Menu -->
-          <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-2xl transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col pt-safe"
+          <aside class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-950 shadow-2xl transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col pt-safe border-r border-white/5"
                  [class.translate-x-0]="isMobileMenuOpen()"
                  [class.-translate-x-full]="!isMobileMenuOpen()">
             
             <!-- Sidebar Header -->
-            <div class="px-4 py-3 flex items-center justify-between border-b border-slate-50">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-md shadow-indigo-200">
-                  <mat-icon class="!w-5 !h-5 !text-[20px]">school</mat-icon>
+            <div class="px-6 py-6 flex items-center justify-between border-b border-white/5">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                  <mat-icon class="!w-6 !h-6 !text-[24px]">school</mat-icon>
                 </div>
-                <h2 class="text-lg font-black text-indigo-600 tracking-tight">Educate MW</h2>
+                <div class="flex flex-col">
+                  <h2 class="text-lg font-black text-white tracking-tight leading-none">EduMalawi</h2>
+                  <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-1">Learning Hub</span>
+                </div>
               </div>
-              <button (click)="closeMenu()" class="text-slate-400 hover:text-slate-600 transition-colors">
+              <button (click)="closeMenu()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-slate-400 hover:text-white transition-colors">
                 <mat-icon class="!w-5 !h-5 !text-[20px]">close</mat-icon>
               </button>
             </div>
 
             <!-- User Profile Section -->
-            <div class="p-4">
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-xl bg-emerald-700 flex items-center justify-center text-white text-lg font-bold shadow-inner">
-                  {{authService.currentUser()?.displayName?.charAt(0)}}
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-black text-slate-900 truncate leading-tight">{{authService.currentUser()?.displayName}}</p>
-                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
-                    {{authService.currentUser()?.isPro ? 'PRO ACCOUNT' : 'FREE ACCOUNT'}}
-                  </p>
-                </div>
-              </div>
-              
+            <div class="p-6">
               @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
-                <a routerLink="/upgrade" (click)="closeMenu()" class="flex flex-col items-center justify-center gap-1 w-full py-2.5 bg-amber-500 text-white rounded-xl font-black shadow-lg shadow-amber-200 hover:bg-amber-600 transition-all active:scale-[0.98] mb-2">
+                <a routerLink="/upgrade" (click)="closeMenu()" class="flex flex-col items-center justify-center gap-1 w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl font-black shadow-xl shadow-amber-900/20 hover:scale-[1.02] transition-all active:scale-[0.98] mb-2">
                   <div class="flex items-center gap-1">
                     <mat-icon class="scale-75">bolt</mat-icon>
                     <span class="text-sm">Upgrade to Pro</span>
@@ -129,86 +143,88 @@ import {MatIconModule} from '@angular/material/icon';
             </div>
             
             <!-- Navigation Items -->
-            <nav class="flex-1 px-2 space-y-0.5 overflow-y-auto pb-10">
-              <a routerLink="/" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">home</mat-icon>
+            <nav class="flex-1 px-4 space-y-1 overflow-y-auto pb-10 custom-scrollbar">
+              <a routerLink="/" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">home</mat-icon>
                 <span class="text-sm">Dashboard</span>
               </a>
               
-              <a routerLink="/video-lessons" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">play_circle_outline</mat-icon>
+              <a routerLink="/video-lessons" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">play_circle_outline</mat-icon>
                 <span class="text-sm">Video Lessons</span>
               </a>
 
-              <a routerLink="/notes" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">menu_book</mat-icon>
+              <a routerLink="/notes" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">menu_book</mat-icon>
                 <span class="text-sm">Past Papers</span>
               </a>
 
-              <a routerLink="/quizzes" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">help_outline</mat-icon>
+              <a routerLink="/quizzes" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">help_outline</mat-icon>
                 <span class="text-sm">Quizzes</span>
               </a>
 
-              <a routerLink="/flashcards" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">layers</mat-icon>
+              <a routerLink="/flashcards" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">layers</mat-icon>
                 <span class="text-sm">Flashcards</span>
               </a>
 
-              <a routerLink="/study-plan" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">access_time</mat-icon>
+              <a routerLink="/study-plan" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">access_time</mat-icon>
                 <span class="text-sm">Study Plan</span>
               </a>
 
-              <a routerLink="/resources" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">inventory_2</mat-icon>
-                <span class="text-sm">Resources</span>
-              </a>
-
-              <a routerLink="/leaderboard" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">emoji_events</mat-icon>
+              <a routerLink="/leaderboard" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">emoji_events</mat-icon>
                 <span class="text-sm">Leaderboard</span>
               </a>
 
-              <a routerLink="/exam-countdown" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">calendar_today</mat-icon>
+              <a routerLink="/exam-countdown" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">calendar_today</mat-icon>
                 <span class="text-sm">Exam Countdown</span>
               </a>
 
-              <a routerLink="/community" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">people_outline</mat-icon>
+              <a routerLink="/community" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">people_outline</mat-icon>
                 <span class="text-sm">Community</span>
               </a>
 
-              <a routerLink="/premium-students" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">star_outline</mat-icon>
+              <a routerLink="/premium-students" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">star_outline</mat-icon>
                 <span class="text-sm">Premium Students</span>
               </a>
 
-              <a routerLink="/timetable" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">calendar_month</mat-icon>
+              <a routerLink="/timetable" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">calendar_month</mat-icon>
                 <span class="text-sm">Student Timetable</span>
               </a>
 
-              <a routerLink="/chat" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">chat_bubble_outline</mat-icon>
+              <a routerLink="/chat" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <div class="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white">
+                  <mat-icon class="!w-3 !h-3 !text-[12px]">auto_awesome</mat-icon>
+                </div>
                 <span class="text-sm">Cleo AI Assistant</span>
               </a>
 
               @if (authService.currentUser()?.role === 'admin') {
-                <a routerLink="/admin" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                  <mat-icon class="!w-5 !h-5 !text-[20px]">admin_panel_settings</mat-icon>
+                <a routerLink="/admin" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">admin_panel_settings</mat-icon>
                   <span class="text-sm">Admin Dashboard</span>
                 </a>
               }
 
-              <div class="pt-2 mt-2 border-t border-slate-50">
-                <a routerLink="/settings" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-md shadow-indigo-100" class="flex items-center gap-3 px-3 py-2 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-all group">
-                  <mat-icon class="!w-5 !h-5 !text-[20px]">settings</mat-icon>
+              <div class="pt-4 mt-4 border-t border-white/5">
+                <a routerLink="/settings" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">settings</mat-icon>
                   <span class="text-sm">Settings</span>
                 </a>
 
-                <button (click)="logout()" class="w-full flex items-center gap-3 px-3 py-2 text-rose-500 font-bold rounded-lg hover:bg-rose-50 transition-all group">
+                <div class="flex items-center gap-6 px-4 py-4">
+                  <a routerLink="/terms" (click)="closeMenu()" class="text-[10px] font-black text-slate-500 hover:text-indigo-400 uppercase tracking-widest transition-colors">Terms</a>
+                  <a routerLink="/privacy" (click)="closeMenu()" class="text-[10px] font-black text-slate-500 hover:text-indigo-400 uppercase tracking-widest transition-colors">Privacy</a>
+                </div>
+
+                <button (click)="logout()" class="w-full flex items-center gap-3 px-4 py-3 text-rose-400 font-bold rounded-xl hover:bg-rose-500/10 transition-all group">
                   <mat-icon class="!w-5 !h-5 !text-[20px]">logout</mat-icon>
                   <span class="text-sm">Logout</span>
                 </button>
@@ -260,6 +276,7 @@ export class App {
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
   isMobileMenuOpen = signal(false);
+  isNavHidden = signal(false);
   isControlsHidden = signal(false);
   deferredPrompt = signal<BeforeInstallPromptEvent | null>(null);
   showInstallPopup = signal(false);
@@ -311,6 +328,12 @@ export class App {
       this.showInstallPopup.set(false);
     }
     this.deferredPrompt.set(null);
+  }
+
+  hideNav() {
+    this.isNavHidden.set(true);
+    // Reset after a short delay to allow it to reappear when returning to home
+    setTimeout(() => this.isNavHidden.set(false), 500);
   }
 
   logout() {
