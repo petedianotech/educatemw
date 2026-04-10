@@ -136,7 +136,8 @@ import { marked } from 'marked';
           <div class="max-w-4xl mx-auto relative flex items-end gap-3">
             <div class="flex-1 relative bg-slate-50 border-2 border-slate-100 rounded-[2rem] flex items-center focus-within:border-indigo-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all duration-300 shadow-inner">
               <textarea 
-                [(ngModel)]="inputText"
+                [ngModel]="inputText()"
+                (ngModelChange)="inputText.set($event)"
                 (keydown.enter)="handleEnter($event)"
                 placeholder="Ask Cleo anything about your MSCE subjects..."
                 class="w-full py-4 px-6 bg-transparent border-transparent focus:ring-0 resize-none outline-none text-[14px] font-bold text-slate-900 placeholder-slate-400"

@@ -174,9 +174,14 @@ Guidelines for your responses:
     Generate 5 challenging questions. Do not include any other text or markdown formatting.`;
 
     try {
-      const model = this.ai.getGenerativeModel({ model: 'gemini-3-flash-preview' });
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json'
+        }
+      });
+      const text = response.text || '';
       // Clean up potential markdown code blocks
       const jsonStr = text.replace(/```json|```/g, '').trim();
       return JSON.parse(jsonStr) as GeneratedQuiz;

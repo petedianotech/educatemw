@@ -3,7 +3,8 @@ import { DataService, Quiz, QuizResult } from '../../core/services/data.service'
 import { AuthService } from '../../core/services/auth.service';
 import { GeminiService, GeneratedQuiz } from '../../core/services/gemini.service';
 import { MatIconModule } from '@angular/material/icon';
-import { DatePipe, CommonModule, FormsModule } from '@angular/common';
+import { DatePipe, CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Timestamp } from 'firebase/firestore';
 
 @Component({
@@ -54,7 +55,8 @@ import { Timestamp } from 'firebase/firestore';
                     <label for="quizTopic" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Quiz Topic</label>
                     <input 
                       id="quizTopic"
-                      [(ngModel)]="quizTopic"
+                      [ngModel]="quizTopic()"
+                      (ngModelChange)="quizTopic.set($event)"
                       type="text" 
                       placeholder="e.g. Photosynthesis, Ohm's Law..."
                       class="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold text-slate-900"
