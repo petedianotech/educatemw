@@ -11,13 +11,13 @@ import { Timestamp } from 'firebase/firestore';
   imports: [MatIconModule, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex flex-col h-full bg-gray-50">
-      <header class="px-6 py-4 border-b-[4px] border-slate-200 bg-white z-10">
-        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
-          <mat-icon class="text-emerald-500">library_books</mat-icon>
+    <div class="flex flex-col h-full bg-slate-50">
+      <header class="px-6 py-4 border-b border-slate-200 bg-white/90 backdrop-blur-md z-10 shadow-sm">
+        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <mat-icon class="text-indigo-600">library_books</mat-icon>
           Library & Past Papers
         </h2>
-        <p class="text-sm text-slate-500 font-bold">Access study materials offline anytime</p>
+        <p class="text-sm text-slate-500 font-medium">Access study materials offline anytime</p>
       </header>
 
       <div class="flex-1 overflow-y-auto p-6">
@@ -25,32 +25,32 @@ import { Timestamp } from 'firebase/firestore';
           
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @for (note of dataService.notes(); track note.id) {
-              <div class="bg-white rounded-3xl border-2 border-slate-200 border-b-[6px] overflow-hidden flex flex-col hover:-translate-y-1 transition-transform duration-200">
-                <div class="h-32 bg-emerald-50 p-6 flex flex-col justify-between border-b-2 border-slate-100 relative">
+              <div class="card-modern overflow-hidden flex flex-col hover:-translate-y-1 transition-transform duration-200">
+                <div class="h-32 bg-indigo-50/50 p-6 flex flex-col justify-between border-b border-slate-100 relative">
                   @if (note.isProOnly) {
-                    <div class="absolute top-3 right-3 bg-amber-100 text-amber-700 text-xs font-black px-2 py-1 rounded-lg border-2 border-amber-200 flex items-center gap-1">
+                    <div class="absolute top-3 right-3 bg-sky-50 text-sky-600 text-xs font-bold px-2 py-1 rounded-lg border border-sky-100 flex items-center gap-1 shadow-sm">
                       <mat-icon class="text-[14px] !w-[14px] !h-[14px]">workspace_premium</mat-icon>
                       PRO
                     </div>
                   }
-                  <span class="inline-block px-3 py-1 bg-white text-emerald-800 text-xs font-black rounded-xl border-2 border-emerald-200 w-fit">
+                  <span class="inline-block px-3 py-1 bg-white text-indigo-700 text-xs font-bold rounded-xl border border-indigo-100 w-fit shadow-sm">
                     {{note.category}}
                   </span>
-                  <h3 class="font-black text-slate-900 text-lg line-clamp-2">{{note.title}}</h3>
+                  <h3 class="font-bold text-slate-900 text-lg line-clamp-2">{{note.title}}</h3>
                 </div>
                 <div class="p-5 flex-1 flex flex-col justify-between">
-                  <p class="text-slate-500 text-sm font-bold line-clamp-3 mb-4">{{note.content}}</p>
+                  <p class="text-slate-500 text-sm font-medium line-clamp-3 mb-4">{{note.content}}</p>
                   
                   <div class="flex items-center justify-between mt-auto">
-                    <span class="text-xs font-bold text-slate-400">{{getNoteDate(note.createdAt) | date:'mediumDate'}}</span>
+                    <span class="text-xs font-medium text-slate-400">{{getNoteDate(note.createdAt) | date:'mediumDate'}}</span>
                     
                     @if (note.isProOnly && !authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
-                      <button class="text-sm font-black text-amber-600 flex items-center gap-1 hover:text-amber-700 bg-amber-50 px-3 py-1.5 rounded-xl border-2 border-amber-200">
+                      <button class="text-sm font-semibold text-sky-600 flex items-center gap-1 hover:text-sky-700 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-100 transition-colors">
                         <mat-icon class="text-sm">lock</mat-icon>
                         Unlock
                       </button>
                     } @else {
-                      <button class="text-sm font-black text-emerald-600 flex items-center gap-1 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border-2 border-emerald-200">
+                      <button class="text-sm font-semibold text-indigo-600 flex items-center gap-1 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100 transition-colors">
                         Read <mat-icon class="text-sm">arrow_forward</mat-icon>
                       </button>
                     }

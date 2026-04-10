@@ -12,18 +12,18 @@ import { Timestamp } from 'firebase/firestore';
   imports: [FormsModule, MatIconModule, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex flex-col h-full bg-[#E5DDD5] relative">
+    <div class="flex flex-col h-full bg-slate-50 relative">
       <!-- Header -->
-      <header class="px-4 py-3 flex justify-between items-center bg-emerald-600 text-white z-10 sticky top-0 border-b-[4px] border-emerald-800">
+      <header class="px-4 py-3 flex justify-between items-center bg-gradient-to-r from-indigo-600 to-blue-600 text-white z-10 sticky top-0 shadow-md">
         <div class="flex items-center gap-3">
           <div class="relative">
-            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-emerald-600 border-2 border-emerald-200 overflow-hidden">
+            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-indigo-600 border border-indigo-100 overflow-hidden shadow-sm">
               <mat-icon class="scale-110">group</mat-icon>
             </div>
           </div>
           <div>
-            <h2 class="text-lg font-black leading-tight">Student Community</h2>
-            <p class="text-xs text-emerald-100 font-bold truncate max-w-[200px]">
+            <h2 class="text-lg font-bold leading-tight">Student Community</h2>
+            <p class="text-xs text-indigo-100 font-medium truncate max-w-[200px]">
               {{dataService.posts().length}} messages
             </p>
           </div>
@@ -39,10 +39,10 @@ import { Timestamp } from 'firebase/firestore';
       </header>
 
       <!-- Chat Area -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-opacity-10" #scrollContainer>
+      <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50" #scrollContainer>
         
         <div class="flex justify-center mb-6 mt-2">
-          <div class="bg-[#E1F3FB] text-gray-700 text-xs px-3 py-1.5 rounded-lg shadow-sm text-center max-w-xs">
+          <div class="bg-indigo-50 text-indigo-700 text-xs px-3 py-1.5 rounded-lg shadow-sm border border-indigo-100 text-center max-w-xs">
             <mat-icon class="!w-3 !h-3 !text-[12px] inline-block align-text-bottom mr-1">lock</mat-icon>
             Messages are end-to-end encrypted. No one outside of this chat, not even EduMalawi, can read or listen to them.
           </div>
@@ -50,17 +50,19 @@ import { Timestamp } from 'firebase/firestore';
 
         @for (post of dataService.posts(); track post.id) {
           <div class="flex w-full" [class.justify-end]="post.authorId === authService.currentUser()?.uid">
-            <div class="relative max-w-[85%] md:max-w-[70%] px-2 pt-1.5 pb-2 shadow-sm rounded-lg"
+            <div class="relative max-w-[85%] md:max-w-[70%] px-2 pt-1.5 pb-2 shadow-sm rounded-lg border"
                  [class.bg-white]="post.authorId !== authService.currentUser()?.uid"
+                 [class.border-slate-200]="post.authorId !== authService.currentUser()?.uid"
                  [class.rounded-tl-none]="post.authorId !== authService.currentUser()?.uid"
-                 [class.bg-[#DCF8C6]]="post.authorId === authService.currentUser()?.uid"
+                 [class.bg-indigo-100]="post.authorId === authService.currentUser()?.uid"
+                 [class.border-indigo-200]="post.authorId === authService.currentUser()?.uid"
                  [class.rounded-tr-none]="post.authorId === authService.currentUser()?.uid">
               
               <!-- Tail -->
               <div class="absolute top-0 w-4 h-4"
                    [class.-left-2]="post.authorId !== authService.currentUser()?.uid"
                    [class.-right-2]="post.authorId === authService.currentUser()?.uid">
-                <svg viewBox="0 0 8 13" width="8" height="13" class="block" [class.text-white]="post.authorId !== authService.currentUser()?.uid" [class.text-[#DCF8C6]]="post.authorId === authService.currentUser()?.uid">
+                <svg viewBox="0 0 8 13" width="8" height="13" class="block" [class.text-white]="post.authorId !== authService.currentUser()?.uid" [class.text-indigo-100]="post.authorId === authService.currentUser()?.uid">
                   <path opacity="0.13" fill="#0000000" d="M1.533 3.118L8 20.118V0L1.533 3.118z"></path>
                   <path opacity="0.98" fill="currentColor" d="M1.533 2.118L8 19.118V0L1.533 2.118z"></path>
                 </svg>
@@ -68,17 +70,17 @@ import { Timestamp } from 'firebase/firestore';
 
               @if (post.authorId !== authService.currentUser()?.uid) {
                 <div class="flex items-center gap-2 mb-1 px-1">
-                  <span class="text-[13px] font-bold" [style.color]="getAuthorColor(post.authorId)">
+                  <span class="text-[13px] font-semibold" [style.color]="getAuthorColor(post.authorId)">
                     {{post.authorName}}
                   </span>
                   @if (post.authorId === 'admin') {
-                    <span class="bg-emerald-100 text-emerald-700 text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase">Admin</span>
+                    <span class="bg-indigo-100 text-indigo-700 text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase border border-indigo-200">Admin</span>
                   }
                 </div>
               }
               
               <div class="px-1">
-                <p class="whitespace-pre-wrap text-[15px] leading-snug text-gray-900">{{post.content}}</p>
+                <p class="whitespace-pre-wrap text-[15px] leading-snug text-slate-900 font-medium">{{post.content}}</p>
               </div>
               
               <div class="flex justify-end items-center gap-1 mt-1 -mb-1 px-1">
@@ -103,16 +105,16 @@ import { Timestamp } from 'firebase/firestore';
       </div>
 
       <!-- Input Area -->
-      <div class="p-3 bg-slate-50 border-t-[4px] border-slate-200 pb-safe">
+      <div class="p-3 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-safe">
         <div class="max-w-3xl mx-auto relative flex items-end gap-2">
-          <div class="flex-1 relative bg-white rounded-2xl border-2 border-slate-200 flex items-center focus-within:border-emerald-500 transition-all">
+          <div class="flex-1 relative bg-slate-50 rounded-2xl border border-slate-200 flex items-center focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-all shadow-sm">
             <button class="p-3 text-slate-400 hover:text-slate-600">
               <mat-icon>mood</mat-icon>
             </button>
             <textarea 
               [(ngModel)]="newPostContent"
               placeholder="Message"
-              class="w-full py-3 bg-transparent border-transparent focus:ring-0 resize-none outline-none transition-all text-[15px] font-bold text-slate-900 placeholder-slate-400"
+              class="w-full py-3 bg-transparent border-transparent focus:ring-0 resize-none outline-none transition-all text-[15px] font-medium text-slate-900 placeholder-slate-400"
               rows="1"
               style="min-height: 48px; max-height: 120px;"
             ></textarea>
@@ -123,7 +125,7 @@ import { Timestamp } from 'firebase/firestore';
           <button 
             (click)="createPost()"
             [disabled]="!newPostContent().trim() || isSubmitting()"
-            class="flex-shrink-0 w-12 h-12 flex items-center justify-center text-white bg-emerald-500 rounded-2xl border-b-[4px] border-emerald-700 hover:bg-emerald-400 active:border-b-0 active:translate-y-[4px] disabled:opacity-50 disabled:bg-slate-300 disabled:border-slate-400 disabled:active:border-b-[4px] disabled:active:translate-y-0 transition-all">
+            class="flex-shrink-0 w-12 h-12 flex items-center justify-center text-white bg-gradient-to-r from-indigo-600 to-blue-500 rounded-2xl shadow-md shadow-indigo-500/20 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100 transition-all">
             <mat-icon>{{newPostContent().trim() ? 'send' : 'mic'}}</mat-icon>
           </button>
         </div>
