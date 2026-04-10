@@ -3,6 +3,7 @@ import { DataService } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
+import { Timestamp } from 'firebase/firestore';
 
 @Component({
   selector: 'app-notes',
@@ -11,12 +12,12 @@ import { DatePipe } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-gray-50">
-      <header class="px-6 py-4 border-b border-gray-200 bg-white z-10">
-        <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-          <mat-icon class="text-blue-500">library_books</mat-icon>
+      <header class="px-6 py-4 border-b-[4px] border-slate-200 bg-white z-10">
+        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+          <mat-icon class="text-emerald-500">library_books</mat-icon>
           Library & Past Papers
         </h2>
-        <p class="text-sm text-gray-500">Access study materials offline anytime</p>
+        <p class="text-sm text-slate-500 font-bold">Access study materials offline anytime</p>
       </header>
 
       <div class="flex-1 overflow-y-auto p-6">
@@ -24,32 +25,32 @@ import { DatePipe } from '@angular/common';
           
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @for (note of dataService.notes(); track note.id) {
-              <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-                <div class="h-32 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 flex flex-col justify-between border-b border-gray-100 relative">
+              <div class="bg-white rounded-3xl border-2 border-slate-200 border-b-[6px] overflow-hidden flex flex-col hover:-translate-y-1 transition-transform duration-200">
+                <div class="h-32 bg-emerald-50 p-6 flex flex-col justify-between border-b-2 border-slate-100 relative">
                   @if (note.isProOnly) {
-                    <div class="absolute top-3 right-3 bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                    <div class="absolute top-3 right-3 bg-amber-100 text-amber-700 text-xs font-black px-2 py-1 rounded-lg border-2 border-amber-200 flex items-center gap-1">
                       <mat-icon class="text-[14px] !w-[14px] !h-[14px]">workspace_premium</mat-icon>
                       PRO
                     </div>
                   }
-                  <span class="inline-block px-3 py-1 bg-white/60 text-blue-800 text-xs font-semibold rounded-full w-fit backdrop-blur-sm">
+                  <span class="inline-block px-3 py-1 bg-white text-emerald-800 text-xs font-black rounded-xl border-2 border-emerald-200 w-fit">
                     {{note.category}}
                   </span>
-                  <h3 class="font-bold text-gray-900 text-lg line-clamp-2">{{note.title}}</h3>
+                  <h3 class="font-black text-slate-900 text-lg line-clamp-2">{{note.title}}</h3>
                 </div>
                 <div class="p-5 flex-1 flex flex-col justify-between">
-                  <p class="text-gray-500 text-sm line-clamp-3 mb-4">{{note.content}}</p>
+                  <p class="text-slate-500 text-sm font-bold line-clamp-3 mb-4">{{note.content}}</p>
                   
                   <div class="flex items-center justify-between mt-auto">
-                    <span class="text-xs text-gray-400">{{note.createdAt?.toDate() | date:'mediumDate'}}</span>
+                    <span class="text-xs font-bold text-slate-400">{{getNoteDate(note.createdAt) | date:'mediumDate'}}</span>
                     
                     @if (note.isProOnly && !authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
-                      <button class="text-sm font-medium text-amber-600 flex items-center gap-1 hover:text-amber-700">
+                      <button class="text-sm font-black text-amber-600 flex items-center gap-1 hover:text-amber-700 bg-amber-50 px-3 py-1.5 rounded-xl border-2 border-amber-200">
                         <mat-icon class="text-sm">lock</mat-icon>
                         Unlock
                       </button>
                     } @else {
-                      <button class="text-sm font-medium text-blue-600 flex items-center gap-1 hover:text-blue-700">
+                      <button class="text-sm font-black text-emerald-600 flex items-center gap-1 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border-2 border-emerald-200">
                         Read <mat-icon class="text-sm">arrow_forward</mat-icon>
                       </button>
                     }
@@ -79,5 +80,12 @@ export class NotesComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.dataService.unsubscribeFromNotes();
+  }
+
+  getNoteDate(createdAt: any): Date | null {
+    if (!createdAt) return null;
+    if (createdAt instanceof Timestamp) return createdAt.toDate();
+    if (createdAt instanceof Date) return createdAt;
+    return new Date(createdAt);
   }
 }

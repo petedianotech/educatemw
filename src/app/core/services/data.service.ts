@@ -1,7 +1,8 @@
 import { Injectable, signal } from '@angular/core';
-import { db } from '../../firebase';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from '../../firebase';
+import { db } from '../../../firebase';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '../../../firebase';
+import { UserProfile } from './auth.service';
 
 export interface Post {
   id: string;
@@ -17,19 +18,53 @@ export interface Post {
 export interface Note {
   id: string;
   title: string;
-  content: string;
+  content?: string;
   category: string;
   isProOnly: boolean;
   createdAt: Date | Timestamp;
+  driveUrl?: string;
+  youtubeUrl?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
   posts = signal<Post[]>([]);
   notes = signal<Note[]>([]);
+  users = signal<UserProfile[]>([]);
   
   private postsUnsubscribe: (() => void) | null = null;
   private notesUnsubscribe: (() => void) | null = null;
+  private usersUnsubscribe: (() => void) | null = null;
+
+  // --- Users ---
+  subscribeToUsers() {
+    if (this.usersUnsubscribe) return;
+    
+    const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+    this.usersUnsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedUsers = snapshot.docs.map(doc => ({
+        ...doc.data()
+      } as UserProfile));
+      this.users.set(loadedUsers);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'users');
+    });
+  }
+
+  unsubscribeFromUsers() {
+    if (this.usersUnsubscribe) {
+      this.usersUnsubscribe();
+      this.usersUnsubscribe = null;
+    }
+  }
+
+  async updateUserProStatus(userId: string, isPro: boolean) {
+    try {
+      await updateDoc(doc(db, 'users', userId), { isPro });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `users/${userId}`);
+    }
+  }
 
   // --- Community Posts ---
   subscribeToPosts() {
@@ -109,6 +144,22 @@ export class DataService {
       });
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'notes');
+    }
+  }
+
+  async updateNote(noteId: string, note: Partial<Note>) {
+    try {
+      await updateDoc(doc(db, 'notes', noteId), note);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `notes/${noteId}`);
+    }
+  }
+
+  async deleteNote(noteId: string) {
+    try {
+      await deleteDoc(doc(db, 'notes', noteId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `notes/${noteId}`);
     }
   }
 }

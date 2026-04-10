@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, ViewChild, ElementRef, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
+import { Timestamp } from 'firebase/firestore';
 
 @Component({
   selector: 'app-community',
@@ -11,84 +12,120 @@ import { DatePipe } from '@angular/common';
   imports: [FormsModule, MatIconModule, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex flex-col h-full bg-gray-50">
-      <header class="px-6 py-4 border-b border-gray-200 bg-white z-10 flex justify-between items-center">
-        <div>
-          <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <mat-icon class="text-purple-500">forum</mat-icon>
-            Student Community
-          </h2>
-          <p class="text-sm text-gray-500">Discuss, ask, and share with peers</p>
+    <div class="flex flex-col h-full bg-[#E5DDD5] relative">
+      <!-- Header -->
+      <header class="px-4 py-3 flex justify-between items-center bg-emerald-600 text-white z-10 sticky top-0 border-b-[4px] border-emerald-800">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-emerald-600 border-2 border-emerald-200 overflow-hidden">
+              <mat-icon class="scale-110">group</mat-icon>
+            </div>
+          </div>
+          <div>
+            <h2 class="text-lg font-black leading-tight">Student Community</h2>
+            <p class="text-xs text-emerald-100 font-bold truncate max-w-[200px]">
+              {{dataService.posts().length}} messages
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1">
+          <button class="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-colors">
+            <mat-icon>search</mat-icon>
+          </button>
+          <button class="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition-colors">
+            <mat-icon>more_vert</mat-icon>
+          </button>
         </div>
       </header>
 
-      <div class="flex-1 overflow-y-auto p-6">
-        <div class="max-w-3xl mx-auto space-y-6">
-          
-          <!-- Create Post -->
-          <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-            <div class="flex gap-4">
-              <img [src]="authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid" alt="Profile" class="w-10 h-10 rounded-full bg-gray-100" referrerpolicy="no-referrer">
-              <div class="flex-1">
-                <textarea 
-                  [(ngModel)]="newPostContent"
-                  placeholder="What's on your mind? Ask a question or share a tip..."
-                  class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none outline-none transition-all"
-                  rows="3"
-                ></textarea>
-                <div class="mt-3 flex justify-end">
-                  <button 
-                    (click)="createPost()"
-                    [disabled]="!newPostContent().trim() || isSubmitting()"
-                    class="px-4 py-2 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-colors flex items-center gap-2">
-                    <mat-icon class="text-sm">send</mat-icon>
-                    Post
-                  </button>
+      <!-- Chat Area -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-opacity-10" #scrollContainer>
+        
+        <div class="flex justify-center mb-6 mt-2">
+          <div class="bg-[#E1F3FB] text-gray-700 text-xs px-3 py-1.5 rounded-lg shadow-sm text-center max-w-xs">
+            <mat-icon class="!w-3 !h-3 !text-[12px] inline-block align-text-bottom mr-1">lock</mat-icon>
+            Messages are end-to-end encrypted. No one outside of this chat, not even EduMalawi, can read or listen to them.
+          </div>
+        </div>
+
+        @for (post of dataService.posts(); track post.id) {
+          <div class="flex w-full" [class.justify-end]="post.authorId === authService.currentUser()?.uid">
+            <div class="relative max-w-[85%] md:max-w-[70%] px-2 pt-1.5 pb-2 shadow-sm rounded-lg"
+                 [class.bg-white]="post.authorId !== authService.currentUser()?.uid"
+                 [class.rounded-tl-none]="post.authorId !== authService.currentUser()?.uid"
+                 [class.bg-[#DCF8C6]]="post.authorId === authService.currentUser()?.uid"
+                 [class.rounded-tr-none]="post.authorId === authService.currentUser()?.uid">
+              
+              <!-- Tail -->
+              <div class="absolute top-0 w-4 h-4"
+                   [class.-left-2]="post.authorId !== authService.currentUser()?.uid"
+                   [class.-right-2]="post.authorId === authService.currentUser()?.uid">
+                <svg viewBox="0 0 8 13" width="8" height="13" class="block" [class.text-white]="post.authorId !== authService.currentUser()?.uid" [class.text-[#DCF8C6]]="post.authorId === authService.currentUser()?.uid">
+                  <path opacity="0.13" fill="#0000000" d="M1.533 3.118L8 20.118V0L1.533 3.118z"></path>
+                  <path opacity="0.98" fill="currentColor" d="M1.533 2.118L8 19.118V0L1.533 2.118z"></path>
+                </svg>
+              </div>
+
+              @if (post.authorId !== authService.currentUser()?.uid) {
+                <div class="flex items-center gap-2 mb-1 px-1">
+                  <span class="text-[13px] font-bold" [style.color]="getAuthorColor(post.authorId)">
+                    {{post.authorName}}
+                  </span>
+                  @if (post.authorId === 'admin') {
+                    <span class="bg-emerald-100 text-emerald-700 text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase">Admin</span>
+                  }
                 </div>
+              }
+              
+              <div class="px-1">
+                <p class="whitespace-pre-wrap text-[15px] leading-snug text-gray-900">{{post.content}}</p>
+              </div>
+              
+              <div class="flex justify-end items-center gap-1 mt-1 -mb-1 px-1">
+                <span class="text-[10px] text-gray-500">{{getPostDate(post.createdAt) | date:'shortTime'}}</span>
+                @if (post.authorId === authService.currentUser()?.uid) {
+                  <mat-icon class="text-[14px] !w-[14px] !h-[14px] text-blue-500">done_all</mat-icon>
+                }
+                
+                @if (post.authorId === authService.currentUser()?.uid || authService.currentUser()?.role === 'admin') {
+                  <button (click)="deletePost(post.id)" class="ml-1 text-gray-400 hover:text-red-500 transition-colors">
+                    <mat-icon class="text-[14px] !w-[14px] !h-[14px]">delete</mat-icon>
+                  </button>
+                }
               </div>
             </div>
           </div>
-
-          <!-- Posts List -->
-          <div class="space-y-4">
-            @for (post of dataService.posts(); track post.id) {
-              <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                <div class="flex justify-between items-start mb-3">
-                  <div class="flex items-center gap-3">
-                    <img [src]="post.authorPhoto || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + post.authorId" alt="Author" class="w-10 h-10 rounded-full bg-gray-100" referrerpolicy="no-referrer">
-                    <div>
-                      <p class="font-medium text-gray-900">{{post.authorName}}</p>
-                      <p class="text-xs text-gray-500">{{post.createdAt?.toDate() | date:'medium'}}</p>
-                    </div>
-                  </div>
-                  @if (post.authorId === authService.currentUser()?.uid || authService.currentUser()?.role === 'admin') {
-                    <button (click)="deletePost(post.id)" class="text-gray-400 hover:text-red-500 transition-colors p-1">
-                      <mat-icon class="text-sm">delete</mat-icon>
-                    </button>
-                  }
-                </div>
-                
-                <p class="text-gray-800 whitespace-pre-wrap mb-4">{{post.content}}</p>
-                
-                <div class="flex items-center gap-4 text-gray-500 border-t border-gray-100 pt-3">
-                  <button class="flex items-center gap-1 hover:text-purple-600 transition-colors">
-                    <mat-icon class="text-sm">thumb_up</mat-icon>
-                    <span class="text-sm">{{post.likesCount || 0}}</span>
-                  </button>
-                  <button class="flex items-center gap-1 hover:text-purple-600 transition-colors">
-                    <mat-icon class="text-sm">chat_bubble_outline</mat-icon>
-                    <span class="text-sm">{{post.commentsCount || 0}}</span>
-                  </button>
-                </div>
-              </div>
-            } @empty {
-              <div class="text-center py-12 text-gray-500">
-                <mat-icon class="!w-12 !h-12 !text-[48px] mb-4 opacity-50">forum</mat-icon>
-                <p>No posts yet. Be the first to start a discussion!</p>
-              </div>
-            }
+        } @empty {
+          <div class="text-center py-12 text-gray-500">
+            <p>No messages yet. Say hi!</p>
           </div>
+        }
+      </div>
 
+      <!-- Input Area -->
+      <div class="p-3 bg-slate-50 border-t-[4px] border-slate-200 pb-safe">
+        <div class="max-w-3xl mx-auto relative flex items-end gap-2">
+          <div class="flex-1 relative bg-white rounded-2xl border-2 border-slate-200 flex items-center focus-within:border-emerald-500 transition-all">
+            <button class="p-3 text-slate-400 hover:text-slate-600">
+              <mat-icon>mood</mat-icon>
+            </button>
+            <textarea 
+              [(ngModel)]="newPostContent"
+              placeholder="Message"
+              class="w-full py-3 bg-transparent border-transparent focus:ring-0 resize-none outline-none transition-all text-[15px] font-bold text-slate-900 placeholder-slate-400"
+              rows="1"
+              style="min-height: 48px; max-height: 120px;"
+            ></textarea>
+            <button class="p-3 text-slate-400 hover:text-slate-600">
+              <mat-icon>attach_file</mat-icon>
+            </button>
+          </div>
+          <button 
+            (click)="createPost()"
+            [disabled]="!newPostContent().trim() || isSubmitting()"
+            class="flex-shrink-0 w-12 h-12 flex items-center justify-center text-white bg-emerald-500 rounded-2xl border-b-[4px] border-emerald-700 hover:bg-emerald-400 active:border-b-0 active:translate-y-[4px] disabled:opacity-50 disabled:bg-slate-300 disabled:border-slate-400 disabled:active:border-b-[4px] disabled:active:translate-y-0 transition-all">
+            <mat-icon>{{newPostContent().trim() ? 'send' : 'mic'}}</mat-icon>
+          </button>
         </div>
       </div>
     </div>
@@ -100,6 +137,15 @@ export class CommunityComponent implements OnInit, OnDestroy {
   
   newPostContent = signal('');
   isSubmitting = signal(false);
+  
+  @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
+
+  constructor() {
+    effect(() => {
+      this.dataService.posts();
+      setTimeout(() => this.scrollToBottom(), 100);
+    });
+  }
 
   ngOnInit() {
     this.dataService.subscribeToPosts();
@@ -124,8 +170,35 @@ export class CommunityComponent implements OnInit, OnDestroy {
   }
 
   async deletePost(postId: string) {
-    if (confirm('Are you sure you want to delete this post?')) {
+    if (confirm('Are you sure you want to delete this message?')) {
       await this.dataService.deletePost(postId);
+    }
+  }
+
+  getPostDate(createdAt: any): Date | null {
+    if (!createdAt) return null;
+    if (createdAt instanceof Timestamp) return createdAt.toDate();
+    if (createdAt instanceof Date) return createdAt;
+    return new Date(createdAt);
+  }
+
+  // Generate consistent colors for different users based on their ID
+  getAuthorColor(authorId: string): string {
+    const colors = [
+      '#351c75', '#d90057', '#008000', '#ff8c00', 
+      '#0000ff', '#800080', '#008080', '#b8860b'
+    ];
+    let hash = 0;
+    for (let i = 0; i < authorId.length; i++) {
+      hash = authorId.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  }
+
+  private scrollToBottom() {
+    if (this.scrollContainer) {
+      const el = this.scrollContainer.nativeElement;
+      el.scrollTop = el.scrollHeight;
     }
   }
 }

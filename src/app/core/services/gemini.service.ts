@@ -35,7 +35,6 @@ export class GeminiService {
     // Note: In a real production app, the API key should be handled securely,
     // preferably via a backend proxy to avoid exposing it in the client.
     // For this AI Studio environment, we use the injected environment variable.
-    // @ts-expect-error - GEMINI_API_KEY is injected by the build system
     this.ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
     // Initialize IndexedDB for offline chat history

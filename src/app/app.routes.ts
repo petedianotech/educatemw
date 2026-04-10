@@ -16,7 +16,7 @@ export const routes: Routes = [
   {
     path: 'chat',
     loadComponent: () => import('./features/chat/chat.component').then(m => m.ChatComponent),
-    canActivate: [authGuard, proGuard]
+    canActivate: [authGuard]
   },
   {
     path: 'notes',
@@ -26,6 +26,16 @@ export const routes: Routes = [
   {
     path: 'community',
     loadComponent: () => import('./features/community/community.component').then(m => m.CommunityComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'career-guidance',
+    loadComponent: () => import('./features/career-guidance/career-guidance.component').then(m => m.CareerGuidanceComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'settings',
+    loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent),
     canActivate: [authGuard]
   },
   {
