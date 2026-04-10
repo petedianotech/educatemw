@@ -323,7 +323,11 @@ export class App {
   }
 
   goBack() {
-    window.history.back();
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      this.router.navigate(['/']);
+    }
   }
 
   async installPwa() {

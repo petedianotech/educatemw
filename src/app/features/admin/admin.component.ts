@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DataService, Quiz, QuizQuestion, Note } from '../../core/services/data.service';
 import { Timestamp } from 'firebase/firestore';
@@ -33,9 +34,11 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
           </button>
         </div>
 
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto w-64">
-            <button (click)="activeTab.set('overview')" 
-                    [class.bg-indigo-600]="activeTab() === 'overview'"
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto w-64 custom-scrollbar">
+            <button (click)="activeTab.set('overview'); isSidebarOpen.set(false)" 
+                    [class.bg-gradient-to-r]="activeTab() === 'overview'"
+                    [class.from-indigo-500]="activeTab() === 'overview'"
+                    [class.to-blue-600]="activeTab() === 'overview'"
                     [class.text-white]="activeTab() === 'overview'"
                     class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
               <mat-icon>dashboard</mat-icon>
@@ -44,32 +47,40 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
 
             <div class="pt-4 pb-2 px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Content</div>
             
-            <button (click)="activeTab.set('upload')" 
-                    [class.bg-indigo-600]="activeTab() === 'upload'"
+            <button (click)="activeTab.set('upload'); isSidebarOpen.set(false)" 
+                    [class.bg-gradient-to-r]="activeTab() === 'upload'"
+                    [class.from-emerald-400]="activeTab() === 'upload'"
+                    [class.to-teal-600]="activeTab() === 'upload'"
                     [class.text-white]="activeTab() === 'upload'"
                     class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
               <mat-icon>library_add</mat-icon>
               <span>Upload Material</span>
             </button>
 
-            <button (click)="activeTab.set('manage')" 
-                    [class.bg-indigo-600]="activeTab() === 'manage'"
+            <button (click)="activeTab.set('manage'); isSidebarOpen.set(false)" 
+                    [class.bg-gradient-to-r]="activeTab() === 'manage'"
+                    [class.from-sky-400]="activeTab() === 'manage'"
+                    [class.to-blue-600]="activeTab() === 'manage'"
                     [class.text-white]="activeTab() === 'manage'"
                     class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
               <mat-icon>folder_managed</mat-icon>
               <span>Manage Library</span>
             </button>
 
-            <button (click)="activeTab.set('quizzes')" 
-                    [class.bg-indigo-600]="activeTab() === 'quizzes'"
+            <button (click)="activeTab.set('quizzes'); isSidebarOpen.set(false)" 
+                    [class.bg-gradient-to-r]="activeTab() === 'quizzes'"
+                    [class.from-amber-400]="activeTab() === 'quizzes'"
+                    [class.to-orange-600]="activeTab() === 'quizzes'"
                     [class.text-white]="activeTab() === 'quizzes'"
                     class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
               <mat-icon>quiz</mat-icon>
               <span>Quizzes</span>
             </button>
 
-            <button (click)="activeTab.set('exams')" 
-                    [class.bg-indigo-600]="activeTab() === 'exams'"
+            <button (click)="activeTab.set('exams'); isSidebarOpen.set(false)" 
+                    [class.bg-gradient-to-r]="activeTab() === 'exams'"
+                    [class.from-rose-400]="activeTab() === 'exams'"
+                    [class.to-pink-600]="activeTab() === 'exams'"
                     [class.text-white]="activeTab() === 'exams'"
                     class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
               <mat-icon>event</mat-icon>
@@ -78,24 +89,30 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
 
             <div class="pt-4 pb-2 px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Users & Stats</div>
 
-            <button (click)="activeTab.set('students')" 
-                    [class.bg-indigo-600]="activeTab() === 'students'"
+            <button (click)="activeTab.set('students'); isSidebarOpen.set(false)" 
+                    [class.bg-gradient-to-r]="activeTab() === 'students'"
+                    [class.from-purple-400]="activeTab() === 'students'"
+                    [class.to-indigo-600]="activeTab() === 'students'"
                     [class.text-white]="activeTab() === 'students'"
                     class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
               <mat-icon>people</mat-icon>
               <span>Students</span>
             </button>
 
-            <button (click)="activeTab.set('revenue')" 
-                    [class.bg-indigo-600]="activeTab() === 'revenue'"
+            <button (click)="activeTab.set('revenue'); isSidebarOpen.set(false)" 
+                    [class.bg-gradient-to-r]="activeTab() === 'revenue'"
+                    [class.from-emerald-500]="activeTab() === 'revenue'"
+                    [class.to-green-700]="activeTab() === 'revenue'"
                     [class.text-white]="activeTab() === 'revenue'"
                     class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
               <mat-icon>payments</mat-icon>
               <span>Revenue</span>
             </button>
 
-            <button (click)="activeTab.set('updates')" 
-                    [class.bg-indigo-600]="activeTab() === 'updates'"
+            <button (click)="activeTab.set('updates'); isSidebarOpen.set(false)" 
+                    [class.bg-gradient-to-r]="activeTab() === 'updates'"
+                    [class.from-slate-600]="activeTab() === 'updates'"
+                    [class.to-slate-800]="activeTab() === 'updates'"
                     [class.text-white]="activeTab() === 'updates'"
                     class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
               <mat-icon>campaign</mat-icon>
@@ -574,6 +591,7 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
 })
 export class AdminComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
+  router = inject(Router);
   
   isSidebarOpen = signal(true);
   activeTab = signal<'overview' | 'upload' | 'manage' | 'students' | 'quizzes' | 'revenue' | 'updates' | 'exams'>('overview');
@@ -639,7 +657,11 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    window.history.back();
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      this.router.navigate(['/']);
+    }
   }
 
   async toggleProStatus(userId: string, isPro: boolean) {
