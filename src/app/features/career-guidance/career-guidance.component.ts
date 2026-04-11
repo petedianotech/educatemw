@@ -23,129 +23,145 @@ interface CareerPath {
   imports: [FormsModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex flex-col h-full bg-slate-50 overflow-y-auto">
-      <header class="px-6 py-8 bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md">
-        <div class="max-w-6xl mx-auto">
-          <h2 class="text-3xl font-bold flex items-center gap-3 tracking-tight">
-            <mat-icon class="!w-8 !h-8 !text-[32px]">explore</mat-icon>
-            University & Career Guidance
-          </h2>
-          <p class="text-indigo-100 mt-2 text-lg max-w-2xl font-medium">
-            Plan your future. Calculate your MSCE points and discover the university programs you qualify for.
-          </p>
-        </div>
-      </header>
+    <div class="flex flex-col h-full bg-slate-50 relative">
+      <!-- Premium Header -->
+      <div class="absolute top-0 left-0 right-0 h-56 bg-gradient-to-r from-rose-600 to-pink-600 rounded-b-[2.5rem] shadow-md z-0">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 rounded-b-[2.5rem]"></div>
+      </div>
 
-      <div class="flex-1 p-6">
-        <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div class="relative z-10 p-6 md:p-8 flex-1 overflow-y-auto">
+        <div class="max-w-6xl mx-auto">
           
-          <!-- Left Column: MSCE Calculator -->
-          <div class="lg:col-span-5 space-y-6">
-            <div class="card-modern overflow-hidden">
-              <div class="p-6 border-b border-slate-100 bg-slate-50">
-                <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <mat-icon class="text-indigo-600">calculate</mat-icon>
-                  MSCE Points Calculator
-                </h3>
-                <p class="text-sm text-slate-500 font-medium mt-1">Enter your expected or actual grades (1-9). Best 6 subjects including English will be calculated.</p>
+          <div class="flex items-center gap-4 mb-10 mt-2">
+            <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-lg">
+              <mat-icon class="!w-8 !h-8 !text-[32px]">explore</mat-icon>
+            </div>
+            <div>
+              <h1 class="text-3xl font-black text-white tracking-tight">Career Guidance</h1>
+              <p class="text-rose-100 font-medium text-sm mt-1">Calculate points & discover programs</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Column: MSCE Calculator -->
+            <div class="lg:col-span-5 space-y-6">
+              <div class="bg-white rounded-[2rem] shadow-xl shadow-rose-500/5 border border-slate-200 overflow-hidden relative">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-rose-50 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                
+                <div class="p-6 md:p-8 border-b border-slate-100 relative z-10">
+                  <h3 class="text-xl font-black text-slate-900 flex items-center gap-2 tracking-tight">
+                    <mat-icon class="text-rose-500">calculate</mat-icon>
+                    Points Calculator
+                  </h3>
+                  <p class="text-sm text-slate-500 font-medium mt-2 leading-relaxed">Enter your expected or actual grades (1-9). Best 6 subjects including English will be calculated.</p>
+                </div>
+                
+                <div class="p-6 md:p-8 space-y-4 relative z-10">
+                  @for (subject of subjects(); track subject.name; let i = $index) {
+                    <div class="flex items-center justify-between gap-4 group">
+                      <label [for]="'grade-' + i" class="text-sm font-bold text-slate-700 flex-1 flex items-center gap-2 group-hover:text-rose-600 transition-colors">
+                        {{subject.name}}
+                        @if (subject.isMandatory) {
+                          <span class="text-[9px] font-black uppercase tracking-widest bg-rose-50 text-rose-600 px-2 py-1 rounded-lg border border-rose-100">Required</span>
+                        }
+                      </label>
+                      <select 
+                        [id]="'grade-' + i"
+                        [ngModel]="subject.grade" 
+                        (ngModelChange)="updateGrade(i, $event)"
+                        class="w-24 p-2.5 bg-slate-50 border-2 border-slate-100 rounded-xl focus:ring-0 focus:border-rose-500 outline-none transition-all text-center font-black text-slate-900 appearance-none cursor-pointer shadow-sm hover:border-rose-200">
+                        <option [ngValue]="null">-</option>
+                        <option [ngValue]="1">1 (Dist)</option>
+                        <option [ngValue]="2">2 (Dist)</option>
+                        <option [ngValue]="3">3 (Cred)</option>
+                        <option [ngValue]="4">4 (Cred)</option>
+                        <option [ngValue]="5">5 (Cred)</option>
+                        <option [ngValue]="6">6 (Cred)</option>
+                        <option [ngValue]="7">7 (Pass)</option>
+                        <option [ngValue]="8">8 (Pass)</option>
+                        <option [ngValue]="9">9 (Fail)</option>
+                      </select>
+                    </div>
+                  }
+
+                  <button (click)="resetCalculator()" class="w-full mt-6 py-3.5 text-sm font-bold text-slate-500 hover:text-rose-600 transition-colors bg-slate-50 rounded-xl border-2 border-slate-100 hover:border-rose-200 hover:bg-rose-50 shadow-sm flex items-center justify-center gap-2">
+                    <mat-icon class="!w-4 !h-4 !text-[16px]">refresh</mat-icon>
+                    Reset Grades
+                  </button>
+                </div>
+
+                <!-- Results Panel -->
+                <div class="p-6 md:p-8 bg-gradient-to-br from-rose-50 to-pink-50 border-t border-rose-100 relative z-10">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-rose-900 font-black tracking-tight">Total Points (Best 6):</span>
+                    <div class="text-4xl font-black text-rose-600 drop-shadow-sm">
+                      @if (calculatedPoints() !== null) {
+                        {{calculatedPoints()}}
+                      } @else {
+                        <span class="text-xl text-rose-300 font-bold">--</span>
+                      }
+                    </div>
+                  </div>
+                  @if (calculatedPoints() === null) {
+                    <p class="text-xs text-rose-500 font-bold mt-2 bg-white/60 p-3 rounded-xl border border-rose-100/50">You must enter a grade for English and at least 5 other subjects.</p>
+                  } @else {
+                    <p class="text-sm text-rose-800 mt-2 font-bold bg-white/60 p-3 rounded-xl border border-rose-100/50 leading-relaxed">
+                      {{getQualificationMessage(calculatedPoints()!)}}
+                    </p>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Career Paths -->
+            <div class="lg:col-span-7 space-y-6">
+              <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-black text-slate-900 tracking-tight">University Programs</h3>
+                <span class="text-[10px] font-black text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm uppercase tracking-widest">Public Universities</span>
               </div>
               
-              <div class="p-6 space-y-4">
-                @for (subject of subjects(); track subject.name; let i = $index) {
-                  <div class="flex items-center justify-between gap-4">
-                    <label [for]="'grade-' + i" class="text-sm font-bold text-slate-700 flex-1 flex items-center gap-2">
-                      {{subject.name}}
-                      @if (subject.isMandatory) {
-                        <span class="text-[10px] font-bold uppercase tracking-wider bg-red-50 text-red-600 px-2 py-0.5 rounded-md border border-red-100">Required</span>
-                      }
-                    </label>
-                    <select 
-                      [id]="'grade-' + i"
-                      [ngModel]="subject.grade" 
-                      (ngModelChange)="updateGrade(i, $event)"
-                      class="w-24 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:border-indigo-500 focus:ring-indigo-500 outline-none transition-all text-center font-bold text-slate-900 appearance-none cursor-pointer shadow-sm">
-                      <option [ngValue]="null">-</option>
-                      <option [ngValue]="1">1 (Dist)</option>
-                      <option [ngValue]="2">2 (Dist)</option>
-                      <option [ngValue]="3">3 (Cred)</option>
-                      <option [ngValue]="4">4 (Cred)</option>
-                      <option [ngValue]="5">5 (Cred)</option>
-                      <option [ngValue]="6">6 (Cred)</option>
-                      <option [ngValue]="7">7 (Pass)</option>
-                      <option [ngValue]="8">8 (Pass)</option>
-                      <option [ngValue]="9">9 (Fail)</option>
-                    </select>
-                  </div>
-                }
-
-                <button (click)="resetCalculator()" class="w-full mt-4 py-3 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors bg-slate-50 rounded-xl border border-slate-200 hover:bg-slate-100 shadow-sm">
-                  Reset Grades
-                </button>
-              </div>
-
-              <!-- Results Panel -->
-              <div class="p-6 bg-indigo-50/50 border-t border-indigo-100">
-                <div class="flex items-center justify-between">
-                  <span class="text-indigo-900 font-bold">Total Points (Best 6):</span>
-                  <div class="text-3xl font-bold text-indigo-700">
-                    @if (calculatedPoints() !== null) {
-                      {{calculatedPoints()}}
-                    } @else {
-                      <span class="text-lg text-indigo-400 font-semibold">Incomplete</span>
-                    }
-                  </div>
-                </div>
-                @if (calculatedPoints() === null) {
-                  <p class="text-xs text-indigo-600 font-medium mt-2">You must enter a grade for English and at least 5 other subjects.</p>
-                } @else {
-                  <p class="text-sm text-indigo-800 mt-2 font-bold">
-                    {{getQualificationMessage(calculatedPoints()!)}}
-                  </p>
-                }
-              </div>
-            </div>
-          </div>
-
-          <!-- Right Column: Career Paths -->
-          <div class="lg:col-span-7 space-y-6">
-            <div class="flex items-center justify-between">
-              <h3 class="text-2xl font-bold text-slate-900">University Programs</h3>
-              <span class="text-sm font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-xl border border-slate-200 shadow-sm">Public Universities</span>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              @for (career of careers; track career.title) {
-                <div class="card-modern p-6 hover:-translate-y-1 transition-transform duration-200 group">
-                  <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border shadow-sm transition-transform group-hover:scale-110" [class]="career.color">
-                    <mat-icon>{{career.icon}}</mat-icon>
-                  </div>
-                  <h4 class="text-lg font-bold text-slate-900 mb-1">{{career.title}}</h4>
-                  <p class="text-sm font-semibold text-indigo-600 mb-3">{{career.institution}}</p>
-                  
-                  <div class="space-y-3">
-                    <div>
-                      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Target Points</span>
-                      <p class="text-sm font-semibold text-slate-900 bg-slate-50 inline-block px-2 py-1 rounded-lg border border-slate-200 mt-1 shadow-sm">{{career.pointsRange}}</p>
-                    </div>
-                    <div>
-                      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Key Requirements</span>
-                      <p class="text-sm font-medium text-slate-600 mt-1 leading-relaxed">{{career.requirements}}</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                @for (career of careers; track career.title) {
+                  <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-200 hover:shadow-xl hover:shadow-rose-500/10 hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-rose-50 transition-colors"></div>
+                    
+                    <div class="relative z-10">
+                      <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 border shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3" [class]="career.color">
+                        <mat-icon class="!w-7 !h-7 !text-[28px]">{{career.icon}}</mat-icon>
+                      </div>
+                      <h4 class="text-lg font-black text-slate-900 mb-1 tracking-tight">{{career.title}}</h4>
+                      <p class="text-sm font-bold text-rose-500 mb-5">{{career.institution}}</p>
+                      
+                      <div class="space-y-4">
+                        <div>
+                          <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Target Points</span>
+                          <span class="text-xs font-bold text-slate-700 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">{{career.pointsRange}}</span>
+                        </div>
+                        <div>
+                          <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Key Requirements</span>
+                          <p class="text-sm font-medium text-slate-600 leading-relaxed">{{career.requirements}}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              }
-            </div>
+                }
+              </div>
 
-            <!-- Info Banner -->
-            <div class="bg-sky-50 border border-sky-100 rounded-2xl p-5 flex gap-4 mt-6 shadow-sm">
-              <mat-icon class="text-sky-600 flex-shrink-0">info</mat-icon>
-              <div>
-                <h5 class="text-sm font-bold text-sky-900">Important Note on Selection</h5>
-                <p class="text-sm font-medium text-sky-800 mt-1">University selection in Malawi is highly competitive. Meeting the minimum points does not guarantee admission. Always aim for the lowest points possible (Distinctions) in your core subjects.</p>
+              <!-- Info Banner -->
+              <div class="bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-100 rounded-[2rem] p-6 md:p-8 flex gap-5 mt-8 shadow-sm relative overflow-hidden">
+                <div class="absolute right-0 top-0 w-32 h-32 bg-sky-200/30 rounded-full blur-3xl"></div>
+                <div class="w-12 h-12 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm border border-sky-200 relative z-10">
+                  <mat-icon>info</mat-icon>
+                </div>
+                <div class="relative z-10">
+                  <h5 class="text-base font-black text-sky-900 mb-1 tracking-tight">Important Note on Selection</h5>
+                  <p class="text-sm font-medium text-sky-800 leading-relaxed">University selection in Malawi is highly competitive. Meeting the minimum points does not guarantee admission. Always aim for the lowest points possible (Distinctions) in your core subjects.</p>
+                </div>
               </div>
             </div>
-          </div>
 
+          </div>
         </div>
       </div>
     </div>

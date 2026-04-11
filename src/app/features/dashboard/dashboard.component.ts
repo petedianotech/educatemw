@@ -12,7 +12,7 @@ import { Timestamp } from 'firebase/firestore';
   imports: [RouterLink, MatIconModule, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="h-full overflow-y-auto bg-slate-50 pb-24 relative">
+    <div class="h-full overflow-y-auto bg-slate-50 relative">
       
       <!-- Premium Header Background -->
       <div class="absolute top-0 left-0 right-0 h-64 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-b-3xl shadow-md z-0">
@@ -80,13 +80,16 @@ import { Timestamp } from 'firebase/firestore';
           </a>
 
           <!-- Library -->
-          <a routerLink="/notes" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-sky-500/30 hover:shadow-xl hover:shadow-sky-500/10 hover:-translate-y-1 transition-all duration-300">
+          <a routerLink="/notes" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-sky-500/30 transition-all duration-500">
             <div class="absolute inset-0 bg-gradient-to-br from-sky-600/5 via-blue-500/5 to-sky-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="absolute -right-6 -top-6 w-32 h-32 bg-sky-500/10 rounded-full blur-3xl group-hover:bg-sky-500/20 transition-all duration-500"></div>
             
-            <div class="w-14 h-14 bg-sky-50/80 backdrop-blur-md text-sky-600 rounded-2xl flex items-center justify-center border border-sky-100 shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              <mat-icon class="!w-8 !h-8 !text-[32px]">library_books</mat-icon>
+            <div class="flex justify-between items-start relative z-10">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-sky-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative overflow-hidden bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 text-white">
+                <mat-icon class="!w-8 !h-8 !text-[32px] relative z-10">library_books</mat-icon>
+              </div>
             </div>
+            
             <div class="relative z-10">
               <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Library</h3>
               <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest">Past papers & notes</p>
@@ -94,13 +97,16 @@ import { Timestamp } from 'firebase/firestore';
           </a>
 
           <!-- Quizzes -->
-          <a routerLink="/quizzes" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 transition-all duration-300">
+          <a routerLink="/quizzes" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-emerald-500/30 transition-all duration-500">
             <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/5 via-green-500/5 to-emerald-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="absolute -right-6 -top-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all duration-500"></div>
             
-            <div class="w-14 h-14 bg-emerald-50/80 backdrop-blur-md text-emerald-600 rounded-2xl flex items-center justify-center border border-emerald-100 shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              <mat-icon class="!w-8 !h-8 !text-[32px]">quiz</mat-icon>
+            <div class="flex justify-between items-start relative z-10">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500 relative overflow-hidden bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500 text-white">
+                <mat-icon class="!w-8 !h-8 !text-[32px] relative z-10">quiz</mat-icon>
+              </div>
             </div>
+            
             <div class="relative z-10">
               <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Quizzes</h3>
               <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest">Test your skills</p>
@@ -108,13 +114,16 @@ import { Timestamp } from 'firebase/firestore';
           </a>
 
           <!-- Forum -->
-          <a routerLink="/community" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-purple-500/30 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 transition-all duration-300">
+          <a routerLink="/community" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-purple-500/30 transition-all duration-500">
             <div class="absolute inset-0 bg-gradient-to-br from-purple-600/5 via-violet-500/5 to-purple-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="absolute -right-6 -top-6 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all duration-500"></div>
             
-            <div class="w-14 h-14 bg-purple-50/80 backdrop-blur-md text-purple-600 rounded-2xl flex items-center justify-center border border-purple-100 shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              <mat-icon class="!w-8 !h-8 !text-[32px]">forum</mat-icon>
+            <div class="flex justify-between items-start relative z-10">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative overflow-hidden bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-500 text-white">
+                <mat-icon class="!w-8 !h-8 !text-[32px] relative z-10">forum</mat-icon>
+              </div>
             </div>
+            
             <div class="relative z-10">
               <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Forum</h3>
               <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest">Discuss with peers</p>
@@ -122,13 +131,16 @@ import { Timestamp } from 'firebase/firestore';
           </a>
 
           <!-- Career Guidance -->
-          <a routerLink="/career-guidance" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-rose-500/30 hover:shadow-xl hover:shadow-rose-500/10 hover:-translate-y-1 transition-all duration-300">
+          <a routerLink="/career-guidance" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-rose-500/30 transition-all duration-500">
             <div class="absolute inset-0 bg-gradient-to-br from-rose-600/5 via-pink-500/5 to-rose-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="absolute -right-6 -top-6 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl group-hover:bg-rose-500/20 transition-all duration-500"></div>
             
-            <div class="w-14 h-14 bg-rose-50/80 backdrop-blur-md text-rose-600 rounded-2xl flex items-center justify-center border border-rose-100 shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              <mat-icon class="!w-8 !h-8 !text-[32px]">explore</mat-icon>
+            <div class="flex justify-between items-start relative z-10">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/30 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500 relative overflow-hidden bg-gradient-to-r from-rose-400 via-pink-500 to-red-500 text-white">
+                <mat-icon class="!w-8 !h-8 !text-[32px] relative z-10">explore</mat-icon>
+              </div>
             </div>
+            
             <div class="relative z-10">
               <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Careers</h3>
               <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest">MSCE Points Calc</p>

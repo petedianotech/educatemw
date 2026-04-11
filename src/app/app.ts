@@ -68,35 +68,9 @@ import {MatIconModule} from '@angular/material/icon';
           </header>
 
           <!-- Main Content Area -->
-          <main class="flex-1 overflow-hidden relative pb-safe" [class.pb-24]="router.url === '/dashboard'">
+          <main class="flex-1 overflow-hidden relative pb-safe">
             <router-outlet></router-outlet>
           </main>
-
-          <!-- Bottom Navigation (Home Screen Only) -->
-          @if (router.url === '/dashboard' && !isNavHidden()) {
-            <nav class="fixed bottom-0 left-0 right-0 h-20 bg-slate-900/95 backdrop-blur-xl z-40 flex items-center justify-around px-2 border-t border-white/10 animate-in slide-in-from-bottom-full duration-300">
-              <a routerLink="/dashboard" (click)="hideNav()" routerLinkActive="text-indigo-400" [routerLinkActiveOptions]="{exact: true}" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
-                <mat-icon class="scale-110">home</mat-icon>
-                <span class="text-[9px] font-black uppercase tracking-tighter">Home</span>
-              </a>
-              <a routerLink="/notes" (click)="hideNav()" routerLinkActive="text-sky-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
-                <mat-icon class="scale-110">library_books</mat-icon>
-                <span class="text-[9px] font-black uppercase tracking-tighter">Library</span>
-              </a>
-              <a routerLink="/quizzes" (click)="hideNav()" routerLinkActive="text-emerald-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
-                <mat-icon class="scale-110">quiz</mat-icon>
-                <span class="text-[9px] font-black uppercase tracking-tighter">Quiz</span>
-              </a>
-              <a routerLink="/community" (click)="hideNav()" routerLinkActive="text-purple-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
-                <mat-icon class="scale-110">forum</mat-icon>
-                <span class="text-[9px] font-black uppercase tracking-tighter">Forum</span>
-              </a>
-              <a routerLink="/career-guidance" (click)="hideNav()" routerLinkActive="text-rose-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
-                <mat-icon class="scale-110">explore</mat-icon>
-                <span class="text-[9px] font-black uppercase tracking-tighter">Careers</span>
-              </a>
-            </nav>
-          }
 
           <!-- Mobile Drawer Overlay -->
           @if (isMobileMenuOpen()) {
@@ -292,7 +266,6 @@ export class App {
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
   isMobileMenuOpen = signal(false);
-  isNavHidden = signal(false);
   isControlsHidden = signal(false);
   deferredPrompt = signal<BeforeInstallPromptEvent | null>(null);
   showInstallPopup = signal(false);
@@ -348,12 +321,6 @@ export class App {
       this.showInstallPopup.set(false);
     }
     this.deferredPrompt.set(null);
-  }
-
-  hideNav() {
-    this.isNavHidden.set(true);
-    // Reset after a short delay to allow it to reappear when returning to home
-    setTimeout(() => this.isNavHidden.set(false), 500);
   }
 
   logout() {
