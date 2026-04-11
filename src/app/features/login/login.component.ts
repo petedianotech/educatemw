@@ -166,7 +166,7 @@ export class LoginComponent {
   constructor() {
     // Redirect if already logged in
     if (this.authService.currentUser()) {
-      this.router.navigate(['/']);
+      this.router.navigate(['/dashboard']);
     }
   }
 
@@ -212,7 +212,7 @@ export class LoginComponent {
           await this.authService.loginWithEmail(this.email, this.password);
         }
       }
-      this.router.navigate(['/']);
+      this.router.navigate(['/dashboard']);
     } catch (error: unknown) {
       console.error('Auth error', error);
       const err = error as { code?: string; message?: string };
@@ -231,7 +231,7 @@ export class LoginComponent {
   async loginWithGoogle() {
     try {
       await this.authService.loginWithGoogle();
-      this.router.navigate(['/']);
+      this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Login error', error);
       this.errorMsg.set('Failed to login with Google.');

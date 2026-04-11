@@ -5,6 +5,10 @@ import {adminGuard} from './core/guards/admin.guard';
 export const routes: Routes = [
   {
     path: '',
+    loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent)
+  },
+  {
+    path: 'dashboard',
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
     canActivate: [authGuard]
   },

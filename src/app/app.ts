@@ -38,7 +38,7 @@ import {MatIconModule} from '@angular/material/icon';
           <!-- Top App Bar -->
           <header class="bg-white/80 backdrop-blur-xl border-b border-slate-200 h-20 flex-shrink-0 flex items-center justify-between px-6 z-30 pt-safe">
             <div class="flex items-center gap-4">
-              @if (router.url === '/') {
+              @if (router.url === '/dashboard' || router.url === '/') {
                 <button (click)="toggleMenu()" class="w-10 h-10 rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center hover:bg-slate-50 active:scale-95 transition-all group">
                   <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
                     <mat-icon class="scale-90">menu</mat-icon>
@@ -68,24 +68,32 @@ import {MatIconModule} from '@angular/material/icon';
           </header>
 
           <!-- Main Content Area -->
-          <main class="flex-1 overflow-hidden relative pb-safe" [class.pb-24]="router.url === '/'">
+          <main class="flex-1 overflow-hidden relative pb-safe" [class.pb-24]="router.url === '/dashboard'">
             <router-outlet></router-outlet>
           </main>
 
           <!-- Bottom Navigation (Home Screen Only) -->
-          @if (router.url === '/' && !isNavHidden()) {
+          @if (router.url === '/dashboard' && !isNavHidden()) {
             <nav class="fixed bottom-0 left-0 right-0 h-20 bg-slate-900/95 backdrop-blur-xl z-40 flex items-center justify-around px-2 border-t border-white/10 animate-in slide-in-from-bottom-full duration-300">
-              <a routerLink="/" (click)="hideNav()" routerLinkActive="text-indigo-400" [routerLinkActiveOptions]="{exact: true}" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
-                <mat-icon>home</mat-icon>
-                <span class="text-[10px] font-bold uppercase tracking-tighter">Home</span>
+              <a routerLink="/dashboard" (click)="hideNav()" routerLinkActive="text-indigo-400" [routerLinkActiveOptions]="{exact: true}" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
+                <mat-icon class="scale-110">home</mat-icon>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Home</span>
               </a>
-              <a routerLink="/community" (click)="hideNav()" routerLinkActive="text-indigo-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
-                <mat-icon>people</mat-icon>
-                <span class="text-[10px] font-bold uppercase tracking-tighter">Forum</span>
+              <a routerLink="/notes" (click)="hideNav()" routerLinkActive="text-sky-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
+                <mat-icon class="scale-110">library_books</mat-icon>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Library</span>
               </a>
-              <a routerLink="/settings" (click)="hideNav()" routerLinkActive="text-indigo-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
-                <mat-icon>person</mat-icon>
-                <span class="text-[10px] font-bold uppercase tracking-tighter">Profile</span>
+              <a routerLink="/quizzes" (click)="hideNav()" routerLinkActive="text-emerald-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
+                <mat-icon class="scale-110">quiz</mat-icon>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Quiz</span>
+              </a>
+              <a routerLink="/community" (click)="hideNav()" routerLinkActive="text-purple-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
+                <mat-icon class="scale-110">forum</mat-icon>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Forum</span>
+              </a>
+              <a routerLink="/career-guidance" (click)="hideNav()" routerLinkActive="text-rose-400" class="flex flex-col items-center gap-1 p-3 transition-all text-slate-400">
+                <mat-icon class="scale-110">explore</mat-icon>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Careers</span>
               </a>
             </nav>
           }
@@ -142,7 +150,7 @@ import {MatIconModule} from '@angular/material/icon';
             
             <!-- Navigation Items -->
             <nav class="flex-1 px-4 space-y-1 overflow-y-auto pb-10 custom-scrollbar">
-              <a routerLink="/" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+              <a routerLink="/dashboard" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
                 <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">home</mat-icon>
                 <span class="text-sm">Dashboard</span>
               </a>
@@ -324,7 +332,7 @@ export class App {
     if (window.history.length > 1) {
       window.history.back();
     } else {
-      this.router.navigate(['/']);
+      this.router.navigate([this.authService.currentUser() ? '/dashboard' : '/']);
     }
   }
 

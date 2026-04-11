@@ -84,8 +84,8 @@ import { Timestamp } from 'firebase/firestore';
             <div class="absolute inset-0 bg-gradient-to-br from-sky-600/5 via-blue-500/5 to-sky-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="absolute -right-6 -top-6 w-32 h-32 bg-sky-500/10 rounded-full blur-3xl group-hover:bg-sky-500/20 transition-all duration-500"></div>
             
-            <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center border border-sky-100 shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              <mat-icon class="!w-7 !h-7 !text-[28px]">library_books</mat-icon>
+            <div class="w-14 h-14 bg-sky-50/80 backdrop-blur-md text-sky-600 rounded-2xl flex items-center justify-center border border-sky-100 shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+              <mat-icon class="!w-8 !h-8 !text-[32px]">library_books</mat-icon>
             </div>
             <div class="relative z-10">
               <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Library</h3>
@@ -98,8 +98,8 @@ import { Timestamp } from 'firebase/firestore';
             <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/5 via-green-500/5 to-emerald-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="absolute -right-6 -top-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all duration-500"></div>
             
-            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center border border-emerald-100 shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              <mat-icon class="!w-7 !h-7 !text-[28px]">quiz</mat-icon>
+            <div class="w-14 h-14 bg-emerald-50/80 backdrop-blur-md text-emerald-600 rounded-2xl flex items-center justify-center border border-emerald-100 shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+              <mat-icon class="!w-8 !h-8 !text-[32px]">quiz</mat-icon>
             </div>
             <div class="relative z-10">
               <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Quizzes</h3>
@@ -107,16 +107,16 @@ import { Timestamp } from 'firebase/firestore';
             </div>
           </a>
 
-          <!-- Community -->
+          <!-- Forum -->
           <a routerLink="/community" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-purple-500/30 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 transition-all duration-300">
             <div class="absolute inset-0 bg-gradient-to-br from-purple-600/5 via-violet-500/5 to-purple-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="absolute -right-6 -top-6 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all duration-500"></div>
             
-            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center border border-purple-100 shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              <mat-icon class="!w-7 !h-7 !text-[28px]">forum</mat-icon>
+            <div class="w-14 h-14 bg-purple-50/80 backdrop-blur-md text-purple-600 rounded-2xl flex items-center justify-center border border-purple-100 shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+              <mat-icon class="!w-8 !h-8 !text-[32px]">forum</mat-icon>
             </div>
             <div class="relative z-10">
-              <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Community</h3>
+              <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Forum</h3>
               <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest">Discuss with peers</p>
             </div>
           </a>
@@ -126,8 +126,8 @@ import { Timestamp } from 'firebase/firestore';
             <div class="absolute inset-0 bg-gradient-to-br from-rose-600/5 via-pink-500/5 to-rose-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="absolute -right-6 -top-6 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl group-hover:bg-rose-500/20 transition-all duration-500"></div>
             
-            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center border border-rose-100 shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              <mat-icon class="!w-7 !h-7 !text-[28px]">explore</mat-icon>
+            <div class="w-14 h-14 bg-rose-50/80 backdrop-blur-md text-rose-600 rounded-2xl flex items-center justify-center border border-rose-100 shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+              <mat-icon class="!w-8 !h-8 !text-[32px]">explore</mat-icon>
             </div>
             <div class="relative z-10">
               <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Careers</h3>
