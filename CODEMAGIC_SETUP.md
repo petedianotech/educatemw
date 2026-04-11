@@ -12,7 +12,29 @@ This guide explains how to configure environment variables for the Android APK b
   - Key alias
   - Key password
 
-## Step 1: Encode Your Keystore File
+## Step 1: Verify Your Keystore Locally
+
+Before anything else, verify that your keystore credentials are correct on your local machine:
+
+```bash
+# List all keys in your keystore
+keytool -list -v -keystore your-keystore.jks -storepass YOUR_KEYSTORE_PASSWORD
+
+# Check if your specific key alias exists
+keytool -list -keystore your-keystore.jks -storepass YOUR_KEYSTORE_PASSWORD -alias YOUR_KEY_ALIAS
+
+# Verify the key password works
+keytool -list -keystore your-keystore.jks -storepass YOUR_KEYSTORE_PASSWORD -alias YOUR_KEY_ALIAS -keypass YOUR_KEY_PASSWORD
+```
+
+If any of these commands fail:
+- **Wrong keystore password**: The first command will fail
+- **Wrong key alias**: The second command will fail and show you which aliases are available
+- **Wrong key password**: The third command will fail
+
+Once all three commands succeed, your credentials are correct and ready to use.
+
+## Step 2: Encode Your Keystore File
 
 Before adding to Codemagic, you must base64-encode your keystore file:
 
@@ -27,7 +49,7 @@ base64 -i your-keystore.jks > keystore-base64.txt
 
 This will create a file with the base64-encoded keystore. Copy the entire contents.
 
-## Step 2: Create Environment Variable Group in Codemagic UI
+## Step 3: Create Environment Variable Group in Codemagic UI
 
 1. **Log in** to [Codemagic](https://codemagic.io)
 2. **Go to** `Teams` → `Environment variables`
@@ -44,14 +66,14 @@ This will create a file with the base64-encoded keystore. Copy the entire conten
 
 ⚠️ **Important:** Make sure to use **String (multiline)** for the `ANDROID_KEYSTORE_BASE64` variable to preserve the full base64 string.
 
-## Step 3: Connect Repository
+## Step 4: Connect Repository
 
 1. Go to your Codemagic dashboard
 2. Click `Create app`
 3. Select your GitHub repository (educatemw)
 4. Codemagic will automatically detect the `codemagic.yaml` file
 
-## Step 4: Trigger Build
+## Step 5: Trigger Build
 
 The build will automatically trigger on:
 - Push to `main` branch
@@ -80,6 +102,26 @@ This means the environment variable group wasn't properly imported. Ensure:
 - The group name in `codemagic.yaml` is exactly `android_keys`
 - The group exists in your Codemagic environment variables
 - You've saved your changes and triggered a new build
+
+### Error: "No key with alias '...' found in keystore"
+
+This error means one of your keystore credentials is incorrect. The Codemagic build now includes a validation step that will tell you exactly which credential is wrong:
+
+1. **Check the build logs** in Codemagic for one of these messages:
+   - ❌ "Cannot open keystore with the provided ANDROID_KEYSTORE_PASSWORD" → Wrong keystore password
+   - ❌ "Key alias ... NOT found in keystore" → Wrong key alias or doesn't exist
+   - ❌ "Cannot access key with the provided ANDROID_KEY_PASSWORD" → Wrong key password
+
+2. **Verify your credentials locally:**
+   ```bash
+   # Test your keystore password
+   keytool -list -v -keystore your-keystore.jks -storepass YOUR_KEYSTORE_PASSWORD
+   
+   # This will show you all available key aliases if the password is correct
+   # Check that your ANDROID_KEY_ALIAS matches exactly
+   ```
+
+3. **Update the credentials** in Codemagic if they were wrong
 
 ## Verifying the Setup
 
