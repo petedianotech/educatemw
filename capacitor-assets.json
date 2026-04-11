@@ -1,0 +1,29 @@
+{
+  "ios": [],
+  "android": [
+    {
+      "src": "assets/icon.png",
+      "sizes": [
+        192,
+        512
+      ],
+      "purposes": [
+        "any",
+        "maskable"
+      ]
+    },
+    {
+      "src": "assets/splash.png",
+      "format": "png",
+      "sizes": [
+        540,
+        720,
+        1080,
+        1440
+      ],
+      "purposes": [
+        "any"
+      ]
+    }
+  ]
+}
