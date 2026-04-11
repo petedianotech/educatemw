@@ -131,11 +131,16 @@ export class AuthService {
       role: 'student',
       isPro: false,
       aiCredits: 5,
-      referralCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
-      referredBy: referredBy,
+      referralCode: user.uid.substring(0, 8).toUpperCase(),
       referralsCount: 0,
       createdAt: new Date()
     };
+    
+    // Only add referredBy if it has a valid value
+    if (referredBy) {
+      newUser.referredBy = referredBy;
+    }
+
     await setDoc(userRef, newUser);
     this.currentUser.set(newUser);
   }

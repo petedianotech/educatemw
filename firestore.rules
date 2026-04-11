@@ -237,7 +237,7 @@ service cloud.firestore {
     }
 
     match /appUpdates/{updateId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow create: if isAdmin() && isValidAppUpdate(request.resource.data);
       allow update: if isAdmin() && isValidAppUpdate(request.resource.data);
       allow delete: if isAdmin();
@@ -252,7 +252,7 @@ service cloud.firestore {
     }
 
     match /examDates/{dateId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow create: if isAdmin() && isValidExamDate(request.resource.data);
       allow update: if isAdmin() && isValidExamDate(request.resource.data);
       allow delete: if isAdmin();

@@ -4,8 +4,12 @@ workflows:
     environment:
       java: 21
       node: 22
-      groups:
-        - android_keys
+      vars:
+        # These need to be set in Codemagic environment variables
+        ANDROID_KEYSTORE_BASE64: $ANDROID_KEYSTORE_BASE64
+        ANDROID_KEYSTORE_PASSWORD: $ANDROID_KEYSTORE_PASSWORD
+        ANDROID_KEY_ALIAS: $ANDROID_KEY_ALIAS
+        ANDROID_KEY_PASSWORD: $ANDROID_KEY_PASSWORD
     scripts:
       - name: Install dependencies
         script: npm install
@@ -21,61 +25,14 @@ workflows:
       - name: Decode Keystore
         script: |
           cd android/app
-          # Remove all whitespace (tabs, newlines, spaces) and decode
-          printf "%s" "$ANDROID_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > my-release-key.jks
-          
-          if [ -f my-release-key.jks ] && [ -s my-release-key.jks ]; then
-            echo "✅ Keystore file decoded successfully"
-            ls -lh my-release-key.jks
-          else
-            echo "❌ Failed to create or empty keystore file"
-            exit 1
-          fi
-      - name: Validate Keystore
-        script: |
-          cd android/app
-          echo "🔍 Validating keystore configuration..."
-          
-          # Check if keystore file is valid
-          if ! keytool -list -v -keystore my-release-key.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" > /dev/null 2>&1; then
-            echo "❌ ERROR: Cannot open keystore with the provided ANDROID_KEYSTORE_PASSWORD"
-            echo "Please verify ANDROID_KEYSTORE_PASSWORD is correct"
-            exit 1
-          fi
-          echo "✅ Keystore password is correct"
-          
-          # List available aliases
-          echo ""
-          echo "📋 Available key aliases in keystore:"
-          keytool -list -keystore my-release-key.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" | grep -E '^[a-zA-Z0-9_-]+,' || echo "No keys found"
-          
-          # Check if the specified alias exists
-          if keytool -list -keystore my-release-key.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" > /dev/null 2>&1; then
-            echo "✅ Key alias '$ANDROID_KEY_ALIAS' found in keystore"
-          else
-            echo "❌ ERROR: Key alias '$ANDROID_KEY_ALIAS' NOT found in keystore"
-            echo "Please verify ANDROID_KEY_ALIAS is correct"
-            echo "Available aliases shown above"
-            exit 1
-          fi
-          
-          # Verify the key password by attempting to access the key
-          if ! keytool -list -keystore my-release-key.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" -keypass "$ANDROID_KEY_PASSWORD" > /dev/null 2>&1; then
-            echo "❌ ERROR: Cannot access key with the provided ANDROID_KEY_PASSWORD"
-            echo "Please verify ANDROID_KEY_PASSWORD is correct for alias '$ANDROID_KEY_ALIAS'"
-            exit 1
-          fi
-          echo "✅ Key password is correct"
-          echo ""
-          echo "✨ All keystore credentials validated successfully!"
+          echo "$ANDROID_KEYSTORE_BASE64" | tr -d '\n' | base64 -d > my-release-key.jks
       - name: Build Signed APK
         script: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file=$(pwd)/app/my-release-key.jks \
-            -Pandroid.injected.signing.store.password="$ANDROID_KEYSTORE_PASSWORD" \
-            -Pandroid.injected.signing.key.alias="$ANDROID_KEY_ALIAS" \
-            -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD"
+          export KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD
+          export KEY_ALIAS=$ANDROID_KEY_ALIAS
+          export KEY_PASSWORD=$ANDROID_KEY_PASSWORD
+          ./gradlew assembleRelease
     artifacts:
-      - android/app/build/outputs/apk/release/app-release.apk
+      - android/app/build/outputs/apk/release/app-release-unsigned.apk
