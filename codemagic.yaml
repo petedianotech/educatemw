@@ -30,10 +30,9 @@ workflows:
         script: |
           cd android
           chmod +x gradlew
+          export KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD
+          export KEY_ALIAS=$ANDROID_KEY_ALIAS
+          export KEY_PASSWORD=$ANDROID_KEY_PASSWORD
           ./gradlew assembleRelease
-        environment:
-          KEYSTORE_PASSWORD: $ANDROID_KEYSTORE_PASSWORD
-          KEY_ALIAS: $ANDROID_KEY_ALIAS
-          KEY_PASSWORD: $ANDROID_KEY_PASSWORD
     artifacts:
       - android/app/build/outputs/apk/release/app-release-unsigned.apk
