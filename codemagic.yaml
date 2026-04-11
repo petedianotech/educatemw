@@ -25,14 +25,24 @@ workflows:
       - name: Decode Keystore
         script: |
           cd android/app
-          echo "$ANDROID_KEYSTORE_BASE64" | tr -d '\n' | base64 -d > my-release-key.jks
+          # Remove all whitespace (tabs, newlines, spaces) and decode
+          printf "%s" "$ANDROID_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > my-release-key.jks
+          
+          if [ -f my-release-key.jks ] && [ -s my-release-key.jks ]; then
+            echo "✅ Keystore file decoded successfully"
+            ls -lh my-release-key.jks
+          else
+            echo "❌ Failed to create or empty keystore file"
+            exit 1
+          fi
       - name: Build Signed APK
         script: |
           cd android
           chmod +x gradlew
-          export KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD
-          export KEY_ALIAS=$ANDROID_KEY_ALIAS
-          export KEY_PASSWORD=$ANDROID_KEY_PASSWORD
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=$(pwd)/app/my-release-key.jks \
+            -Pandroid.injected.signing.store.password="$ANDROID_KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$ANDROID_KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD"
     artifacts:
-      - android/app/build/outputs/apk/release/app-release-unsigned.apk
+      - android/app/build/outputs/apk/release/app-release.apk
