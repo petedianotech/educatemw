@@ -31,9 +31,6 @@ import { CommonModule } from '@angular/common';
                    alt="Profile" 
                    class="w-32 h-32 rounded-[2.5rem] bg-slate-100 border-8 border-white shadow-2xl ring-1 ring-slate-200 object-cover" 
                    referrerpolicy="no-referrer">
-              <button (click)="showPhotoEdit.set(true)" class="absolute bottom-1 right-1 w-10 h-10 bg-indigo-600 text-white rounded-2xl shadow-lg flex items-center justify-center hover:bg-indigo-700 transition-all active:scale-90 border-4 border-white">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">photo_camera</mat-icon>
-              </button>
             </div>
             <h2 class="text-2xl font-black text-slate-900 mt-4 leading-none">{{authService.currentUser()?.displayName}}</h2>
             <div class="flex items-center gap-2 mt-2">
@@ -61,20 +58,6 @@ import { CommonModule } from '@angular/common';
                 </button>
               </div>
             </div>
-
-            @if (showPhotoEdit()) {
-              <div class="animate-in slide-in-from-top-2 duration-300">
-                <label for="photoUrl" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Profile Photo URL</label>
-                <div class="flex gap-2">
-                  <input type="text" id="photoUrl" [(ngModel)]="newPhotoUrl" placeholder="https://example.com/photo.jpg" 
-                         class="flex-1 px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all outline-none text-slate-700">
-                  <button (click)="updatePhoto()" [disabled]="!newPhotoUrl().trim() || isUpdating()" 
-                          class="px-6 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95">
-                    Update
-                  </button>
-                </div>
-              </div>
-            }
 
             @if (updateMsg()) {
               <div class="bg-emerald-50 text-emerald-600 p-4 rounded-2xl border border-emerald-100 text-sm font-bold flex items-center gap-2">
@@ -191,8 +174,6 @@ export class SettingsComponent {
   router = inject(Router);
   
   newUsername = signal('');
-  newPhotoUrl = signal('');
-  showPhotoEdit = signal(false);
   isUpdating = signal(false);
   updateMsg = signal('');
 
@@ -200,7 +181,6 @@ export class SettingsComponent {
     const user = this.authService.currentUser();
     if (user) {
       this.newUsername.set(user.displayName || '');
-      this.newPhotoUrl.set(user.photoURL || '');
     }
   }
 
@@ -223,29 +203,6 @@ export class SettingsComponent {
     } catch (error) {
       console.error('Failed to update username', error);
       this.updateMsg.set('Failed to update username.');
-    } finally {
-      this.isUpdating.set(false);
-    }
-  }
-
-  async updatePhoto() {
-    const url = this.newPhotoUrl().trim();
-    if (!url) return;
-    
-    this.isUpdating.set(true);
-    this.updateMsg.set('');
-    try {
-      const user = this.authService.currentUser();
-      if (user) {
-        await this.dataService.updateUserProfile(user.uid, { photoURL: url });
-        this.authService.currentUser.set({ ...user, photoURL: url });
-        this.updateMsg.set('Photo updated successfully!');
-        this.showPhotoEdit.set(false);
-        setTimeout(() => this.updateMsg.set(''), 3000);
-      }
-    } catch (error) {
-      console.error('Failed to update photo', error);
-      this.updateMsg.set('Failed to update photo.');
     } finally {
       this.isUpdating.set(false);
     }

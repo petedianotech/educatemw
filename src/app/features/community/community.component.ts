@@ -61,7 +61,7 @@ import { Timestamp } from 'firebase/firestore';
               </div>
               
               <div class="flex justify-end items-center gap-2 mt-1 px-1">
-                <button (click)="likePost(post)" class="flex items-center gap-0.5 text-[10px]" [class.text-red-500]="post.likedBy?.includes(authService.currentUser()?.uid || '')">
+                <button (click)="likePost(post)" class="flex items-center gap-0.5 text-[10px]" [class.text-red-500]="post.likedBy.includes(authService.currentUser()?.uid || '')">
                   <mat-icon class="text-[14px] !w-[14px] !h-[14px]">favorite</mat-icon>
                   {{post.likesCount || 0}}
                 </button>

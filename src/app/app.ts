@@ -18,19 +18,17 @@ import {MatIconModule} from '@angular/material/icon';
         <div class="relative z-10 flex flex-col items-center">
           <!-- Logo with Pulse Effect -->
           <div class="relative mb-8">
-            <div class="absolute inset-0 bg-indigo-500/20 rounded-3xl blur-xl animate-ping"></div>
-            <div class="w-24 h-24 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-3xl flex items-center justify-center text-white shadow-2xl shadow-indigo-500/40 relative z-10">
+            <div class="w-24 h-24 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-3xl flex items-center justify-center text-white shadow-2xl shadow-indigo-500/40 relative z-10 animate-pulse">
               <mat-icon class="!w-12 !h-12 !text-[48px]">school</mat-icon>
             </div>
           </div>
           
           <h2 class="text-3xl font-black text-slate-900 tracking-tight mb-2">EduMalawi</h2>
           <div class="flex items-center gap-2">
-            <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-            <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-            <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
+            <div class="w-2 h-2 bg-indigo-600 rounded-full animate-pulse"></div>
+            <div class="w-2 h-2 bg-indigo-600 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+            <div class="w-2 h-2 bg-indigo-600 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
           </div>
-          <p class="text-slate-400 text-sm font-bold uppercase tracking-widest mt-6">Preparing your workspace</p>
         </div>
       </div>
     } @else {
