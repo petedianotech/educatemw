@@ -66,6 +66,7 @@ html, body {
   overscroll-behavior-y: none;
   -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
   background-color: #f8fafc; /* slate-50 */
+  padding-top: env(safe-area-inset-top);
 }
 
 /* Custom scrollbar for webkit to look more like mobile */
