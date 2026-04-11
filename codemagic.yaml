@@ -1,0 +1,39 @@
+workflows:
+  android-release:
+    name: Build Android Release APK
+    environment:
+      java: 21
+      node: 22
+      vars:
+        # These need to be set in Codemagic environment variables
+        ANDROID_KEYSTORE_BASE64: $ANDROID_KEYSTORE_BASE64
+        ANDROID_KEYSTORE_PASSWORD: $ANDROID_KEYSTORE_PASSWORD
+        ANDROID_KEY_ALIAS: $ANDROID_KEY_ALIAS
+        ANDROID_KEY_PASSWORD: $ANDROID_KEY_PASSWORD
+    scripts:
+      - name: Install dependencies
+        script: npm install
+      - name: Build Angular
+        script: npm run build
+      - name: Sync Capacitor
+        script: npx cap sync android
+      - name: Fix Gradle Wrapper
+        script: |
+          cd android
+          rm -f gradle/wrapper/gradle-wrapper.jar
+          curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.14.3/gradle/wrapper/gradle-wrapper.jar
+      - name: Decode Keystore
+        script: |
+          cd android/app
+          printf "%s" "$ANDROID_KEYSTORE_BASE64" | base64 -d > my-release-key.jks
+      - name: Build Signed APK
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease
+        environment:
+          KEYSTORE_PASSWORD: $ANDROID_KEYSTORE_PASSWORD
+          KEY_ALIAS: $ANDROID_KEY_ALIAS
+          KEY_PASSWORD: $ANDROID_KEY_PASSWORD
+    artifacts:
+      - android/app/build/outputs/apk/release/app-release-unsigned.apk
