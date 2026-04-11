@@ -30,6 +30,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Fix Gradle Wrapper
+        working-directory: android
+        run: |
+          rm -f gradle/wrapper/gradle-wrapper.jar
+          curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.14.3/gradle/wrapper/gradle-wrapper.jar
+
       - name: Decode Keystore
         env:
           BASE64_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
