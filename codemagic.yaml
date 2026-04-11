@@ -4,12 +4,8 @@ workflows:
     environment:
       java: 21
       node: 22
-      vars:
-        # These need to be set in Codemagic environment variables
-        ANDROID_KEYSTORE_BASE64: $ANDROID_KEYSTORE_BASE64
-        ANDROID_KEYSTORE_PASSWORD: $ANDROID_KEYSTORE_PASSWORD
-        ANDROID_KEY_ALIAS: $ANDROID_KEY_ALIAS
-        ANDROID_KEY_PASSWORD: $ANDROID_KEY_PASSWORD
+      groups:
+        - android_keys
     scripts:
       - name: Install dependencies
         script: npm install
