@@ -89,59 +89,61 @@ import { Timestamp } from 'firebase/firestore';
           
           <!-- Quiz List View -->
           @if (view() === 'list') {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="flex flex-col gap-4 max-w-2xl mx-auto">
               @for (quiz of dataService.quizzes(); track quiz.id) {
-                <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-200 flex flex-col hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
-                  <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-emerald-100 transition-colors"></div>
+                <div class="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200/80 flex items-center gap-4 active:scale-[0.98] transition-all relative overflow-hidden group">
+                  <div class="absolute inset-0 bg-gradient-to-br from-transparent to-emerald-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   
-                  <div class="relative z-10 flex-1">
-                    <div class="flex justify-between items-start mb-4">
-                      <span class="inline-flex items-center px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100">
+                  <!-- Icon -->
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/30 relative z-10">
+                    <mat-icon class="!w-7 !h-7 !text-[28px]">quiz</mat-icon>
+                  </div>
+                  
+                  <!-- Content -->
+                  <div class="flex-1 min-w-0 relative z-10">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
                         {{quiz.category}}
                       </span>
                       @if (quiz.isProOnly) {
-                        <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
-                          <mat-icon class="!w-3 !h-3 !text-[12px]">workspace_premium</mat-icon>
-                          PRO
-                        </div>
+                        <span class="text-[10px] font-black text-white uppercase tracking-widest bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-0.5 rounded-md shadow-sm flex items-center gap-0.5">
+                          <mat-icon class="!w-3 !h-3 !text-[12px]">workspace_premium</mat-icon> PRO
+                        </span>
                       }
                     </div>
-                    
-                    <h3 class="font-black text-xl text-slate-900 mb-3 tracking-tight line-clamp-2 group-hover:text-emerald-600 transition-colors">{{quiz.title}}</h3>
-                    
-                    <div class="space-y-2 mb-6">
-                      <div class="flex items-center gap-2 text-slate-500 text-xs font-medium">
-                        <mat-icon class="text-[16px] !w-[16px] !h-[16px]">help_outline</mat-icon>
-                        {{quiz.questions.length}} Questions
-                      </div>
-                      <div class="flex items-center gap-2 text-slate-500 text-xs font-medium">
-                        <mat-icon class="text-[16px] !w-[16px] !h-[16px]">schedule</mat-icon>
-                        {{quiz.timeLimit}} Minutes
-                      </div>
+                    <h3 class="font-bold text-base text-slate-900 truncate">{{quiz.title}}</h3>
+                    <div class="flex items-center gap-3 mt-1">
+                      <span class="text-slate-500 text-xs flex items-center gap-1">
+                        <mat-icon class="!w-3.5 !h-3.5 !text-[14px]">help_outline</mat-icon>
+                        {{quiz.questions.length}} Qs
+                      </span>
+                      <span class="text-slate-500 text-xs flex items-center gap-1">
+                        <mat-icon class="!w-3.5 !h-3.5 !text-[14px]">schedule</mat-icon>
+                        {{quiz.timeLimit}}m
+                      </span>
                     </div>
                   </div>
                   
-                  <div class="relative z-10 flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{{getQuizDate(quiz.createdAt) | date:'mediumDate'}}</span>
-                    
+                  <!-- Action Button -->
+                  <div class="shrink-0 relative z-10">
                     @if (quiz.isProOnly && !authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
-                      <button class="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-slate-200 transition-colors">
+                      <button class="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center">
                         <mat-icon class="!w-5 !h-5 !text-[20px]">lock</mat-icon>
                       </button>
                     } @else {
-                      <button (click)="startQuiz(quiz)" class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">
+                      <button (click)="startQuiz(quiz)" class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors shadow-sm">
                         <mat-icon class="!w-5 !h-5 !text-[20px]">play_arrow</mat-icon>
                       </button>
                     }
                   </div>
                 </div>
               } @empty {
-                <div class="col-span-full text-center py-20 bg-white rounded-[2rem] border border-slate-200 border-dashed">
-                  <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <mat-icon class="!w-10 !h-10 !text-[40px] text-slate-300">quiz</mat-icon>
+                <div class="text-center py-12 bg-white rounded-2xl border border-slate-200 border-dashed">
+                  <div class="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <mat-icon class="!w-7 !h-7 !text-[28px] text-slate-300">quiz</mat-icon>
                   </div>
-                  <h3 class="text-lg font-black text-slate-900 mb-1">No Quizzes Yet</h3>
-                  <p class="text-slate-500 font-medium text-sm">Check back later for new assessments.</p>
+                  <h3 class="text-base font-black text-slate-900 mb-1">No Quizzes Yet</h3>
+                  <p class="text-slate-500 font-medium text-xs">Check back later for assessments.</p>
                 </div>
               }
             </div>

@@ -87,7 +87,7 @@ import { CommonModule } from '@angular/common';
 
             <div class="bg-white/5 border border-white/10 rounded-3xl p-6 mb-8 backdrop-blur-sm">
               <p class="text-slate-300 text-sm font-medium leading-relaxed">
-                Invite your classmates to <span class="text-white font-black">EduMalawi</span>! When they join using your link, you'll receive <span class="text-indigo-400 font-black">10 AI Credits</span> for Cleo AI and Flashcard generation.
+                Invite your classmates to <span class="text-white font-black">Educate MW</span>! When they join using your link, you'll receive <span class="text-indigo-400 font-black">10 AI Credits</span> for Cleo AI and Flashcard generation.
               </p>
             </div>
 
@@ -220,8 +220,8 @@ export class SettingsComponent {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'EduMalawi',
-          text: 'Join me on EduMalawi and master your MSCE subjects with AI! Use my link to get started:',
+          title: 'Educate MW',
+          text: 'Join me on Educate MW and master your MSCE subjects with AI! Use my link to get started:',
           url: link
         });
       } catch (err) {

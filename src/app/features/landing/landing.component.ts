@@ -17,7 +17,7 @@ import { AuthService } from '../../core/services/auth.service';
           <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
             <mat-icon>school</mat-icon>
           </div>
-          <span class="text-xl font-black tracking-tight">EduMalawi</span>
+          <span class="text-xl font-black tracking-tight">Educate MW</span>
         </div>
         <div class="flex items-center gap-4">
           @if (authService.currentUser()) {
@@ -46,7 +46,7 @@ import { AuthService } from '../../core/services/auth.service';
           </h1>
           
           <p class="text-xl text-slate-500 font-medium max-w-2xl mx-auto mb-12 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
-            Access MSCE past papers, video lessons, and your personal AI tutor. Join thousands of students achieving excellence with EduMalawi.
+            Access MSCE past papers, video lessons, and your personal AI tutor. Join thousands of students achieving excellence with Educate MW.
           </p>
 
           <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300">
@@ -117,7 +117,7 @@ import { AuthService } from '../../core/services/auth.service';
           <div class="absolute bottom-0 left-0 w-64 h-64 bg-sky-400/10 rounded-full -ml-32 -mb-32 blur-3xl"></div>
           
           <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-6 relative z-10">Ready to Ace Your Exams?</h2>
-          <p class="text-indigo-100 text-lg mb-12 max-w-xl mx-auto font-medium relative z-10">Join over 5,000 Malawian students already using EduMalawi to transform their grades.</p>
+          <p class="text-indigo-100 text-lg mb-12 max-w-xl mx-auto font-medium relative z-10">Join over 5,000 Malawian students already using Educate MW to transform their grades.</p>
           
           <a routerLink="/login" class="inline-flex items-center gap-3 px-12 py-6 bg-white text-indigo-600 rounded-2xl font-black text-xl shadow-xl hover:scale-105 active:scale-95 transition-all relative z-10">
             Get Started for Free
@@ -132,9 +132,9 @@ import { AuthService } from '../../core/services/auth.service';
           <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
             <mat-icon class="scale-75">school</mat-icon>
           </div>
-          <span class="text-lg font-black tracking-tight">EduMalawi</span>
+          <span class="text-lg font-black tracking-tight">Educate MW</span>
         </div>
-        <p class="text-slate-400 text-sm font-medium">© 2026 EduMalawi. Empowering the next generation of Malawian leaders.</p>
+        <p class="text-slate-400 text-sm font-medium">© 2026 Educate MW. Empowering the next generation of Malawian leaders.</p>
       </footer>
 
     </div>

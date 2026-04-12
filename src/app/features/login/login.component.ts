@@ -24,7 +24,7 @@ import { FormsModule } from '@angular/forms';
           </div>
         </div>
         <h2 class="mt-8 text-center text-3xl font-bold text-slate-900 tracking-tight">
-          EduMalawi
+          Educate MW
         </h2>
         <p class="mt-3 text-center text-base text-slate-500 font-medium">
           Your premium educational ecosystem

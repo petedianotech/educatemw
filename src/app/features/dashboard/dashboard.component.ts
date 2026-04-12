@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { DataService } from '../../core/services/data.service';
@@ -12,167 +12,160 @@ import { Timestamp } from 'firebase/firestore';
   imports: [RouterLink, MatIconModule, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="h-full overflow-y-auto bg-slate-50 relative">
+    <div class="h-full bg-slate-50 relative flex flex-col overflow-hidden">
       
       <!-- Premium Header Background -->
-      <div class="absolute top-0 left-0 right-0 h-64 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-b-3xl shadow-md z-0">
-        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 rounded-b-3xl"></div>
+      <div class="absolute top-0 left-0 right-0 h-48 bg-slate-950 rounded-b-[2.5rem] shadow-lg z-0 overflow-hidden">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+        <!-- Decorative glow -->
+        <div class="absolute top-[-50%] left-[-10%] w-64 h-64 bg-indigo-500/30 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-[-20%] right-[-10%] w-64 h-64 bg-sky-500/20 rounded-full blur-3xl"></div>
       </div>
 
-      <div class="relative z-10 p-4 md:p-8">
-        <!-- Greeting Section -->
-        <div class="mb-8 mt-4 px-2 flex items-center justify-between">
-          <div>
-            <h2 class="text-sm font-semibold text-indigo-100 uppercase tracking-wider mb-1">Welcome Back</h2>
-            <h1 class="text-3xl font-bold text-white tracking-tight">{{authService.currentUser()?.displayName}}</h1>
+      <div class="relative z-10 pt-safe pb-32 px-5 flex flex-col h-full overflow-y-auto custom-scrollbar">
+        <!-- Top Bar -->
+        <div class="pt-4 pb-8 flex items-center justify-between shrink-0">
+          <div class="pl-14">
+            <h1 class="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+              <mat-icon class="text-indigo-400">school</mat-icon>
+              Educate MW
+            </h1>
+            <p class="text-xs font-medium text-indigo-200 mt-1">Welcome back, {{authService.currentUser()?.displayName?.split(' ')?.[0] || 'Student'}}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white">
-            <mat-icon>notifications_none</mat-icon>
+          <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-sm hover:bg-white/20 transition-colors">
+            <mat-icon class="!w-6 !h-6 !text-[24px]">notifications_none</mat-icon>
           </div>
         </div>
 
         <!-- App Updates Section -->
-        @if (dataService.appUpdates().length > 0) {
-          <div class="max-w-2xl mx-auto mb-8">
-            <div class="bg-white rounded-3xl p-6 shadow-xl border border-indigo-50 relative overflow-hidden">
-              <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full -mr-12 -mt-12 blur-2xl"></div>
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
-                  <mat-icon class="!w-5 !h-5 !text-[20px]">campaign</mat-icon>
-                </div>
-                <div>
-                  <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">Latest Update</h3>
-                  <p class="text-[10px] text-slate-400 font-bold">{{ toDate(dataService.appUpdates()[0].createdAt) | date:'mediumDate' }}</p>
-                </div>
+        @if (dataService.appUpdates().length > 0 && !updateDismissed()) {
+          <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500" (click)="dismissUpdate()">
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors active:scale-95">
+              <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 border border-indigo-100">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">campaign</mat-icon>
               </div>
-              <h4 class="text-lg font-black text-slate-900 mb-2">{{ dataService.appUpdates()[0].title }}</h4>
-              <p class="text-sm text-slate-600 leading-relaxed line-clamp-2">{{ dataService.appUpdates()[0].content }}</p>
+              <div class="flex-1 min-w-0">
+                <h4 class="text-sm font-black text-slate-900 truncate">{{ dataService.appUpdates()[0].title }}</h4>
+                <p class="text-xs text-slate-500 truncate mt-0.5">{{ dataService.appUpdates()[0].content }}</p>
+              </div>
+              <mat-icon class="text-slate-300 !w-5 !h-5 !text-[20px]">close</mat-icon>
             </div>
           </div>
         }
 
-        <!-- Quick Actions Grid (App Style) -->
-        <div class="grid grid-cols-2 gap-4 mb-8 max-w-2xl mx-auto">
+        <!-- Quick Actions Grid (Compact Sizing, 2 Columns) -->
+        <div class="grid grid-cols-2 gap-3 mb-4 shrink-0">
           
-          <!-- Cleo AI -->
-          <a routerLink="/chat" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-indigo-500/30 transition-all duration-500">
-            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/5 via-blue-500/5 to-sky-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div class="absolute -right-6 -top-6 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-all duration-500"></div>
-            
-            <div class="flex justify-between items-start relative z-10">
-              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500 relative overflow-hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white">
-                <mat-icon class="!w-8 !h-8 !text-[32px] relative z-10">auto_awesome</mat-icon>
-              </div>
+          <!-- Cleo AI Tutor -->
+          <a routerLink="/chat" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/30 relative z-10 group-hover:scale-105 transition-transform">
+              <mat-icon class="!w-6 !h-6 !text-[24px]">auto_awesome</mat-icon>
               @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 5) <= 0) {
-                <div class="bg-slate-900 text-amber-400 p-2 rounded-xl border border-slate-800 shadow-lg">
-                  <mat-icon class="!w-4 !h-4 !text-[16px]">lock</mat-icon>
+                <div class="absolute -top-1.5 -right-1.5 bg-slate-900 text-amber-400 p-1 rounded-lg border-2 border-white shadow-sm">
+                  <mat-icon class="!w-3 !h-3 !text-[12px]">lock</mat-icon>
                 </div>
               }
             </div>
-            
-            <div class="relative z-10">
-              <div class="flex items-center gap-1.5 mb-1">
-                <h3 class="font-black text-xl text-slate-900 tracking-tight">Cleo AI</h3>
-                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-              </div>
-              <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest">Advanced Tutor</p>
-            </div>
+            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Cleo AI Tutor</h3>
+            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Interactive learning</p>
           </a>
 
-          <!-- Library -->
-          <a routerLink="/notes" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-sky-500/30 transition-all duration-500">
-            <div class="absolute inset-0 bg-gradient-to-br from-sky-600/5 via-blue-500/5 to-sky-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div class="absolute -right-6 -top-6 w-32 h-32 bg-sky-500/10 rounded-full blur-3xl group-hover:bg-sky-500/20 transition-all duration-500"></div>
-            
-            <div class="flex justify-between items-start relative z-10">
-              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-sky-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative overflow-hidden bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 text-white">
-                <mat-icon class="!w-8 !h-8 !text-[32px] relative z-10">library_books</mat-icon>
-              </div>
+          <!-- Video Lessons -->
+          <a routerLink="/video-lessons" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-rose-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-md shadow-rose-500/30 relative z-10 group-hover:scale-105 transition-transform">
+              <mat-icon class="!w-6 !h-6 !text-[24px]">play_circle_outline</mat-icon>
             </div>
-            
-            <div class="relative z-10">
-              <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Library</h3>
-              <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest">Past papers & notes</p>
-            </div>
+            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Video Lessons</h3>
+            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Visual tutorials</p>
           </a>
 
-          <!-- Quizzes -->
-          <a routerLink="/quizzes" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-emerald-500/30 transition-all duration-500">
-            <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/5 via-green-500/5 to-emerald-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div class="absolute -right-6 -top-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all duration-500"></div>
-            
-            <div class="flex justify-between items-start relative z-10">
-              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500 relative overflow-hidden bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500 text-white">
-                <mat-icon class="!w-8 !h-8 !text-[32px] relative z-10">quiz</mat-icon>
-              </div>
+          <!-- Study Library -->
+          <a routerLink="/notes" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-sky-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-md shadow-sky-500/30 relative z-10 group-hover:scale-105 transition-transform">
+              <mat-icon class="!w-6 !h-6 !text-[24px]">library_books</mat-icon>
             </div>
-            
-            <div class="relative z-10">
-              <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Quizzes</h3>
-              <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest">Test your skills</p>
-            </div>
+            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Study Library</h3>
+            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Past papers & notes</p>
           </a>
 
-          <!-- Forum -->
-          <a routerLink="/community" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-purple-500/30 transition-all duration-500">
-            <div class="absolute inset-0 bg-gradient-to-br from-purple-600/5 via-violet-500/5 to-purple-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div class="absolute -right-6 -top-6 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all duration-500"></div>
-            
-            <div class="flex justify-between items-start relative z-10">
-              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative overflow-hidden bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-500 text-white">
-                <mat-icon class="!w-8 !h-8 !text-[32px] relative z-10">forum</mat-icon>
-              </div>
+          <!-- Practice Quizzes -->
+          <a routerLink="/quizzes" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-emerald-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-emerald-400 to-teal-600 text-white shadow-md shadow-emerald-500/30 relative z-10 group-hover:scale-105 transition-transform">
+              <mat-icon class="!w-6 !h-6 !text-[24px]">quiz</mat-icon>
             </div>
-            
-            <div class="relative z-10">
-              <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Forum</h3>
-              <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest">Discuss with peers</p>
+            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Practice Quizzes</h3>
+            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Test your knowledge</p>
+          </a>
+
+          <!-- Community Forum -->
+          <a routerLink="/community" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-md shadow-purple-500/30 relative z-10 group-hover:scale-105 transition-transform">
+              <mat-icon class="!w-6 !h-6 !text-[24px]">forum</mat-icon>
             </div>
+            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Community Forum</h3>
+            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Discuss with peers</p>
           </a>
 
           <!-- Career Guidance -->
-          <a routerLink="/career-guidance" class="card-modern p-5 flex flex-col justify-between aspect-square relative overflow-hidden group border-2 border-transparent hover:border-rose-500/30 transition-all duration-500">
-            <div class="absolute inset-0 bg-gradient-to-br from-rose-600/5 via-pink-500/5 to-rose-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div class="absolute -right-6 -top-6 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl group-hover:bg-rose-500/20 transition-all duration-500"></div>
-            
-            <div class="flex justify-between items-start relative z-10">
-              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/30 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500 relative overflow-hidden bg-gradient-to-r from-rose-400 via-pink-500 to-red-500 text-white">
-                <mat-icon class="!w-8 !h-8 !text-[32px] relative z-10">explore</mat-icon>
-              </div>
+          <a routerLink="/career-guidance" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-orange-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-400 to-amber-500 text-white shadow-md shadow-orange-500/30 relative z-10 group-hover:scale-105 transition-transform">
+              <mat-icon class="!w-6 !h-6 !text-[24px]">explore</mat-icon>
             </div>
-            
-            <div class="relative z-10">
-              <h3 class="font-black text-xl mb-1 text-slate-900 tracking-tight">Careers</h3>
-              <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest">MSCE Points Calc</p>
-            </div>
+            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Career Guidance</h3>
+            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">MSCE points calculator</p>
           </a>
         </div>
 
-        <!-- Pro Upgrade Banner (Native App Style) -->
+        <!-- Pro Upgrade Banner -->
         @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
-          <div class="max-w-2xl mx-auto">
-            <div class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-3xl p-8 text-white shadow-xl border border-slate-800 relative overflow-hidden">
-              <div class="absolute top-0 right-0 -mr-8 -mt-8 w-40 h-40 rounded-full bg-sky-500 opacity-20 blur-3xl pointer-events-none"></div>
-              <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-32 h-32 rounded-full bg-indigo-500 opacity-20 blur-2xl pointer-events-none"></div>
-              
+          <div class="mt-auto shrink-0 pb-4">
+            <div class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[1.5rem] p-5 text-white shadow-lg border border-slate-800 flex items-center justify-between relative overflow-hidden">
+              <div class="absolute right-0 top-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl"></div>
               <div class="relative z-10">
-                <div class="flex items-center gap-2 mb-4">
-                  <div class="p-1.5 bg-sky-500/20 rounded-lg border border-sky-500/30">
-                    <mat-icon class="text-sky-400 !w-5 !h-5 !text-[20px]">workspace_premium</mat-icon>
-                  </div>
-                  <span class="text-sky-400 font-bold text-sm tracking-widest uppercase">EduMalawi Pro</span>
+                <div class="flex items-center gap-1.5 mb-1.5">
+                  <mat-icon class="text-sky-400 !w-4 !h-4 !text-[16px]">workspace_premium</mat-icon>
+                  <span class="text-sky-400 font-bold text-[10px] tracking-widest uppercase">Educate MW Pro</span>
                 </div>
-                
-                <h3 class="text-3xl font-bold mb-3 tracking-tight">Unlock Your Potential</h3>
-                <p class="text-slate-300 text-sm mb-8 font-medium leading-relaxed max-w-[90%]">Pay K5,000 once and access everything till your exams. Get unlimited Cleo AI and premium papers.</p>
-                
-                <a routerLink="/upgrade" class="btn-accent w-full py-3.5 text-[15px]">
-                  Upgrade Now
-                </a>
+                <h3 class="text-base font-bold tracking-tight">Unlock Everything</h3>
               </div>
+              <a routerLink="/upgrade" class="bg-white text-slate-900 px-5 py-2.5 rounded-xl font-black text-sm shadow-md active:scale-95 transition-transform relative z-10">
+                Upgrade
+              </a>
             </div>
           </div>
         }
+      </div>
+      
+      <!-- Edge-to-Edge Bottom Navigation -->
+      <div class="fixed bottom-0 left-0 right-0 z-50 pointer-events-auto">
+        <div class="bg-slate-950/95 backdrop-blur-xl border-t border-white/10 px-6 py-2 pb-safe flex items-center justify-between shadow-[0_-8px_30px_rgba(0,0,0,0.3)]">
+          <a routerLink="/" class="flex flex-col items-center justify-center w-12 h-10 text-white transition-all active:scale-90">
+            <div class="bg-indigo-500/20 p-1.5 rounded-xl">
+              <mat-icon class="!w-5 !h-5 !text-[20px] text-indigo-400">home</mat-icon>
+            </div>
+          </a>
+          <a routerLink="/chat" class="flex flex-col items-center justify-center w-12 h-10 text-slate-400 hover:text-white transition-all active:scale-90">
+            <div class="p-1.5 rounded-xl hover:bg-white/5">
+              <mat-icon class="!w-5 !h-5 !text-[20px]">auto_awesome</mat-icon>
+            </div>
+          </a>
+          <a routerLink="/notes" class="flex flex-col items-center justify-center w-12 h-10 text-slate-400 hover:text-white transition-all active:scale-90">
+            <div class="p-1.5 rounded-xl hover:bg-white/5">
+              <mat-icon class="!w-5 !h-5 !text-[20px]">library_books</mat-icon>
+            </div>
+          </a>
+          <a routerLink="/quizzes" class="flex flex-col items-center justify-center w-12 h-10 text-slate-400 hover:text-white transition-all active:scale-90">
+            <div class="p-1.5 rounded-xl hover:bg-white/5">
+              <mat-icon class="!w-5 !h-5 !text-[20px]">quiz</mat-icon>
+            </div>
+          </a>
+        </div>
       </div>
     </div>
   `
@@ -180,6 +173,8 @@ import { Timestamp } from 'firebase/firestore';
 export class DashboardComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   dataService = inject(DataService);
+  
+  updateDismissed = signal(false);
 
   ngOnInit() {
     this.dataService.subscribeToAppUpdates();
@@ -187,6 +182,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.dataService.unsubscribeFromAppUpdates();
+  }
+
+  dismissUpdate() {
+    this.updateDismissed.set(true);
   }
 
   toDate(date: Date | Timestamp | string | null): Date | null {

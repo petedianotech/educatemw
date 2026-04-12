@@ -23,7 +23,7 @@ import {MatIconModule} from '@angular/material/icon';
             </div>
           </div>
           
-          <h2 class="text-3xl font-black text-slate-900 tracking-tight mb-2">EduMalawi</h2>
+          <h2 class="text-3xl font-black text-slate-900 tracking-tight mb-2">Educate MW</h2>
           <div class="flex items-center gap-2">
             <div class="w-2 h-2 bg-indigo-600 rounded-full animate-pulse"></div>
             <div class="w-2 h-2 bg-indigo-600 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
@@ -35,37 +35,21 @@ import {MatIconModule} from '@angular/material/icon';
       @if (authService.currentUser()) {
         <div class="flex flex-col h-[100dvh] bg-slate-50 font-sans text-slate-900 overflow-hidden relative">
           
-          <!-- Top App Bar -->
-          <header class="bg-white/80 backdrop-blur-xl border-b border-slate-200 h-20 flex-shrink-0 flex items-center justify-between px-6 z-30 pt-safe">
-            <div class="flex items-center gap-4">
-              @if (router.url === '/dashboard' || router.url === '/') {
-                <button (click)="toggleMenu()" class="w-10 h-10 rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center hover:bg-slate-50 active:scale-95 transition-all group">
-                  <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
-                    <mat-icon class="scale-90">menu</mat-icon>
-                  </div>
-                </button>
-              } @else {
-                <button (click)="goBack()" class="w-12 h-12 rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center text-slate-900 hover:bg-slate-50 transition-all active:scale-90">
-                  <mat-icon>arrow_back</mat-icon>
-                </button>
-              }
-              <div class="flex flex-col">
-                <h1 class="text-xl font-black text-slate-900 tracking-tight leading-none">
-                  EduMalawi
-                </h1>
-                <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mt-1">Learning Hub</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-3">
-              @if (authService.currentUser()?.isPro) {
-                <div class="hidden md:flex items-center gap-1 bg-sky-50 text-sky-600 px-3 py-1 rounded-full border border-sky-100 text-[10px] font-black uppercase tracking-wider">
-                  <mat-icon class="text-[14px] !w-[14px] !h-[14px]">workspace_premium</mat-icon>
-                  Pro Member
+          <!-- Floating Action Buttons (Top Left) -->
+          <div class="absolute top-safe left-4 mt-4 z-40 flex gap-2">
+            @if (router.url === '/dashboard' || router.url === '/') {
+              <button (click)="toggleMenu()" class="w-12 h-12 rounded-2xl bg-white/90 backdrop-blur-md shadow-lg border border-white/20 flex items-center justify-center text-slate-800 hover:bg-white active:scale-95 transition-all group">
+                <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
+                  <mat-icon class="scale-90">menu</mat-icon>
                 </div>
-              }
-              <img [src]="authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid" alt="Profile" class="w-9 h-9 rounded-2xl bg-slate-200 border-2 border-white shadow-sm ring-1 ring-slate-200" referrerpolicy="no-referrer">
-            </div>
-          </header>
+              </button>
+            } @else {
+              <button (click)="goBack()" class="w-12 h-12 rounded-2xl bg-white/90 backdrop-blur-md shadow-lg border border-white/20 flex items-center justify-center text-slate-800 hover:bg-white hover:shadow-xl hover:-translate-x-1 active:scale-90 active:translate-x-0 transition-all duration-300 group overflow-hidden relative">
+                <div class="absolute inset-0 bg-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <mat-icon class="relative z-10 group-hover:-translate-x-0.5 transition-transform">arrow_back</mat-icon>
+              </button>
+            }
+          </div>
 
           <!-- Main Content Area -->
           <main class="flex-1 overflow-hidden relative pb-safe">
@@ -94,7 +78,7 @@ import {MatIconModule} from '@angular/material/icon';
                   <mat-icon class="!w-6 !h-6 !text-[24px]">school</mat-icon>
                 </div>
                 <div class="flex flex-col">
-                  <h2 class="text-lg font-black text-white tracking-tight leading-none">EduMalawi</h2>
+                  <h2 class="text-lg font-black text-white tracking-tight leading-none">Educate MW</h2>
                   <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-1">Learning Hub</span>
                 </div>
               </div>
@@ -234,7 +218,7 @@ import {MatIconModule} from '@angular/material/icon';
                     <mat-icon class="!w-8 !h-8 !text-[32px]">install_mobile</mat-icon>
                   </div>
                   <div class="flex-1">
-                    <h4 class="text-lg font-black text-slate-900 leading-tight">Install EduMalawi</h4>
+                    <h4 class="text-lg font-black text-slate-900 leading-tight">Install Educate MW</h4>
                     <p class="text-sm text-slate-500 font-medium mt-1">Get 10 FREE AI Credits instantly when you install our app!</p>
                   </div>
                   <button (click)="showInstallPopup.set(false)" class="text-slate-300 hover:text-slate-500 transition-colors">
