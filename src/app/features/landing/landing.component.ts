@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../core/services/auth.service';
@@ -9,6 +9,38 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [RouterLink, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    @if (isLoading()) {
+      <div class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center animate-out fade-out duration-1000 delay-1000 fill-mode-forwards">
+        <!-- Animated Background Orbs -->
+        <div class="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] rounded-full bg-indigo-600/10 blur-[120px] animate-pulse"></div>
+        <div class="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-blue-600/10 blur-[120px] animate-pulse" style="animation-delay: 1.5s"></div>
+        
+        <div class="relative z-10 flex flex-col items-center">
+          <!-- Logo with Catching Animation -->
+          <div class="relative mb-12 group">
+            <div class="absolute inset-0 bg-indigo-500/40 rounded-[2.5rem] blur-2xl animate-pulse"></div>
+            <div class="w-28 h-28 bg-gradient-to-tr from-indigo-600 via-blue-500 to-sky-400 rounded-[2.5rem] flex items-center justify-center text-white shadow-[0_20px_50px_rgba(79,70,229,0.4)] relative z-10 animate-in zoom-in duration-1000 cubic-bezier(0.34, 1.56, 0.64, 1)">
+              <mat-icon class="!w-14 !h-14 !text-[56px] animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">school</mat-icon>
+            </div>
+            <div class="absolute inset-0 animate-spin-slow pointer-events-none">
+              <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 w-3 h-3 bg-indigo-400 rounded-full shadow-[0_0_15px_rgba(129,140,248,0.8)]"></div>
+            </div>
+          </div>
+          
+          <div class="text-center space-y-4">
+            <h2 class="text-4xl font-black text-white tracking-tighter animate-in fade-in slide-in-from-bottom-6 duration-700 delay-500">
+              Educate <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-sky-300">MW</span>
+            </h2>
+            <div class="flex items-center gap-3 justify-center">
+              <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></div>
+              <div class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+              <div class="w-1.5 h-1.5 bg-sky-300 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
     <div class="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-700 overflow-x-hidden">
       
       <!-- Navigation -->
@@ -80,7 +112,7 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Feature 1 -->
+            <!-- Feature 1: Cleo AI -->
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white hover:-translate-y-2 transition-all duration-500 group">
               <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all">
                 <mat-icon class="!w-8 !h-8 !text-[32px]">auto_awesome</mat-icon>
@@ -89,7 +121,7 @@ import { AuthService } from '../../core/services/auth.service';
               <p class="text-slate-500 text-sm leading-relaxed font-medium">Get instant explanations for any topic, 24/7. Cleo understands your syllabus perfectly.</p>
             </div>
 
-            <!-- Feature 2 -->
+            <!-- Feature 2: Past Papers -->
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white hover:-translate-y-2 transition-all duration-500 group">
               <div class="w-16 h-16 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all">
                 <mat-icon class="!w-8 !h-8 !text-[32px]">library_books</mat-icon>
@@ -98,13 +130,40 @@ import { AuthService } from '../../core/services/auth.service';
               <p class="text-slate-500 text-sm leading-relaxed font-medium">Access over 10 years of MSCE past papers with detailed marking schemes and notes.</p>
             </div>
 
-            <!-- Feature 3 -->
+            <!-- Feature 3: Quizzes -->
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white hover:-translate-y-2 transition-all duration-500 group">
               <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all">
                 <mat-icon class="!w-8 !h-8 !text-[32px]">quiz</mat-icon>
               </div>
               <h3 class="text-xl font-black text-slate-900 mb-3">Interactive Quizzes</h3>
               <p class="text-slate-500 text-sm leading-relaxed font-medium">Test your knowledge with timed quizzes and track your progress on the leaderboard.</p>
+            </div>
+
+            <!-- Feature 4: Group Chat -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white hover:-translate-y-2 transition-all duration-500 group">
+              <div class="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all">
+                <mat-icon class="!w-8 !h-8 !text-[32px]">forum</mat-icon>
+              </div>
+              <h3 class="text-xl font-black text-slate-900 mb-3">Community Forum</h3>
+              <p class="text-slate-500 text-sm leading-relaxed font-medium">Connect with fellow students, share study tips, and discuss challenging MSCE topics.</p>
+            </div>
+
+            <!-- Feature 5: Flashcards -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white hover:-translate-y-2 transition-all duration-500 group">
+              <div class="w-16 h-16 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all">
+                <mat-icon class="!w-8 !h-8 !text-[32px]">layers</mat-icon>
+              </div>
+              <h3 class="text-xl font-black text-slate-900 mb-3">Smart Flashcards</h3>
+              <p class="text-slate-500 text-sm leading-relaxed font-medium">Memorize key definitions and formulas faster with our spaced-repetition flashcard system.</p>
+            </div>
+
+            <!-- Feature 6: Video Lessons -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white hover:-translate-y-2 transition-all duration-500 group">
+              <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all">
+                <mat-icon class="!w-8 !h-8 !text-[32px]">play_circle_outline</mat-icon>
+              </div>
+              <h3 class="text-xl font-black text-slate-900 mb-3">Video Lessons</h3>
+              <p class="text-slate-500 text-sm leading-relaxed font-medium">Watch step-by-step video tutorials from top teachers explaining complex MSCE concepts.</p>
             </div>
           </div>
         </div>
@@ -140,6 +199,14 @@ import { AuthService } from '../../core/services/auth.service';
     </div>
   `
 })
-export class LandingComponent {
+export class LandingComponent implements OnInit {
   authService = inject(AuthService);
+  isLoading = signal(true);
+
+  ngOnInit() {
+    // Simulate a loading effect for the landing page
+    setTimeout(() => {
+      this.isLoading.set(false);
+    }, 1500);
+  }
 }

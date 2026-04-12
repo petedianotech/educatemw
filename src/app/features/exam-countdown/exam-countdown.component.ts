@@ -3,17 +3,21 @@ import { DataService } from '../../core/services/data.service';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe, CommonModule } from '@angular/common';
 import { Timestamp } from 'firebase/firestore';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-exam-countdown',
   standalone: true,
-  imports: [MatIconModule, DatePipe, CommonModule],
+  imports: [MatIconModule, DatePipe, CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-slate-50 pb-24">
       <!-- Header -->
       <header class="bg-white px-6 py-8 border-b border-slate-200">
         <div class="max-w-4xl mx-auto flex items-center gap-4">
+          <a routerLink="/dashboard" class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:scale-90 transition-all">
+            <mat-icon class="text-[24px]">arrow_back</mat-icon>
+          </a>
           <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center border border-rose-100">
             <mat-icon>timer</mat-icon>
           </div>

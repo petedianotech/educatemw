@@ -39,8 +39,12 @@ import { Timestamp } from 'firebase/firestore';
 
         <!-- App Updates Section -->
         @if (dataService.appUpdates().length > 0 && !updateDismissed()) {
-          <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500" (click)="dismissUpdate()">
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors active:scale-95">
+          <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors active:scale-95" 
+                 (click)="dismissUpdate()"
+                 (keydown.enter)="dismissUpdate()"
+                 tabindex="0"
+                 role="button">
               <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 border border-indigo-100">
                 <mat-icon class="!w-5 !h-5 !text-[20px]">campaign</mat-icon>
               </div>
@@ -140,55 +144,6 @@ import { Timestamp } from 'firebase/firestore';
             </div>
           </div>
         }
-      </div>
-      
-      <!-- Floating Bottom Navigation -->
-      <div class="fixed bottom-0 left-0 right-0 z-50 pointer-events-none pb-[calc(env(safe-area-inset-bottom)+1rem)] px-4 flex justify-center">
-        <div class="pointer-events-auto bg-slate-950/95 backdrop-blur-2xl border border-white/10 px-3 py-1.5 rounded-[2rem] flex items-center justify-center gap-1 shadow-2xl shadow-slate-900/50 max-w-[360px] w-full">
-          
-          <!-- Home -->
-          <a routerLink="/" routerLinkActive="text-white" [routerLinkActiveOptions]="{exact: true}" class="flex flex-col items-center justify-center gap-0.5 w-12 text-slate-500 hover:text-slate-300 transition-all active:scale-90 group">
-            <div class="relative flex items-center justify-center w-7 h-7 rounded-full transition-colors" routerLinkActive="bg-white/10" [routerLinkActiveOptions]="{exact: true}">
-              <mat-icon class="!w-4 !h-4 !text-[16px]">home</mat-icon>
-            </div>
-            <span class="text-[8px] font-bold tracking-wide" routerLinkActive="font-black text-white">Home</span>
-          </a>
-
-          <!-- Library -->
-          <a routerLink="/notes" routerLinkActive="text-white" class="flex flex-col items-center justify-center gap-0.5 w-12 text-slate-500 hover:text-slate-300 transition-all active:scale-90 group">
-            <div class="relative flex items-center justify-center w-7 h-7 rounded-full transition-colors" routerLinkActive="bg-white/10">
-              <mat-icon class="!w-4 !h-4 !text-[16px]">library_books</mat-icon>
-            </div>
-            <span class="text-[8px] font-bold tracking-wide" routerLinkActive="font-black text-white">Library</span>
-          </a>
-
-          <!-- Cleo AI (Center, Prominent) -->
-          <div class="relative -top-3 mx-1">
-            <a routerLink="/chat" class="flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90 group">
-              <div class="relative flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-lg shadow-purple-500/30 border-[3px] border-slate-950 group-hover:scale-105 transition-transform">
-                <mat-icon class="!w-5 !h-5 !text-[20px] text-white">auto_awesome</mat-icon>
-              </div>
-              <span class="text-[9px] font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-400">Cleo AI</span>
-            </a>
-          </div>
-
-          <!-- Quizzes -->
-          <a routerLink="/quizzes" routerLinkActive="text-white" class="flex flex-col items-center justify-center gap-0.5 w-12 text-slate-500 hover:text-slate-300 transition-all active:scale-90 group">
-            <div class="relative flex items-center justify-center w-7 h-7 rounded-full transition-colors" routerLinkActive="bg-white/10">
-              <mat-icon class="!w-4 !h-4 !text-[16px]">quiz</mat-icon>
-            </div>
-            <span class="text-[8px] font-bold tracking-wide" routerLinkActive="font-black text-white">Quizzes</span>
-          </a>
-
-          <!-- Profile -->
-          <a routerLink="/settings" routerLinkActive="text-white" class="flex flex-col items-center justify-center gap-0.5 w-12 text-slate-500 hover:text-slate-300 transition-all active:scale-90 group">
-            <div class="relative flex items-center justify-center w-7 h-7 rounded-full transition-colors" routerLinkActive="bg-white/10">
-              <mat-icon class="!w-4 !h-4 !text-[16px]">person</mat-icon>
-            </div>
-            <span class="text-[8px] font-bold tracking-wide" routerLinkActive="font-black text-white">Profile</span>
-          </a>
-
-        </div>
       </div>
     </div>
   `

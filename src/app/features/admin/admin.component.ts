@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DataService, Quiz, QuizQuestion, Note } from '../../core/services/data.service';
 import { Timestamp } from 'firebase/firestore';
@@ -9,7 +9,7 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [FormsModule, MatIconModule, DatePipe, DecimalPipe, CommonModule],
+  imports: [FormsModule, MatIconModule, DatePipe, DecimalPipe, CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex h-screen bg-slate-50 overflow-hidden">
@@ -121,10 +121,10 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
           </nav>
 
           <div class="p-4 border-t border-slate-800 w-64">
-            <button (click)="goBack()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
+            <a routerLink="/dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
               <mat-icon>arrow_back</mat-icon>
               <span>Back to App</span>
-            </button>
+            </a>
           </div>
         </aside>
 

@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { db } from '../../../firebase';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc, where, arrayUnion, arrayRemove, increment, limit, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc, where, arrayUnion, arrayRemove, increment, limit } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../../../firebase';
 import { UserProfile } from './auth.service';
 
@@ -135,10 +135,24 @@ export class DataService {
   private flashcardsUnsubscribe: (() => void) | null = null;
 
   // --- Users ---
-  subscribeToUsers() {
+  subscribeToUsers(limitCount = 50) {
     if (this.usersUnsubscribe) return;
     
-    const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(limitCount));
+    this.usersUnsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedUsers = snapshot.docs.map(doc => ({
+        ...doc.data()
+      } as UserProfile));
+      this.users.set(loadedUsers);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'users');
+    });
+  }
+
+  subscribeToPremiumUsers(limitCount = 20) {
+    if (this.usersUnsubscribe) return;
+    
+    const q = query(collection(db, 'users'), where('isPro', '==', true), orderBy('createdAt', 'desc'), limit(limitCount));
     this.usersUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedUsers = snapshot.docs.map(doc => ({
         ...doc.data()
@@ -173,10 +187,10 @@ export class DataService {
   }
 
   // --- Community Posts ---
-  subscribeToPosts() {
+  subscribeToPosts(limitCount = 20) {
     if (this.postsUnsubscribe) return;
     
-    const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(limitCount));
     this.postsUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedPosts = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -251,10 +265,14 @@ export class DataService {
   }
 
   // --- Notes & Past Papers ---
-  subscribeToNotes() {
+  subscribeToNotes(category?: string, limitCount = 50) {
     if (this.notesUnsubscribe) return;
     
-    const q = query(collection(db, 'notes'), orderBy('createdAt', 'desc'));
+    let q = query(collection(db, 'notes'), orderBy('createdAt', 'desc'), limit(limitCount));
+    if (category) {
+      q = query(collection(db, 'notes'), where('category', '==', category), orderBy('createdAt', 'desc'), limit(limitCount));
+    }
+    
     this.notesUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedNotes = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -301,9 +319,9 @@ export class DataService {
   }
 
   // --- Quizzes ---
-  subscribeToQuizzes() {
+  subscribeToQuizzes(limitCount = 20) {
     if (this.quizzesUnsubscribe) return;
-    const q = query(collection(db, 'quizzes'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'quizzes'), orderBy('createdAt', 'desc'), limit(limitCount));
     this.quizzesUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedQuizzes = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -407,9 +425,9 @@ export class DataService {
   }
 
   // --- App Updates ---
-  subscribeToAppUpdates() {
+  subscribeToAppUpdates(limitCount = 5) {
     if (this.appUpdatesUnsubscribe) return;
-    const q = query(collection(db, 'appUpdates'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'appUpdates'), orderBy('createdAt', 'desc'), limit(limitCount));
     this.appUpdatesUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedUpdates = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -597,14 +615,35 @@ export class DataService {
   }
 
   // --- Leaderboard ---
-  async getTopStudents(limitCount = 10) {
+  async getTopStudents(limitCount = 25, lastDoc: unknown = null) {
     try {
-      const q = query(collection(db, 'users'), orderBy('aiCredits', 'desc'), limit(limitCount));
+      const { query, collection, orderBy, limit, getDocs } = await import('firebase/firestore');
+      
+      let q = query(
+        collection(db, 'users'), 
+        orderBy('aiCredits', 'desc'), 
+        limit(limitCount)
+      );
+      
+      if (lastDoc) {
+        const { startAfter } = await import('firebase/firestore');
+        q = query(
+          collection(db, 'users'), 
+          orderBy('aiCredits', 'desc'), 
+          startAfter(lastDoc),
+          limit(limitCount)
+        );
+      }
+      
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+      const students = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+      return {
+        students,
+        lastDoc: snapshot.docs[snapshot.docs.length - 1]
+      };
     } catch (error) {
       handleFirestoreError(error, OperationType.LIST, 'users');
-      return [];
+      return { students: [], lastDoc: null };
     }
   }
 }

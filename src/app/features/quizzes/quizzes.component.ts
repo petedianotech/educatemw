@@ -6,11 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { DatePipe, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Timestamp } from 'firebase/firestore';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-quizzes',
   standalone: true,
-  imports: [MatIconModule, DatePipe, CommonModule, FormsModule],
+  imports: [MatIconModule, DatePipe, CommonModule, FormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-slate-50 relative">
@@ -24,6 +25,9 @@ import { Timestamp } from 'firebase/firestore';
           
           <div class="flex items-center justify-between mb-10 mt-2">
             <div class="flex items-center gap-4">
+              <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white active:scale-90 transition-all backdrop-blur-md">
+                <mat-icon class="text-[22px]">arrow_back</mat-icon>
+              </a>
               <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-lg">
                 <mat-icon class="!w-8 !h-8 !text-[32px]">quiz</mat-icon>
               </div>

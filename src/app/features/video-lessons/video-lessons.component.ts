@@ -1,17 +1,26 @@
 import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
-import { DataService } from '../../core/services/data.service';
+import { DataService, Note } from '../../core/services/data.service';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-video-lessons',
   standalone: true,
-  imports: [MatIconModule, CommonModule],
+  imports: [MatIconModule, CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-slate-950 overflow-hidden">
       
+      <!-- Header -->
+      <header class="px-4 py-3 flex items-center gap-3 bg-slate-950 border-b border-white/10 shrink-0">
+        <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 active:scale-90 transition-all">
+          <mat-icon class="text-[22px]">arrow_back</mat-icon>
+        </a>
+        <h1 class="text-lg font-bold text-white">Video Lessons</h1>
+      </header>
+
       <!-- Video Player Area (Top Half) -->
       <div class="w-full aspect-video bg-black shrink-0 relative shadow-2xl z-20">
         @if (activeVideo()) {
@@ -81,7 +90,7 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   sanitizer = inject(DomSanitizer);
   
-  activeVideo = signal<any>(null);
+  activeVideo = signal<Note | null>(null);
 
   ngOnInit() {
     this.dataService.subscribeToNotes();

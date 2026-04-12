@@ -4,11 +4,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
 import { Timestamp } from 'firebase/firestore';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-notes',
   standalone: true,
-  imports: [MatIconModule, DatePipe],
+  imports: [MatIconModule, DatePipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-slate-50 overflow-hidden relative">
@@ -16,6 +17,9 @@ import { Timestamp } from 'firebase/firestore';
       <div class="bg-gradient-to-r from-sky-600 to-blue-600 px-4 py-6 shrink-0 relative z-10 shadow-md">
         <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div class="flex items-center gap-3 relative z-10">
+          <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white active:scale-90 transition-all mr-1 backdrop-blur-md">
+            <mat-icon class="text-[22px]">arrow_back</mat-icon>
+          </a>
           <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-lg">
             <mat-icon class="!w-6 !h-6 !text-[24px]">library_books</mat-icon>
           </div>

@@ -12,6 +12,7 @@ export interface UserProfile {
   role: 'student' | 'admin';
   isPro: boolean;
   aiCredits?: number;
+  streak?: number;
   pwaInstalled?: boolean;
   referralCode?: string;
   referredBy?: string;
@@ -131,6 +132,7 @@ export class AuthService {
       role: 'student',
       isPro: false,
       aiCredits: 5,
+      streak: 0,
       referralCode: user.uid.substring(0, 8).toUpperCase(),
       referralsCount: 0,
       createdAt: new Date()

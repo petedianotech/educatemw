@@ -27,11 +27,6 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'study-plan',
-    loadComponent: () => import('./features/study-plan/study-plan.component').then(m => m.StudyPlanComponent),
-    canActivate: [authGuard]
-  },
-  {
     path: 'leaderboard',
     loadComponent: () => import('./features/leaderboard/leaderboard.component').then(m => m.LeaderboardComponent),
     canActivate: [authGuard]
