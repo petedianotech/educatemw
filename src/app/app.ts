@@ -43,11 +43,6 @@ import {MatIconModule} from '@angular/material/icon';
                   <mat-icon class="scale-90">menu</mat-icon>
                 </div>
               </button>
-            } @else {
-              <button (click)="goBack()" class="w-12 h-12 rounded-2xl bg-white/90 backdrop-blur-md shadow-lg border border-white/20 flex items-center justify-center text-slate-800 hover:bg-white hover:shadow-xl hover:-translate-x-1 active:scale-90 active:translate-x-0 transition-all duration-300 group overflow-hidden relative">
-                <div class="absolute inset-0 bg-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <mat-icon class="relative z-10 group-hover:-translate-x-0.5 transition-transform">arrow_back</mat-icon>
-              </button>
             }
           </div>
 
@@ -143,11 +138,6 @@ import {MatIconModule} from '@angular/material/icon';
                 <span class="text-sm">Leaderboard</span>
               </a>
 
-              <a routerLink="/exam-countdown" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">calendar_today</mat-icon>
-                <span class="text-sm">Exam Countdown</span>
-              </a>
-
               <a routerLink="/community" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
                 <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">people_outline</mat-icon>
                 <span class="text-sm">Forum</span>
@@ -156,11 +146,6 @@ import {MatIconModule} from '@angular/material/icon';
               <a routerLink="/premium-students" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
                 <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">star_outline</mat-icon>
                 <span class="text-sm">Premium Students</span>
-              </a>
-
-              <a routerLink="/timetable" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
-                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">calendar_month</mat-icon>
-                <span class="text-sm">Student Timetable</span>
               </a>
 
               <a routerLink="/chat" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
