@@ -47,6 +47,7 @@ export class AuthService {
 
   async loginWithGoogle() {
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
     try {
       const result = await signInWithPopup(auth, provider);
       await this.loadUserProfile(result.user);
