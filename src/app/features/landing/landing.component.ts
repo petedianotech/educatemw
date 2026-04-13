@@ -218,6 +218,9 @@ import { AuthService } from '../../core/services/auth.service';
           <span class="text-lg font-black tracking-tight">Educate MW</span>
         </div>
         <p class="text-slate-400 text-sm font-medium">© 2026 Educate MW. Empowering the next generation of Malawian leaders.</p>
+        <div class="mt-4">
+          <a routerLink="/privacy" class="text-indigo-600 font-bold hover:underline">Privacy Policy</a>
+        </div>
       </footer>
 
     </div>
