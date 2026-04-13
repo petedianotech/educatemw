@@ -45,7 +45,7 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'aiCredits', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount', 'createdAt']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'aiCredits', 'streak', 'lastCreditReset', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount', 'createdAt']) &&
              hasRequiredFields(['uid', 'email', 'role', 'isPro', 'createdAt']) &&
              data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
              data.email is string && data.email.size() > 0 && data.email.size() < 100 &&
@@ -55,6 +55,8 @@ service cloud.firestore {
              isValidOptionalString('displayName', 1, 100) &&
              isValidOptionalString('photoURL', 1, 500) &&
              (!('aiCredits' in data) || data.aiCredits is number) &&
+             (!('streak' in data) || data.streak is number) &&
+             (!('lastCreditReset' in data) || data.lastCreditReset is string) &&
              (!('pwaInstalled' in data) || data.pwaInstalled is bool) &&
              (!('referralCode' in data) || data.referralCode is string) &&
              (!('referredBy' in data) || data.referredBy is string) &&
@@ -62,18 +64,19 @@ service cloud.firestore {
     }
 
     function isValidPost(data) {
-      return hasOnlyAllowedFields(['authorId', 'authorName', 'authorPhoto', 'content', 'createdAt', 'likesCount', 'commentsCount']) &&
+      return hasOnlyAllowedFields(['authorId', 'authorName', 'authorPhoto', 'content', 'createdAt', 'likesCount', 'likedBy', 'commentsCount']) &&
              hasRequiredFields(['authorId', 'authorName', 'content', 'createdAt', 'likesCount', 'commentsCount']) &&
              data.authorId is string && data.authorId.size() > 0 && data.authorId.size() < 100 &&
              data.authorName is string && data.authorName.size() > 0 && data.authorName.size() < 100 &&
              data.content is string && data.content.size() > 0 && data.content.size() < 5000 &&
              data.createdAt is timestamp &&
-             data.likesCount is number && data.likesCount >= 0 &&
-             data.commentsCount is number && data.commentsCount >= 0 &&
+             data.likesCount is number &&
+             data.commentsCount is number &&
+             (!('likedBy' in data) || data.likedBy is list) &&
              isValidOptionalString('authorPhoto', 1, 500);
     }
 
-    function isValidComment(data) {
+    function isValidReply(data) {
       return hasOnlyAllowedFields(['postId', 'authorId', 'authorName', 'authorPhoto', 'content', 'createdAt']) &&
              hasRequiredFields(['postId', 'authorId', 'authorName', 'content', 'createdAt']) &&
              data.postId is string && data.postId.size() > 0 && data.postId.size() < 100 &&
@@ -173,16 +176,14 @@ service cloud.firestore {
     // Rules
     // ===============================================================
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
-                    isOwner(userId) && request.resource.data.uid == userId &&
-                    ((request.resource.data.role == 'student' && request.resource.data.isPro == false) || isAdmin());
+                    isOwner(userId) && request.resource.data.uid == userId;
       allow update: if isAuthenticated() && isValidUser(request.resource.data) &&
                     ((isOwner(userId) && request.resource.data.uid == resource.data.uid && 
                       request.resource.data.role == resource.data.role && 
                       request.resource.data.isPro == resource.data.isPro &&
-                      request.resource.data.createdAt == resource.data.createdAt &&
-                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'aiCredits', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount'])) || isAdmin());
+                      request.resource.data.createdAt == resource.data.createdAt) || isAdmin());
     }
 
     match /posts/{postId} {
@@ -195,18 +196,16 @@ service cloud.firestore {
                     ((request.resource.data.authorId == resource.data.authorId &&
                       request.resource.data.createdAt == resource.data.createdAt &&
                       (request.auth.uid == resource.data.authorId || 
-                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'commentsCount'])))) || isAdmin());
+                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'commentsCount', 'likedBy'])))) || isAdmin());
       allow delete: if isAuthenticated() && (request.auth.uid == resource.data.authorId || isAdmin());
     }
 
-    match /posts/{postId}/comments/{commentId} {
+    match /replies/{replyId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidComment(request.resource.data) && 
-                    request.resource.data.authorId == request.auth.uid &&
-                    request.resource.data.postId == postId;
-      allow update: if isAuthenticated() && isValidComment(request.resource.data) &&
+      allow create: if isAuthenticated() && isValidReply(request.resource.data) && 
+                    request.resource.data.authorId == request.auth.uid;
+      allow update: if isAuthenticated() && isValidReply(request.resource.data) &&
                     ((request.resource.data.authorId == resource.data.authorId &&
-                      request.resource.data.postId == resource.data.postId &&
                       request.resource.data.createdAt == resource.data.createdAt &&
                       request.auth.uid == resource.data.authorId) || isAdmin());
       allow delete: if isAuthenticated() && (request.auth.uid == resource.data.authorId || isAdmin());

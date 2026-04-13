@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { auth } from '../../../firebase';
-import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebase';
 
@@ -36,36 +36,13 @@ export class AuthService {
       }
       this.isAuthReady.set(true);
     });
-
-    // Handle redirect result for mobile Google sign-in
-    this.handleRedirectResult();
-  }
-
-  private async handleRedirectResult() {
-    try {
-      const result = await getRedirectResult(auth);
-      if (result) {
-        await this.loadUserProfile(result.user);
-      }
-    } catch (error) {
-      console.error('Redirect login failed', error);
-    }
   }
 
   async loginWithGoogle() {
     const provider = new GoogleAuthProvider();
     try {
-      // Check if we are on a mobile device or standalone (APK/PWA)
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
-
-      if (isMobile || isStandalone) {
-        await signInWithRedirect(auth, provider);
-      } else {
-        const result = await signInWithPopup(auth, provider);
-        await this.loadUserProfile(result.user);
-      }
+      const result = await signInWithPopup(auth, provider);
+      await this.loadUserProfile(result.user);
     } catch (error) {
       console.error('Login failed', error);
       throw error;
