@@ -46,10 +46,11 @@ export class GeminiService {
 
   constructor() {
     // Initialize Gemini API
-    // Note: In a real production app, the API key should be handled securely,
-    // preferably via a backend proxy to avoid exposing it in the client.
-    // For this AI Studio environment, we use the injected environment variable.
-    this.ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+    const apiKey = typeof GEMINI_API_KEY !== 'undefined' ? GEMINI_API_KEY : '';
+    if (!apiKey) {
+      console.error('GEMINI_API_KEY is not defined. AI features will not work.');
+    }
+    this.ai = new GoogleGenAI({ apiKey });
 
     // Initialize IndexedDB for offline chat history
     this.dbPromise = openDB<ChatDB>('edu-chat-db', 1, {
@@ -62,6 +63,13 @@ export class GeminiService {
     this.loadHistory();
   }
 
+  private generateId(): string {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+
   private async loadHistory() {
     const db = await this.dbPromise;
     const allMessages = await db.getAllFromIndex('messages', 'by-timestamp');
@@ -72,7 +80,7 @@ export class GeminiService {
     if (!content.trim()) return;
 
     const userMessage: ChatMessage = {
-      id: crypto.randomUUID(),
+      id: this.generateId(),
       role: 'user',
       content,
       timestamp: Date.now()
@@ -129,7 +137,7 @@ Guidelines for your responses:
       const response = await chat.sendMessage({ message: content });
       
       const modelMessage: ChatMessage = {
-        id: crypto.randomUUID(),
+        id: this.generateId(),
         role: 'model',
         content: response.text || 'Sorry, I could not generate a response.',
         timestamp: Date.now()
@@ -138,16 +146,27 @@ Guidelines for your responses:
       this.messages.update(msgs => [...msgs, modelMessage]);
       await db.put('messages', modelMessage);
       
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error('Error communicating with Gemini:', error);
-      // Could add an error message to the chat
-      const errorMessage: ChatMessage = {
-        id: crypto.randomUUID(),
+      
+      let errorMessage = '⚠️ An error occurred. Your message was saved, and you can try again soon.';
+      
+      if (!navigator.onLine) {
+        errorMessage = '⚠️ You seem to be offline. Your message was saved, and you can try again when you have a connection.';
+      } else if (error?.message?.includes('API key not valid')) {
+        errorMessage = '⚠️ AI configuration error. Please contact support or check your API key.';
+      } else if (error?.message?.includes('quota')) {
+        errorMessage = '⚠️ AI daily limit reached for the system. Please try again later.';
+      }
+
+      const errorMsg: ChatMessage = {
+        id: this.generateId(),
         role: 'model',
-        content: '⚠️ You seem to be offline or an error occurred. Your message was saved, and you can try again when you have a connection.',
+        content: errorMessage,
         timestamp: Date.now()
       };
-      this.messages.update(msgs => [...msgs, errorMessage]);
+      this.messages.update(msgs => [...msgs, errorMsg]);
     } finally {
       this.isLoading.set(false);
     }

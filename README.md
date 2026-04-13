@@ -1,20 +1,46 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Peter Leo Damiano 🚀
+### Full Stack Developer | Innovator | Problem Solver
 
-# Run and deploy your AI Studio app
+I am a passionate **Full Stack Developer** and **Innovator** dedicated to building and shipping high-impact applications that solve real-world problems. My work focuses on integrating AI, automation, and evidence-based reputation systems to create seamless digital experiences.
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/c9a4a495-3dd6-4a57-a2ce-2fe27cec4d82
+## 🌟 Featured Projects
 
-## Run Locally
+### 📚 [Educate MW](https://educatemw.vercel.app)
+**The Premium Educational Ecosystem for Malawi.**
+Educate MW is a comprehensive platform designed to empower students in Malawi with real-time exam countdowns (PSLCE, JCE, MSCE), AI-powered study assistance, and structured learning resources. 
+- **Status:** Live & Production Ready
+- **Links:** [educatemw.com](https://educatemw.com) | [educatemw.vercel.app](https://educatemw.vercel.app)
 
-**Prerequisites:**  Node.js
+### 🔗 [GlobLync](https://globlync.vercel.app)
+**AI-Verified Work & Hiring Platform.**
+A free platform where professionals log their work and get verified by AI. GlobLync is known for its **evidence-based reputation** system, allowing users to view jobs, get hired, or hire talent with confidence.
+- **Key Feature:** AI Verification & Reputation Ledger.
 
+### 🤖 [AutoPXF](https://autopxf.vercel.app)
+**Autonomous Content Agent for X.**
+An advanced autonomous agent that creates and posts content on X (formerly Twitter) without any human intervention. 
+- **Status:** Under Active Development (Beta)
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+
+## 🛠️ Technical Arsenal
+
+- **Frontend:** Angular, React, Tailwind CSS, TypeScript
+- **Backend:** Node.js, Express, Firebase (Firestore, Auth)
+- **AI/ML:** Gemini API Integration, Autonomous Agents
+- **Deployment:** Vercel, Cloud Run, Custom Domains
+
+---
+
+## 🌐 Connect with Me
+
+- **Portfolio:** [Peterleodamiano.vercel.app](https://peterleodamiano.vercel.app)
+- **Innovation:** Always shipping new ideas.
+
+---
+
+> "Innovation is the ability to see change as an opportunity - not a threat."
+
+© 2026 Peter Leo Damiano. All rights reserved.

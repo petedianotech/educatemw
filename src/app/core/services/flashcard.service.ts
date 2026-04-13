@@ -9,7 +9,12 @@ import { DataService } from './data.service';
 export class FlashcardService {
   private dataService = inject(DataService);
   private authService = inject(AuthService);
-  private genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  private genAI: GoogleGenAI;
+
+  constructor() {
+    const apiKey = typeof GEMINI_API_KEY !== 'undefined' ? GEMINI_API_KEY : '';
+    this.genAI = new GoogleGenAI({ apiKey });
+  }
 
   async generateFlashcards(topic: string, category: string, count = 5) {
     const user = this.authService.currentUser();

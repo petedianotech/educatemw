@@ -1,7 +1,8 @@
-import {ChangeDetectionStrategy, Component, PLATFORM_ID, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, PLATFORM_ID, inject, signal, OnInit} from '@angular/core';
 import {isPlatformBrowser} from '@angular/common';
 import {RouterOutlet, RouterLink, RouterLinkActive, Router} from '@angular/router';
 import {AuthService} from './core/services/auth.service';
+import {LoadingService} from './core/services/loading.service';
 import {MatIconModule} from '@angular/material/icon';
 
 @Component({
@@ -9,21 +10,21 @@ import {MatIconModule} from '@angular/material/icon';
   selector: 'app-root',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIconModule],
   template: `
-    @if (!authService.isAuthReady()) {
+    @if (loadingService.isLoading() || !authService.isAuthReady()) {
       <div class="min-h-screen flex flex-col items-center justify-center bg-slate-950 relative overflow-hidden">
         <!-- Animated Background Orbs -->
         <div class="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] rounded-full bg-indigo-600/10 blur-[120px] animate-pulse"></div>
         <div class="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-blue-600/10 blur-[120px] animate-pulse" style="animation-delay: 1.5s"></div>
         
-        <div class="relative z-10 flex flex-col items-center">
+        <div class="relative z-10 flex flex-col items-center w-full max-w-xs">
           <!-- Logo with Catching Animation -->
           <div class="relative mb-12 group">
             <!-- Outer Glow -->
             <div class="absolute inset-0 bg-indigo-500/40 rounded-[2.5rem] blur-2xl animate-pulse group-hover:blur-3xl transition-all duration-700"></div>
             
             <!-- Main Logo Box -->
-            <div class="w-28 h-28 bg-gradient-to-tr from-indigo-600 via-blue-500 to-sky-400 rounded-[2.5rem] flex items-center justify-center text-white shadow-[0_20px_50px_rgba(79,70,229,0.4)] relative z-10 animate-in zoom-in duration-1000 cubic-bezier(0.34, 1.56, 0.64, 1)">
-              <mat-icon class="!w-14 !h-14 !text-[56px] animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">school</mat-icon>
+            <div class="w-24 h-24 bg-gradient-to-tr from-indigo-600 via-blue-500 to-sky-400 rounded-[2.5rem] flex items-center justify-center text-white shadow-[0_20px_50px_rgba(79,70,229,0.4)] relative z-10 animate-in zoom-in duration-1000 cubic-bezier(0.34, 1.56, 0.64, 1)">
+              <mat-icon class="!w-12 !h-12 !text-[48px] animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">school</mat-icon>
             </div>
             
             <!-- Orbiting Dots -->
@@ -32,21 +33,22 @@ import {MatIconModule} from '@angular/material/icon';
             </div>
           </div>
           
-          <div class="text-center space-y-4">
+          <div class="text-center space-y-6 w-full">
             <h2 class="text-4xl font-black text-white tracking-tighter animate-in fade-in slide-in-from-bottom-6 duration-700 delay-500">
               Educate <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-sky-300">MW</span>
             </h2>
             
-            <div class="flex flex-col items-center gap-6">
-              <div class="flex items-center gap-3">
-                <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></div>
-                <div class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-                <div class="w-1.5 h-1.5 bg-sky-300 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+            <!-- Progress Bar -->
+            <div class="space-y-3 w-full px-4">
+              <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                <div class="h-full bg-gradient-to-r from-indigo-500 via-blue-500 to-sky-400 transition-all duration-300 ease-out shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                     [style.width.%]="loadingService.progress()"></div>
               </div>
-              
-              <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] animate-in fade-in duration-1000 delay-700">
-                Unlocking Your Potential
-              </p>
+              <div class="flex justify-center items-center">
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest animate-pulse">
+                  {{ loadingService.loadingText() }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -74,6 +76,17 @@ import {MatIconModule} from '@angular/material/icon';
 
           <!-- Main Content Area -->
           <main class="flex-1 overflow-hidden relative" [class.pb-[calc(env(safe-area-inset-bottom)+4.5rem)]]="router.url === '/dashboard'">
+            
+            <!-- Daily Reward Message -->
+            @if (authService.rewardMessage()) {
+              <div class="fixed top-20 left-4 right-4 z-[60] animate-in slide-in-from-top-10 duration-500">
+                <div class="bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-emerald-500/50 backdrop-blur-md">
+                  <mat-icon class="text-emerald-100">card_giftcard</mat-icon>
+                  <p class="text-sm font-black tracking-tight">{{authService.rewardMessage()}}</p>
+                </div>
+              </div>
+            }
+
             <router-outlet></router-outlet>
           </main>
 
@@ -292,8 +305,9 @@ import {MatIconModule} from '@angular/material/icon';
     }
   `,
 })
-export class App {
+export class App implements OnInit {
   authService = inject(AuthService);
+  loadingService = inject(LoadingService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
   isMobileMenuOpen = signal(false);
@@ -322,6 +336,10 @@ export class App {
         this.authService.claimPwaReward();
       });
     }
+  }
+
+  ngOnInit() {
+    this.loadingService.simulateLoading();
   }
 
   toggleMenu() {

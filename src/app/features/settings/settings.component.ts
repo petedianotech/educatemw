@@ -21,50 +21,51 @@ import { CommonModule } from '@angular/common';
         <h1 class="text-xl font-bold text-slate-900">Settings & Profile</h1>
       </header>
 
-      <div class="p-4 max-w-2xl mx-auto space-y-6 mt-2 overflow-y-auto h-[calc(100vh-80px)] custom-scrollbar">
+      <div class="p-4 max-w-2xl mx-auto space-y-4 mt-2 overflow-y-auto h-[calc(100vh-80px)] custom-scrollbar">
         
         <!-- Profile Section -->
-        <section class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-          <div class="relative h-32 bg-gradient-to-r from-indigo-600 to-blue-500">
-            <div class="absolute inset-0 bg-black/10"></div>
+        <section class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
+          <div class="relative h-24 bg-gradient-to-r from-indigo-600 to-blue-500">
+            <div class="absolute inset-0 bg-black/5"></div>
           </div>
-          <div class="px-8 pb-8 -mt-16 relative flex flex-col items-center text-center">
-            <div class="relative group">
+          <div class="px-6 pb-6 -mt-12 relative flex flex-col items-center sm:flex-row sm:items-end sm:gap-6 sm:text-left">
+            <div class="relative">
               <img [src]="authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid" 
                    alt="Profile" 
-                   class="w-32 h-32 rounded-[2.5rem] bg-slate-100 border-8 border-white shadow-2xl ring-1 ring-slate-200 object-cover" 
+                   class="w-24 h-24 rounded-[1.5rem] bg-slate-100 border-4 border-white shadow-xl object-cover" 
                    referrerpolicy="no-referrer">
             </div>
-            <h2 class="text-2xl font-black text-slate-900 mt-4 leading-none">{{authService.currentUser()?.displayName}}</h2>
-            <div class="flex items-center gap-2 mt-2">
-              <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-100">
-                {{authService.currentUser()?.isPro ? 'PRO MEMBER' : 'FREE STUDENT'}}
-              </span>
-              @if (authService.currentUser()?.role === 'admin') {
-                <span class="px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-rose-100">
-                  ADMIN
+            <div class="mt-4 sm:mt-0 flex-1">
+              <h2 class="text-xl font-black text-slate-900 leading-tight">{{authService.currentUser()?.displayName}}</h2>
+              <div class="flex items-center gap-2 mt-1.5 justify-center sm:justify-start">
+                <span class="px-2.5 py-0.5 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-indigo-100">
+                  {{authService.currentUser()?.isPro ? 'PRO MEMBER' : 'FREE STUDENT'}}
                 </span>
-              }
+                @if (authService.currentUser()?.role === 'admin') {
+                  <span class="px-2.5 py-0.5 bg-rose-50 text-rose-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-rose-100">
+                    ADMIN
+                  </span>
+                }
+              </div>
             </div>
           </div>
           
-          <div class="p-8 pt-0 space-y-6">
-            <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
-              <label for="username" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1">Display Name</label>
-              <div class="flex flex-col gap-3">
-                <input type="text" id="username" [(ngModel)]="newUsername" placeholder="Enter new username" 
-                       class="w-full px-6 py-4 bg-white border-2 border-slate-100 rounded-2xl font-bold placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all outline-none text-slate-700 shadow-sm">
+          <div class="px-6 pb-6 space-y-4">
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              <label for="username" class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Display Name</label>
+              <div class="flex gap-2">
+                <input type="text" id="username" [(ngModel)]="newUsername" placeholder="New name" 
+                       class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all outline-none text-sm text-slate-700 shadow-sm">
                 <button (click)="updateUsername()" [disabled]="!newUsername().trim() || isUpdating()" 
-                        class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-200 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2">
+                        class="px-4 bg-indigo-600 text-white rounded-xl font-black shadow-md shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center">
                   <mat-icon class="!w-5 !h-5 !text-[20px]">save</mat-icon>
-                  Update Name
                 </button>
               </div>
             </div>
 
             @if (updateMsg()) {
-              <div class="bg-emerald-50 text-emerald-600 p-4 rounded-2xl border border-emerald-100 text-sm font-bold flex items-center gap-2">
-                <mat-icon class="text-sm">check_circle</mat-icon>
+              <div class="bg-emerald-50 text-emerald-600 p-3 rounded-xl border border-emerald-100 text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+                <mat-icon class="text-xs">check_circle</mat-icon>
                 {{updateMsg()}}
               </div>
             }
@@ -72,75 +73,68 @@ import { CommonModule } from '@angular/common';
         </section>
 
         <!-- Referral System -->
-        <section class="bg-slate-950 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-indigo-900/20 relative overflow-hidden border border-white/5">
+        <section class="bg-slate-950 rounded-[2rem] p-6 text-white shadow-2xl shadow-indigo-900/20 relative overflow-hidden border border-white/5">
           <!-- Decorative background -->
-          <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-600/20 rounded-full -mr-32 -mt-32 blur-[80px]"></div>
-          <div class="absolute bottom-0 left-0 w-48 h-48 bg-blue-600/10 rounded-full -ml-24 -mb-24 blur-[60px]"></div>
+          <div class="absolute top-0 right-0 w-48 h-48 bg-indigo-600/20 rounded-full -mr-24 -mt-24 blur-[60px]"></div>
           
           <div class="relative z-10">
-            <div class="flex items-center gap-4 mb-8">
-              <div class="w-14 h-14 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-500/20">
-                <mat-icon class="!w-7 !h-7 !text-[28px]">share</mat-icon>
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-xl flex items-center justify-center text-white shadow-xl shadow-indigo-500/20">
+                <mat-icon class="!w-6 !h-6 !text-[24px]">share</mat-icon>
               </div>
               <div>
-                <h3 class="text-2xl font-black tracking-tight leading-none">Refer & Earn</h3>
-                <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-2">Get 10 AI Credits per friend</p>
+                <h3 class="text-xl font-black tracking-tight leading-none">Refer & Earn</h3>
+                <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-1.5">Get 10 AI Credits per friend</p>
               </div>
             </div>
 
-            <div class="bg-white/5 border border-white/10 rounded-3xl p-6 mb-8 backdrop-blur-sm">
-              <p class="text-slate-300 text-sm font-medium leading-relaxed">
-                Invite your classmates to <span class="text-white font-black">Educate MW</span>! When they join using your link, you'll receive <span class="text-indigo-400 font-black">10 AI Credits</span> for Cleo AI and Flashcard generation.
-              </p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-8">
-              <div class="bg-white/5 border border-white/10 rounded-[1.5rem] p-5 text-center">
-                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Your Code</p>
-                <p class="text-2xl font-black text-white tracking-wider">{{authService.currentUser()?.referralCode}}</p>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+              <div class="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Your Code</p>
+                <p class="text-xl font-black text-white tracking-wider">{{authService.currentUser()?.referralCode}}</p>
               </div>
-              <div class="bg-white/5 border border-white/10 rounded-[1.5rem] p-5 text-center">
-                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Total Referrals</p>
-                <p class="text-2xl font-black text-white">{{authService.currentUser()?.referralsCount || 0}}</p>
+              <div class="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Referrals</p>
+                <p class="text-xl font-black text-white">{{authService.currentUser()?.referralsCount || 0}}</p>
               </div>
             </div>
 
             <button (click)="shareApp()" 
-                    class="w-full py-5 bg-white text-slate-950 rounded-2xl font-black shadow-xl hover:bg-slate-100 transition-all active:scale-[0.98] flex items-center justify-center gap-3">
-              <mat-icon>send</mat-icon>
-              Share Referral Link
+                    class="w-full py-4 bg-white text-slate-950 rounded-xl font-black shadow-xl hover:bg-slate-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-sm">
+              <mat-icon class="text-sm">send</mat-icon>
+              Share Link
             </button>
           </div>
         </section>
 
         <!-- Account Info -->
-        <section class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-          <div class="p-6 border-b border-slate-50">
-            <h3 class="font-black text-slate-900 flex items-center gap-2">
-              <mat-icon class="text-indigo-600">account_circle</mat-icon>
+        <section class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
+          <div class="p-5 border-b border-slate-50">
+            <h3 class="font-black text-slate-900 text-sm flex items-center gap-2">
+              <mat-icon class="text-indigo-600 text-sm">account_circle</mat-icon>
               Account Status
             </h3>
           </div>
-          <div class="p-6 space-y-4">
-            <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
+          <div class="p-5 space-y-3">
+            <div class="flex justify-between items-center p-3.5 bg-slate-50 rounded-xl">
               <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subscription</p>
-                <p class="font-black text-slate-900">{{ authService.currentUser()?.isPro ? 'Pro Member' : 'Free Tier' }}</p>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Subscription</p>
+                <p class="font-black text-slate-900 text-sm">{{ authService.currentUser()?.isPro ? 'Pro Member' : 'Free Tier' }}</p>
               </div>
               @if (!authService.currentUser()?.isPro) {
-                <button (click)="router.navigate(['/upgrade'])" class="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-amber-100">
+                <button (click)="router.navigate(['/upgrade'])" class="px-3 py-1.5 bg-amber-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg shadow-amber-100">
                   Upgrade
                 </button>
               }
             </div>
             
-            <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
+            <div class="flex justify-between items-center p-3.5 bg-slate-50 rounded-xl">
               <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI Credits</p>
-                <p class="font-black text-slate-900">Questions & Flashcards</p>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">AI Credits</p>
+                <p class="font-black text-slate-900 text-sm">Questions & Flashcards</p>
               </div>
-              <div class="flex items-center gap-1 bg-indigo-600 text-white px-4 py-2 rounded-xl font-black shadow-lg shadow-indigo-100">
-                <mat-icon class="!w-4 !h-4 !text-[16px]">bolt</mat-icon>
+              <div class="flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-black shadow-lg shadow-indigo-100 text-xs">
+                <mat-icon class="!w-3.5 !h-3.5 !text-[14px]">bolt</mat-icon>
                 {{ authService.currentUser()?.isPro || authService.currentUser()?.role === 'admin' ? 'Unlimited' : (authService.currentUser()?.aiCredits ?? 5) }}
               </div>
             </div>
@@ -162,9 +156,18 @@ import { CommonModule } from '@angular/common';
         </section>
 
         <!-- Terms and Privacy -->
-        <div class="flex items-center justify-center gap-6 py-8">
-          <a routerLink="/terms" class="text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Terms</a>
-          <a routerLink="/privacy" class="text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Privacy</a>
+        <div class="flex flex-col items-center gap-4 py-8">
+          <div class="flex items-center justify-center gap-6">
+            <a routerLink="/terms" class="text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Terms</a>
+            <a routerLink="/privacy" class="text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Privacy</a>
+          </div>
+          
+          <div class="flex flex-col items-center gap-1">
+            <p class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">
+              Display Version: <span class="text-indigo-400">1.0.0</span> (13/04/2026)
+            </p>
+            <div class="h-[1px] w-8 bg-slate-200"></div>
+          </div>
         </div>
 
       </div>

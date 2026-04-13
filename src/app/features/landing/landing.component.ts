@@ -204,9 +204,7 @@ export class LandingComponent implements OnInit {
   isLoading = signal(true);
 
   ngOnInit() {
-    // Simulate a loading effect for the landing page
-    setTimeout(() => {
-      this.isLoading.set(false);
-    }, 1500);
+    // Global loading is handled in App component
+    this.isLoading.set(false);
   }
 }
