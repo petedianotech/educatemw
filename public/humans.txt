@@ -1,0 +1,10 @@
+/* TEAM */
+Educate MW Team
+Educate MW
+https://educatemw.vercel.app/
+/* SITE */
+Angular
+Tailwind CSS
+Firebase
+PayChangu
+Gemini API

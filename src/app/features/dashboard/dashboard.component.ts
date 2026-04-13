@@ -69,6 +69,11 @@ import { Timestamp } from 'firebase/firestore';
               <div class="flex-1 min-w-0">
                 <h4 class="text-sm font-black text-slate-900 truncate">{{ dataService.appUpdates()[0].title }}</h4>
                 <p class="text-xs text-slate-500 truncate mt-0.5">{{ dataService.appUpdates()[0].content }}</p>
+                @if (dataService.appUpdates()[0].driveUrl) {
+                  <a [href]="dataService.appUpdates()[0].driveUrl" target="_blank" class="inline-block mt-2 px-3 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-indigo-700 transition-colors">
+                    Download Update
+                  </a>
+                }
               </div>
               <mat-icon class="text-slate-300 !w-5 !h-5 !text-[20px]">close</mat-icon>
             </div>

@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { auth } from '../../../firebase';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../../firebase';
+import { db, handleFirestoreError, OperationType } from '../../../firebase';
 
 export interface SecurityQuestion {
   question: string;
@@ -185,58 +185,62 @@ export class AuthService {
   }
 
   private async loadUserProfile(user: FirebaseUser) {
-    const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
 
-    if (userSnap.exists()) {
-      const data = userSnap.data();
-      let profile = {
-        ...data,
-        aiCredits: data['aiCredits'] !== undefined ? data['aiCredits'] : (data['isGuest'] ? 2 : 5),
-        createdAt: data['createdAt']?.toDate() || new Date()
-      } as UserProfile;
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        let profile = {
+          ...data,
+          aiCredits: data['aiCredits'] !== undefined ? data['aiCredits'] : (data['isGuest'] ? 2 : 5),
+          createdAt: data['createdAt']?.toDate() || new Date()
+        } as UserProfile;
 
-      // Daily Credit Reset Logic (12 PM Malawi Time / CAT)
-      // CAT is UTC+2. 12 PM CAT = 10 AM UTC.
-      const now = new Date();
-      const malawiNow = new Date(now.getTime() + (2 * 60 * 60 * 1000)); // Current time in CAT
-      
-      // Determine the last reset threshold (the most recent 12 PM CAT)
-      const resetThreshold = new Date(malawiNow);
-      resetThreshold.setHours(12, 0, 0, 0);
-      
-      // If current time is before 12 PM today, the threshold was 12 PM yesterday
-      if (malawiNow.getTime() < resetThreshold.getTime()) {
-        resetThreshold.setDate(resetThreshold.getDate() - 1);
+        // Daily Credit Reset Logic (12 PM Malawi Time / CAT)
+        // CAT is UTC+2. 12 PM CAT = 10 AM UTC.
+        const now = new Date();
+        const malawiNow = new Date(now.getTime() + (2 * 60 * 60 * 1000)); // Current time in CAT
+        
+        // Determine the last reset threshold (the most recent 12 PM CAT)
+        const resetThreshold = new Date(malawiNow);
+        resetThreshold.setHours(12, 0, 0, 0);
+        
+        // If current time is before 12 PM today, the threshold was 12 PM yesterday
+        if (malawiNow.getTime() < resetThreshold.getTime()) {
+          resetThreshold.setDate(resetThreshold.getDate() - 1);
+        }
+
+        const lastReset = profile.lastCreditReset ? new Date(profile.lastCreditReset) : new Date(0);
+        const lastResetInCAT = new Date(lastReset.getTime() + (2 * 60 * 60 * 1000));
+
+        if (lastResetInCAT.getTime() < resetThreshold.getTime()) {
+          // Reset credits
+          const dailyAllowance = profile.isGuest ? 2 : 5;
+          const newCredits = (profile.aiCredits || 0) < dailyAllowance ? dailyAllowance : profile.aiCredits;
+          
+          await updateDoc(userRef, {
+            aiCredits: newCredits,
+            lastCreditReset: now.toISOString()
+          });
+          
+          profile = {
+            ...profile,
+            aiCredits: newCredits,
+            lastCreditReset: now.toISOString()
+          };
+          
+          this.rewardMessage.set('Your daily credits has been rewarded successfully! 🎁');
+          setTimeout(() => this.rewardMessage.set(null), 5000);
+        }
+
+        this.currentUser.set(profile);
+      } else {
+        // Fallback if profile doesn't exist (e.g., Google login first time or Guest login)
+        await this.createNewUserProfile(user, user.isAnonymous ? 'Guest' : (user.displayName || 'Student'));
       }
-
-      const lastReset = profile.lastCreditReset ? new Date(profile.lastCreditReset) : new Date(0);
-      const lastResetInCAT = new Date(lastReset.getTime() + (2 * 60 * 60 * 1000));
-
-      if (lastResetInCAT.getTime() < resetThreshold.getTime()) {
-        // Reset credits
-        const dailyAllowance = profile.isGuest ? 2 : 5;
-        const newCredits = (profile.aiCredits || 0) < dailyAllowance ? dailyAllowance : profile.aiCredits;
-        
-        await updateDoc(userRef, {
-          aiCredits: newCredits,
-          lastCreditReset: now.toISOString()
-        });
-        
-        profile = {
-          ...profile,
-          aiCredits: newCredits,
-          lastCreditReset: now.toISOString()
-        };
-        
-        this.rewardMessage.set('Your daily credits has been rewarded successfully! 🎁');
-        setTimeout(() => this.rewardMessage.set(null), 5000);
-      }
-
-      this.currentUser.set(profile);
-    } else {
-      // Fallback if profile doesn't exist (e.g., Google login first time or Guest login)
-      await this.createNewUserProfile(user, user.isAnonymous ? 'Guest' : (user.displayName || 'Student'));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.GET, `users/${user.uid}`);
     }
   }
 

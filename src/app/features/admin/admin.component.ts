@@ -557,6 +557,10 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
                       <label for="update-content" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Content</label>
                       <textarea id="update-content" [(ngModel)]="updateContent" rows="4" placeholder="Update details..." class="w-full p-6 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 resize-none"></textarea>
                     </div>
+                    <div>
+                      <label for="update-drive-url" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Drive URL (Optional)</label>
+                      <input id="update-drive-url" type="text" [(ngModel)]="updateDriveUrl" placeholder="https://drive.google.com/..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                    </div>
                     <button (click)="postUpdate()" [disabled]="isSubmitting()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 uppercase tracking-widest disabled:opacity-50">
                       {{ isSubmitting() ? 'Publishing...' : 'Publish Update' }}
                     </button>
@@ -575,6 +579,12 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
                     </div>
                     <h4 class="text-lg font-black text-slate-900 tracking-tight mb-2">{{ update.title }}</h4>
                     <p class="text-sm text-slate-600 leading-relaxed">{{ update.content }}</p>
+                    @if (update.driveUrl) {
+                      <div class="mt-4">
+                        <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Download URL:</span>
+                        <p class="text-xs text-slate-500 font-mono break-all">{{ update.driveUrl }}</p>
+                      </div>
+                    }
                   </div>
                 }
               </div>
@@ -617,6 +627,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   // Updates State
   updateTitle = signal('');
   updateContent = signal('');
+  updateDriveUrl = signal('');
   updateType = signal<'feature' | 'maintenance' | 'announcement'>('feature');
 
   // Exam Dates State
@@ -675,10 +686,12 @@ export class AdminComponent implements OnInit, OnDestroy {
       await this.dataService.createAppUpdate({
         title: this.updateTitle(),
         content: this.updateContent(),
-        type: this.updateType()
+        type: this.updateType(),
+        driveUrl: this.updateDriveUrl() || undefined
       });
       this.updateTitle.set('');
       this.updateContent.set('');
+      this.updateDriveUrl.set('');
     } catch (error) {
       console.error(error);
     } finally {

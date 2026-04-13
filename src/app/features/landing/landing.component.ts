@@ -34,7 +34,7 @@ import { AuthService } from '../../core/services/auth.service';
   `],
   template: `
     @if (isLoading()) {
-      <div class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center animate-out fade-out duration-1000 delay-1000 fill-mode-forwards">
+      <div class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center animate-out fade-out duration-500 delay-300 fill-mode-forwards">
         <!-- Animated Background Orbs -->
         <div class="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] rounded-full bg-indigo-600/10 blur-[120px] animate-pulse"></div>
         <div class="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-blue-600/10 blur-[120px] animate-pulse" style="animation-delay: 1.5s"></div>

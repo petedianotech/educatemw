@@ -68,7 +68,7 @@ app.post('/api/paychangu/initialize', async (req, res) => {
   }
 });
 
-app.post('/api/paychangu/webhook', async (req, res) => {
+app.post('/api/paychangu-webhook', async (req, res) => {
   try {
     const payload = req.body;
     console.log('PayChangu Webhook Received:', payload);

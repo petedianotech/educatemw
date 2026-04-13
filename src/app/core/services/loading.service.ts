@@ -26,9 +26,9 @@ export class LoadingService {
         if (p > 50) this.loadingText.set('Preparing your dashboard...');
         if (p > 80) this.loadingText.set('Almost ready...');
         
-        return p + Math.floor(Math.random() * 20) + 10;
+        return p + Math.floor(Math.random() * 30) + 20;
       });
-    }, 100);
+    }, 50);
   }
 
   setLoading(loading: boolean, text = 'Loading...') {

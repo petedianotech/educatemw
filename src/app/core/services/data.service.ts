@@ -72,6 +72,7 @@ export interface AppUpdate {
   content: string;
   type: 'feature' | 'maintenance' | 'announcement';
   createdAt: Date | Timestamp;
+  driveUrl?: string;
 }
 
 export interface RevenueRecord {
