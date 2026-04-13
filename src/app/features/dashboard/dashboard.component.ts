@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { DataService } from '../../core/services/data.service';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,6 +36,24 @@ import { Timestamp } from 'firebase/firestore';
             <mat-icon class="!w-6 !h-6 !text-[24px]">notifications_none</mat-icon>
           </div>
         </div>
+
+        <!-- Guest Banner -->
+        @if (authService.currentUser()?.isGuest) {
+          <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div class="bg-amber-50 rounded-2xl p-4 shadow-sm border border-amber-200/80 flex items-center gap-4">
+              <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center shrink-0 border border-amber-200">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">account_circle</mat-icon>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="text-sm font-black text-amber-900">Guest Account</h4>
+                <p class="text-[10px] text-amber-700 font-bold mt-0.5">Create an account for 5 AI credits per day and to save your progress!</p>
+              </div>
+              <a routerLink="/login" class="bg-amber-600 text-white px-3 py-1.5 rounded-lg font-black text-[10px] shadow-sm active:scale-95 transition-transform">
+                Sign Up
+              </a>
+            </div>
+          </div>
+        }
 
         <!-- App Updates Section -->
         @if (dataService.appUpdates().length > 0 && !updateDismissed()) {
@@ -105,14 +123,26 @@ import { Timestamp } from 'firebase/firestore';
             <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Test your knowledge</p>
           </a>
 
-          <!-- Community Forum -->
+          <!-- Exam Countdown -->
+          <a routerLink="/exam-countdown" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-rose-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/30 relative z-10 group-hover:scale-105 transition-transform">
+              <mat-icon class="!w-6 !h-6 !text-[24px]">timer</mat-icon>
+            </div>
+            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Exam Dates</h3>
+            <div class="mt-1 relative z-10">
+              <p class="text-blue-600 text-[10px] font-black uppercase tracking-tighter">MSCE in {{ getMsceDays() }} Days</p>
+            </div>
+          </a>
+
+          <!-- Community Chat -->
           <a routerLink="/community" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
             <div class="absolute inset-0 bg-gradient-to-br from-transparent to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-md shadow-purple-500/30 relative z-10 group-hover:scale-105 transition-transform">
-              <mat-icon class="!w-6 !h-6 !text-[24px]">forum</mat-icon>
+              <mat-icon class="!w-6 !h-6 !text-[24px]">groups</mat-icon>
             </div>
-            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Community Forum</h3>
-            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Discuss with peers</p>
+            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Community Chat</h3>
+            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Live study discussion</p>
           </a>
 
           <!-- Career Guidance -->
@@ -151,11 +181,24 @@ import { Timestamp } from 'firebase/firestore';
 export class DashboardComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   dataService = inject(DataService);
+  route = inject(ActivatedRoute);
   
   updateDismissed = signal(false);
 
   ngOnInit() {
     this.dataService.subscribeToAppUpdates();
+    
+    // Check for payment success
+    this.route.queryParams.subscribe(params => {
+      if (params['payment'] === 'success') {
+        alert('Payment successful! Your account has been upgraded to Pro.');
+        // Force refresh user state
+        const user = this.authService.currentUser();
+        if (user) {
+          this.authService.currentUser.update(u => u ? { ...u, isPro: true } : null);
+        }
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -164,6 +207,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   dismissUpdate() {
     this.updateDismissed.set(true);
+  }
+
+  getMsceDays(): number {
+    const msceDate = new Date('2026-06-29T08:00:00');
+    const diff = msceDate.getTime() - Date.now();
+    if (diff <= 0) return 0;
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
   }
 
   toDate(date: Date | Timestamp | string | null): Date | null {

@@ -109,10 +109,11 @@ import {MatIconModule} from '@angular/material/icon';
               <!-- Cleo AI (Center, Prominent) -->
               <div class="relative -top-1">
                 <a routerLink="/chat" class="flex flex-col items-center justify-center gap-1 transition-all active:scale-90 group">
-                  <div class="relative flex items-center justify-center w-12 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-lg shadow-purple-500/30 border-2 border-white/20 group-hover:scale-105 transition-transform">
-                    <mat-icon class="!w-6 !h-6 !text-[24px] text-white">auto_awesome</mat-icon>
+                  <div class="relative flex items-center justify-center w-12 h-10 rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/40 border-2 border-white/20 group-hover:scale-105 transition-transform overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-indigo-500 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <mat-icon class="!w-6 !h-6 !text-[24px] text-white relative z-10">auto_awesome</mat-icon>
                   </div>
-                  <span class="text-[10px] font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-400">Cleo AI</span>
+                  <span class="text-[10px] font-black tracking-wide text-indigo-400">Cleo AI</span>
                 </a>
               </div>
 

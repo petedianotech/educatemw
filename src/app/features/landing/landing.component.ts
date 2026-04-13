@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../core/services/auth.service';
@@ -7,7 +7,31 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'app-landing',
   standalone: true,
   imports: [RouterLink, MatIconModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    .wave-text {
+      display: inline-block;
+      background: linear-gradient(
+        to right, 
+        #4f46e5 0%, 
+        #0ea5e9 25%, 
+        #6366f1 50%, 
+        #0ea5e9 75%, 
+        #4f46e5 100%
+      );
+      background-size: 200% auto;
+      color: #4f46e5;
+      background-clip: text;
+      text-fill-color: transparent;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: wave-animation 3s linear infinite;
+      font-weight: 900;
+    }
+    @keyframes wave-animation {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
+  `],
   template: `
     @if (isLoading()) {
       <div class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center animate-out fade-out duration-1000 delay-1000 fill-mode-forwards">
@@ -68,9 +92,9 @@ import { AuthService } from '../../core/services/auth.service';
         <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-sky-400/10 blur-[120px] pointer-events-none"></div>
 
         <div class="max-w-5xl mx-auto text-center relative z-10">
-          <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 px-4 py-2 rounded-full border border-indigo-100 text-xs font-black uppercase tracking-widest mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <mat-icon class="text-[16px] !w-4 !h-4">stars</mat-icon>
-            The #1 Learning Platform in Malawi
+          <div class="inline-flex items-center gap-2 bg-white text-indigo-600 px-5 py-2.5 rounded-full border border-indigo-100 text-[10px] font-black uppercase tracking-widest mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700 shadow-xl shadow-indigo-100/50">
+            <mat-icon class="text-amber-500 !w-5 !h-5 !text-[20px] flex items-center justify-center">stars</mat-icon>
+            <span class="wave-text">The #1 Learning Platform in Malawi</span>
           </div>
           
           <h1 class="text-5xl md:text-7xl font-black tracking-tight text-slate-900 mb-8 leading-[1.1] animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
@@ -81,7 +105,7 @@ import { AuthService } from '../../core/services/auth.service';
             Access MSCE past papers, video lessons, and your personal AI tutor. Join thousands of students achieving excellence with Educate MW.
           </p>
 
-          <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300">
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300 mb-16">
             <a routerLink="/login" class="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all">
               Start Learning Free
             </a>

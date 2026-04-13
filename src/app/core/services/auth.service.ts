@@ -1,8 +1,13 @@
 import { Injectable, signal } from '@angular/core';
 import { auth } from '../../../firebase';
-import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebase';
+
+export interface SecurityQuestion {
+  question: string;
+  answer: string;
+}
 
 export interface UserProfile {
   uid: string;
@@ -11,6 +16,7 @@ export interface UserProfile {
   photoURL: string;
   role: 'student' | 'admin';
   isPro: boolean;
+  isGuest?: boolean;
   aiCredits?: number;
   streak?: number;
   lastCreditReset?: string; // ISO date string
@@ -19,6 +25,7 @@ export interface UserProfile {
   referredBy?: string;
   referralsCount?: number;
   createdAt: Date;
+  securityQuestions?: SecurityQuestion[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -49,16 +56,6 @@ export class AuthService {
     }
   }
 
-  async signupWithEmail(email: string, password: string, username: string) {
-    try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      await this.createNewUserProfile(result.user, username);
-    } catch (error) {
-      console.error('Signup failed', error);
-      throw error;
-    }
-  }
-
   async loginWithEmail(email: string, password: string) {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
@@ -69,12 +66,40 @@ export class AuthService {
     }
   }
 
-  async signupWithPhone(phone: string, password: string, username: string) {
+  async loginAsGuest() {
     try {
-      // Using a dummy domain to treat phone number as an email for Firebase Auth
+      const result = await signInAnonymously(auth);
+      await this.loadUserProfile(result.user);
+    } catch (error) {
+      console.error('Guest login failed', error);
+      throw error;
+    }
+  }
+
+  async sendPasswordReset(email: string) {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      console.error('Password reset failed', error);
+      throw error;
+    }
+  }
+
+  async signupWithEmail(email: string, password: string, username: string, securityQuestions?: SecurityQuestion[]) {
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await this.createNewUserProfile(result.user, username, securityQuestions);
+    } catch (error) {
+      console.error('Signup failed', error);
+      throw error;
+    }
+  }
+
+  async signupWithPhone(phone: string, password: string, username: string, securityQuestions?: SecurityQuestion[]) {
+    try {
       const emailAlias = `${phone.replace(/[^0-9+]/g, '')}@edumalawi.local`;
       const result = await createUserWithEmailAndPassword(auth, emailAlias, password);
-      await this.createNewUserProfile(result.user, username);
+      await this.createNewUserProfile(result.user, username, securityQuestions);
     } catch (error) {
       console.error('Signup failed', error);
       throw error;
@@ -97,10 +122,17 @@ export class AuthService {
     this.currentUser.set(null);
   }
 
-  private async createNewUserProfile(user: FirebaseUser, username: string) {
+  private async createNewUserProfile(user: FirebaseUser, username: string, securityQuestions?: SecurityQuestion[]) {
     const userRef = doc(db, 'users', user.uid);
     
-    // Check for referral code in URL
+    // Save security questions to a separate collection for recovery
+    if (securityQuestions && securityQuestions.length > 0) {
+      const recoveryRef = doc(db, 'recovery', user.email || `${user.uid}@edumalawi.local`);
+      await setDoc(recoveryRef, {
+        uid: user.uid,
+        questions: securityQuestions.map(q => ({ question: q.question, answer: q.answer.toLowerCase().trim() }))
+      });
+    }
     const urlParams = new URLSearchParams(window.location.search);
     const referralCode = urlParams.get('ref');
     let referredBy: string | undefined;
@@ -133,12 +165,14 @@ export class AuthService {
       photoURL: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
       role: 'student',
       isPro: false,
-      aiCredits: 5,
+      isGuest: user.isAnonymous,
+      aiCredits: user.isAnonymous ? 2 : 5,
       streak: 0,
       lastCreditReset: new Date().toISOString(),
       referralCode: user.uid.substring(0, 8).toUpperCase(),
       referralsCount: 0,
-      createdAt: new Date()
+      createdAt: new Date(),
+      securityQuestions: securityQuestions || []
     };
     
     // Only add referredBy if it has a valid value
@@ -158,7 +192,7 @@ export class AuthService {
       const data = userSnap.data();
       let profile = {
         ...data,
-        aiCredits: data['aiCredits'] !== undefined ? data['aiCredits'] : 5,
+        aiCredits: data['aiCredits'] !== undefined ? data['aiCredits'] : (data['isGuest'] ? 2 : 5),
         createdAt: data['createdAt']?.toDate() || new Date()
       } as UserProfile;
 
@@ -181,7 +215,7 @@ export class AuthService {
 
       if (lastResetInCAT.getTime() < resetThreshold.getTime()) {
         // Reset credits
-        const dailyAllowance = 5;
+        const dailyAllowance = profile.isGuest ? 2 : 5;
         const newCredits = (profile.aiCredits || 0) < dailyAllowance ? dailyAllowance : profile.aiCredits;
         
         await updateDoc(userRef, {
@@ -201,8 +235,8 @@ export class AuthService {
 
       this.currentUser.set(profile);
     } else {
-      // Fallback if profile doesn't exist (e.g., Google login first time)
-      await this.createNewUserProfile(user, user.displayName || 'Student');
+      // Fallback if profile doesn't exist (e.g., Google login first time or Guest login)
+      await this.createNewUserProfile(user, user.isAnonymous ? 'Guest' : (user.displayName || 'Student'));
     }
   }
 
@@ -213,6 +247,23 @@ export class AuthService {
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, { displayName: newUsername });
     this.currentUser.set({ ...user, displayName: newUsername });
+  }
+
+  async getUserByPhone(phone: string): Promise<UserProfile | null> {
+    const emailAlias = `${phone.replace(/[^0-9+]/g, '')}@edumalawi.local`;
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', emailAlias));
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) return null;
+    return querySnapshot.docs[0].data() as UserProfile;
+  }
+
+  async getSecurityQuestions(identifier: string): Promise<{ uid: string, questions: SecurityQuestion[] } | null> {
+    const id = identifier.includes('@') ? identifier : `${identifier.replace(/[^0-9+]/g, '')}@edumalawi.local`;
+    const recoveryRef = doc(db, 'recovery', id);
+    const snap = await getDoc(recoveryRef);
+    if (snap.exists()) return snap.data() as { uid: string, questions: SecurityQuestion[] };
+    return null;
   }
 
   async decrementAiCredits() {

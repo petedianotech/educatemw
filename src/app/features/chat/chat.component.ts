@@ -32,6 +32,13 @@ import { marked } from 'marked';
       font-style: normal !important;
       color: inherit !important;
     }
+    textarea::-webkit-scrollbar {
+      display: none;
+    }
+    textarea {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
   `],
   template: `
     <div class="flex flex-col h-full bg-slate-50 relative">
@@ -164,19 +171,16 @@ import { marked } from 'marked';
           </div>
         } @else {
           <div class="max-w-4xl mx-auto relative flex items-end gap-3">
-            <div class="flex-1 relative bg-white border-2 border-slate-200 rounded-[2rem] flex items-center focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all duration-300 shadow-sm">
+            <div class="flex-1 relative bg-white border-2 border-slate-200 rounded-[2rem] focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all duration-300 shadow-sm overflow-hidden">
               <textarea 
                 [ngModel]="inputText()"
                 (ngModelChange)="inputText.set($event)"
                 (keydown.enter)="handleEnter($event)"
                 placeholder="Ask Cleo anything about your MSCE subjects..."
-                class="w-full py-4 px-6 bg-transparent border-transparent focus:ring-0 resize-none outline-none text-[15px] font-bold text-slate-900 placeholder-slate-400"
+                class="w-full py-4 px-6 bg-transparent border-none focus:ring-0 resize-none outline-none text-[15px] font-bold text-slate-900 placeholder-slate-400 leading-relaxed"
                 rows="1"
-                style="min-height: 56px; max-height: 160px;"
+                style="min-height: 56px; max-height: 160px; display: block;"
               ></textarea>
-              <div class="pr-4 flex items-center gap-2">
-                <mat-icon class="text-slate-300">school</mat-icon>
-              </div>
             </div>
             <button 
               (click)="sendMessage()"

@@ -45,7 +45,7 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'aiCredits', 'streak', 'lastCreditReset', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount', 'createdAt']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'isGuest', 'aiCredits', 'streak', 'lastCreditReset', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount', 'createdAt', 'securityQuestions']) &&
              hasRequiredFields(['uid', 'email', 'role', 'isPro', 'createdAt']) &&
              data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
              data.email is string && data.email.size() > 0 && data.email.size() < 100 &&
@@ -54,13 +54,25 @@ service cloud.firestore {
              data.createdAt is timestamp &&
              isValidOptionalString('displayName', 1, 100) &&
              isValidOptionalString('photoURL', 1, 500) &&
+             (!('isGuest' in data) || data.isGuest is bool) &&
              (!('aiCredits' in data) || data.aiCredits is number) &&
              (!('streak' in data) || data.streak is number) &&
              (!('lastCreditReset' in data) || data.lastCreditReset is string) &&
              (!('pwaInstalled' in data) || data.pwaInstalled is bool) &&
              (!('referralCode' in data) || data.referralCode is string) &&
              (!('referredBy' in data) || data.referredBy is string) &&
-             (!('referralsCount' in data) || data.referralsCount is number);
+             (!('referralsCount' in data) || data.referralsCount is number) &&
+             (!('securityQuestions' in data) || data.securityQuestions is list);
+    }
+
+    function isValidChatMessage(data) {
+      return hasOnlyAllowedFields(['authorId', 'authorName', 'authorPhoto', 'content', 'createdAt']) &&
+             hasRequiredFields(['authorId', 'authorName', 'content', 'createdAt']) &&
+             data.authorId is string && data.authorId.size() > 0 && data.authorId.size() < 100 &&
+             data.authorName is string && data.authorName.size() > 0 && data.authorName.size() < 100 &&
+             data.content is string && data.content.size() > 0 && data.content.size() < 2000 &&
+             data.createdAt is timestamp &&
+             isValidOptionalString('authorPhoto', 1, 500);
     }
 
     function isValidPost(data) {
@@ -184,6 +196,20 @@ service cloud.firestore {
                       request.resource.data.role == resource.data.role && 
                       request.resource.data.isPro == resource.data.isPro &&
                       request.resource.data.createdAt == resource.data.createdAt) || isAdmin());
+    }
+
+    match /recovery/{identifier} {
+      allow get: if true;
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.uid;
+      allow update: if isAuthenticated() && request.auth.uid == resource.data.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /messages/{messageId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidChatMessage(request.resource.data) && 
+                    request.resource.data.authorId == request.auth.uid;
+      allow delete: if isAuthenticated() && (request.auth.uid == resource.data.authorId || isAdmin());
     }
 
     match /posts/{postId} {

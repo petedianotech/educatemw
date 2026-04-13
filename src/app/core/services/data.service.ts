@@ -102,6 +102,15 @@ export interface FlashcardSet {
   createdAt: Date | Timestamp;
 }
 
+export interface ChatMessage {
+  id: string;
+  authorId: string;
+  authorName: string;
+  authorPhoto?: string;
+  content: string;
+  createdAt: Date | Timestamp;
+}
+
 export interface Flashcard {
   id: string;
   setId: string;
@@ -122,6 +131,7 @@ export class DataService {
   examDates = signal<ExamDate[]>([]);
   flashcardSets = signal<FlashcardSet[]>([]);
   flashcards = signal<Flashcard[]>([]);
+  messages = signal<ChatMessage[]>([]);
   
   private postsUnsubscribe: (() => void) | null = null;
   private notesUnsubscribe: (() => void) | null = null;
@@ -133,6 +143,7 @@ export class DataService {
   private examDatesUnsubscribe: (() => void) | null = null;
   private flashcardSetsUnsubscribe: (() => void) | null = null;
   private flashcardsUnsubscribe: (() => void) | null = null;
+  private messagesUnsubscribe: (() => void) | null = null;
 
   // --- Users ---
   subscribeToUsers(limitCount = 50) {
@@ -611,6 +622,51 @@ export class DataService {
       await deleteDoc(doc(db, 'flashcards', cardId));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `flashcards/${cardId}`);
+    }
+  }
+
+  // --- Community Chat ---
+  subscribeToMessages(limitCount = 50) {
+    if (this.messagesUnsubscribe) return;
+    
+    const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'), limit(limitCount));
+    this.messagesUnsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedMessages = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as ChatMessage)).reverse(); // Reverse to show oldest at top for chat
+      this.messages.set(loadedMessages);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'messages');
+    });
+  }
+
+  unsubscribeFromMessages() {
+    if (this.messagesUnsubscribe) {
+      this.messagesUnsubscribe();
+      this.messagesUnsubscribe = null;
+    }
+  }
+
+  async sendMessage(authorId: string, authorName: string, authorPhoto: string, content: string) {
+    try {
+      await addDoc(collection(db, 'messages'), {
+        authorId,
+        authorName,
+        authorPhoto,
+        content,
+        createdAt: serverTimestamp()
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'messages');
+    }
+  }
+
+  async deleteMessage(messageId: string) {
+    try {
+      await deleteDoc(doc(db, 'messages', messageId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `messages/${messageId}`);
     }
   }
 

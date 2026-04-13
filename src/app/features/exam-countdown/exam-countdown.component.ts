@@ -18,14 +18,14 @@ interface TimeLeft {
   imports: [MatIconModule, DatePipe, CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-slate-50 pb-24">
+    <div class="h-full overflow-y-auto bg-slate-50 pb-24 custom-scrollbar">
       <!-- Header -->
-      <header class="bg-white px-6 py-8 border-b border-slate-200">
+      <header class="bg-white px-6 py-8 border-b border-slate-200 sticky top-0 z-50">
         <div class="max-w-4xl mx-auto flex items-center gap-4">
           <a routerLink="/dashboard" class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:scale-90 transition-all">
             <mat-icon class="text-[24px]">arrow_back</mat-icon>
           </a>
-          <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center border border-rose-100">
+          <div class="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
             <mat-icon>timer</mat-icon>
           </div>
           <div>
@@ -40,10 +40,10 @@ interface TimeLeft {
         <section>
           <div class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-3">
-              <div class="w-2 h-8 bg-rose-600 rounded-full"></div>
+              <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
               <h2 class="text-xl font-black text-slate-900 uppercase tracking-tight">National Examinations 2026</h2>
             </div>
-            <span class="px-4 py-1.5 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg shadow-slate-200">
+            <span class="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg shadow-blue-100">
               Official MANEB
             </span>
           </div>
@@ -52,19 +52,18 @@ interface TimeLeft {
             @for (exam of officialExams; track exam.name) {
               <div class="bg-white rounded-[3rem] p-8 md:p-10 shadow-2xl shadow-slate-200/60 border border-slate-100 relative overflow-hidden group">
                 <!-- Decorative background -->
-                <div class="absolute top-0 right-0 w-64 h-64 bg-rose-50 rounded-full -mr-32 -mt-32 blur-3xl opacity-40 group-hover:scale-125 transition-transform duration-1000"></div>
-                <div class="absolute bottom-0 left-0 w-48 h-48 bg-blue-50 rounded-full -ml-24 -mb-24 blur-3xl opacity-30"></div>
+                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full -mr-32 -mt-32 blur-3xl opacity-40 group-hover:scale-125 transition-transform duration-1000"></div>
                 
                 <div class="relative z-10 flex flex-col md:flex-row md:items-center gap-8">
                   <!-- Left Side: Icon & Title -->
                   <div class="flex-1">
                     <div class="flex items-center gap-4 mb-4">
-                      <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-[2rem] flex items-center justify-center border border-rose-100 shadow-inner">
+                      <div class="w-16 h-16 bg-blue-600 text-white rounded-[2rem] flex items-center justify-center shadow-lg shadow-blue-100">
                         <mat-icon class="!w-8 !h-8 !text-[32px]">{{ exam.icon }}</mat-icon>
                       </div>
                       <div>
                         <h3 class="text-3xl font-black text-slate-900 tracking-tighter">{{ exam.name }}</h3>
-                        <p class="text-xs font-black text-rose-600 uppercase tracking-widest">{{ exam.fullName }}</p>
+                        <p class="text-xs font-black text-blue-600 uppercase tracking-widest">{{ exam.fullName }}</p>
                       </div>
                     </div>
                     <p class="text-sm text-slate-500 font-medium max-w-sm">
@@ -76,30 +75,30 @@ interface TimeLeft {
                   <div class="flex-1">
                     <div class="grid grid-cols-4 gap-3">
                       @let timeLeft = getTimeLeft(exam.date);
-                      <div class="flex flex-col items-center p-3 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
-                        <span class="text-2xl font-black text-slate-900 leading-none">{{ timeLeft.days }}</span>
-                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Days</span>
+                      <div class="flex flex-col items-center p-3 bg-blue-50 rounded-2xl border border-blue-100 shadow-sm">
+                        <span class="text-2xl font-black text-blue-900 leading-none">{{ timeLeft.days }}</span>
+                        <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest mt-1">Days</span>
                       </div>
-                      <div class="flex flex-col items-center p-3 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
-                        <span class="text-2xl font-black text-slate-900 leading-none">{{ timeLeft.hours | number:'2.0' }}</span>
-                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Hrs</span>
+                      <div class="flex flex-col items-center p-3 bg-blue-50 rounded-2xl border border-blue-100 shadow-sm">
+                        <span class="text-2xl font-black text-blue-900 leading-none">{{ timeLeft.hours | number:'2.0' }}</span>
+                        <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest mt-1">Hrs</span>
                       </div>
-                      <div class="flex flex-col items-center p-3 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
-                        <span class="text-2xl font-black text-slate-900 leading-none">{{ timeLeft.minutes | number:'2.0' }}</span>
-                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Min</span>
+                      <div class="flex flex-col items-center p-3 bg-blue-50 rounded-2xl border border-blue-100 shadow-sm">
+                        <span class="text-2xl font-black text-blue-900 leading-none">{{ timeLeft.minutes | number:'2.0' }}</span>
+                        <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest mt-1">Min</span>
                       </div>
-                      <div class="flex flex-col items-center p-3 bg-rose-600 rounded-2xl border border-rose-500 shadow-lg shadow-rose-100">
+                      <div class="flex flex-col items-center p-3 bg-blue-600 rounded-2xl border border-blue-500 shadow-lg shadow-blue-200">
                         <span class="text-2xl font-black text-white leading-none">{{ timeLeft.seconds | number:'2.0' }}</span>
-                        <span class="text-[8px] font-black text-rose-100 uppercase tracking-widest mt-1">Sec</span>
+                        <span class="text-[8px] font-black text-blue-100 uppercase tracking-widest mt-1">Sec</span>
                       </div>
                     </div>
                     
                     <div class="mt-6 flex items-center justify-between px-2">
                       <div class="flex items-center gap-2">
-                        <mat-icon class="text-slate-300 text-sm">calendar_today</mat-icon>
+                        <mat-icon class="text-blue-300 text-sm">calendar_today</mat-icon>
                         <span class="text-xs font-black text-slate-900">{{ exam.date | date:'fullDate' }}</span>
                       </div>
-                      <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                      <div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
                     </div>
                   </div>
                 </div>
@@ -180,6 +179,13 @@ export class ExamCountdownComponent implements OnInit, OnDestroy {
 
   officialExams = [
     {
+      name: 'MSCE',
+      fullName: 'Malawi School Certificate',
+      date: new Date('2026-06-29T08:00:00'),
+      period: '29 June - 24 July',
+      icon: 'workspace_premium'
+    },
+    {
       name: 'JCE',
       fullName: 'Junior Certificate of Education',
       date: new Date('2026-06-01T08:00:00'),
@@ -192,13 +198,6 @@ export class ExamCountdownComponent implements OnInit, OnDestroy {
       date: new Date('2026-06-08T08:00:00'),
       period: '8 June - 10 June',
       icon: 'school'
-    },
-    {
-      name: 'MSCE',
-      fullName: 'Malawi School Certificate',
-      date: new Date('2026-06-29T08:00:00'),
-      period: '29 June - 24 July',
-      icon: 'workspace_premium'
     }
   ];
 

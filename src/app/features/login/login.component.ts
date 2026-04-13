@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService, SecurityQuestion } from '../../core/services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 
@@ -46,6 +46,14 @@ import { FormsModule } from '@angular/forms';
                 </svg>
                 Continue with Google
               </button>
+
+              <div class="mt-4 text-center">
+                <button (click)="toggleSignup()" type="button" 
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-100 active:scale-95 transition-all w-full justify-center sm:w-auto">
+                  <mat-icon class="text-sm">{{ isSignup() ? 'login' : 'person_add' }}</mat-icon>
+                  {{ isSignup() ? 'Already have an account? Sign in' : 'Need an account? Sign up' }}
+                </button>
+              </div>
               
               <div class="relative mt-8">
                 <div class="absolute inset-0 flex items-center">
@@ -74,79 +82,196 @@ import { FormsModule } from '@angular/forms';
             </div>
 
             <!-- Form -->
-            <form (ngSubmit)="submitForm()" class="space-y-4">
-              @if (isSignup()) {
-                <div class="animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label for="username" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Username</label>
-                  <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">person</mat-icon>
+            @if (view() === 'forgot-password') {
+              <div class="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <h3 class="text-lg font-black text-slate-900">Reset Password</h3>
+                <p class="text-xs text-slate-500 font-medium">Choose how you want to recover your account.</p>
+                
+                <div class="grid grid-cols-2 gap-3">
+                  <button (click)="recoveryMethod.set('email')" 
+                          [class]="recoveryMethod() === 'email' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-50 text-slate-600 border border-slate-200'"
+                          class="p-4 rounded-2xl flex flex-col items-center gap-2 transition-all">
+                    <mat-icon>email</mat-icon>
+                    <span class="text-[10px] font-black uppercase tracking-widest">Email</span>
+                  </button>
+                  <button (click)="recoveryMethod.set('questions')" 
+                          [class]="recoveryMethod() === 'questions' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-50 text-slate-600 border border-slate-200'"
+                          class="p-4 rounded-2xl flex flex-col items-center gap-2 transition-all">
+                    <mat-icon>security</mat-icon>
+                    <span class="text-[10px] font-black uppercase tracking-widest">Questions</span>
+                  </button>
+                </div>
+
+                @if (recoveryMethod() === 'email') {
+                  <div class="space-y-4 animate-in fade-in duration-300">
+                    <div>
+                      <label for="recoveryEmail" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
+                      <input type="email" id="recoveryEmail" [(ngModel)]="email" name="recoveryEmail" placeholder="you@example.com"
+                             class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
                     </div>
-                    <input type="text" id="username" [(ngModel)]="username" name="username" placeholder="Choose a username" required 
-                           enterkeyhint="next"
-                           class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                    <button (click)="sendResetEmail()" [disabled]="isLoading()" class="btn-primary w-full py-4 shadow-lg shadow-indigo-100">
+                      {{ isLoading() ? 'Sending...' : 'Send Reset Link' }}
+                    </button>
                   </div>
-                </div>
-              }
-
-              @if (authMode() === 'phone') {
-                <div class="animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label for="phone" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Phone Number</label>
-                  <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">phone</mat-icon>
+                } @else if (recoveryMethod() === 'questions') {
+                  <div class="space-y-4 animate-in fade-in duration-300">
+                    <div>
+                      <label for="recoveryIdentifier" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Phone or Email</label>
+                      <input type="text" id="recoveryIdentifier" [(ngModel)]="recoveryIdentifier" name="recoveryIdentifier" placeholder="Enter your identifier"
+                             class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
                     </div>
-                    <input type="tel" id="phone" [(ngModel)]="phone" name="phone" placeholder="e.g. 0991234567" required 
-                           enterkeyhint="next"
-                           class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                    
+                    @if (recoveryUser()) {
+                      <div class="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                        @for (q of recoveryUser()?.questions; track $index) {
+                          <div>
+                            <label [for]="'recovery-ans-' + $index" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{{q.question}}</label>
+                            <input type="text" [id]="'recovery-ans-' + $index" [(ngModel)]="recoveryAnswers[$index]" [name]="'ans'+$index" placeholder="Your answer"
+                                   class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
+                          </div>
+                        }
+                        <button (click)="verifyQuestions()" [disabled]="isLoading()" class="btn-primary w-full py-4 shadow-lg shadow-indigo-100">
+                          Verify Answers
+                        </button>
+                      </div>
+                    } @else {
+                      <button (click)="findUserForRecovery()" [disabled]="isLoading()" class="btn-secondary w-full py-4">
+                        Find Account
+                      </button>
+                    }
                   </div>
-                </div>
-              } @else {
-                <div class="animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label for="email" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
-                  <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">email</mat-icon>
-                    </div>
-                    <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="you@example.com" required 
-                           enterkeyhint="next"
-                           class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
-                  </div>
-                </div>
-              }
+                }
 
-              <div class="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label for="password" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Password</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">lock</mat-icon>
-                  </div>
-                  <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="••••••••" required 
-                         enterkeyhint="done" (keyup.enter)="submitForm()"
-                         class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
-                </div>
-              </div>
-
-              @if (errorMsg()) {
-                <div class="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 animate-in shake duration-500">
-                  <mat-icon class="text-rose-500 !w-5 !h-5 !text-[20px]">error_outline</mat-icon>
-                  <span class="text-rose-700 text-xs font-bold leading-tight">{{errorMsg()}}</span>
-                </div>
-              }
-
-              <div class="pt-2 sm:pt-4">
-                <button type="submit" [disabled]="isLoading()" 
-                        class="btn-primary w-full py-3.5 sm:py-4 text-sm sm:text-[15px] shadow-xl shadow-indigo-200 active:scale-[0.98] transition-all">
-                  {{ isLoading() ? 'Processing...' : (isSignup() ? 'Create Free Account' : 'Sign In to Dashboard') }}
+                <button (click)="view.set('login')" class="w-full text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">
+                  Back to Login
                 </button>
               </div>
-            </form>
+            } @else if (view() === 'security-setup') {
+              <div class="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div class="p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-3">
+                  <mat-icon class="text-amber-500 !w-5 !h-5 !text-[20px]">warning</mat-icon>
+                  <p class="text-amber-700 text-[10px] font-bold leading-tight">
+                    Set security questions to recover your account if you forget your password. If you skip this, you will not be able to recover your account.
+                  </p>
+                </div>
 
-            <div class="mt-6 sm:mt-8 text-center">
-              <button (click)="toggleSignup()" type="button" class="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">
-                {{ isSignup() ? 'Already have an account? Sign in' : 'Need an account? Sign up' }}
-              </button>
-            </div>
+                <div class="space-y-4">
+                  <div>
+                    <label for="ans1" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Question 1: What is your home district?</label>
+                    <input type="text" id="ans1" [(ngModel)]="ans1" name="ans1" placeholder="Answer"
+                           class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
+                  </div>
+                  <div>
+                    <label for="ans2" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Question 2: What is your mother's maiden name?</label>
+                    <input type="text" id="ans2" [(ngModel)]="ans2" name="ans2" placeholder="Answer"
+                           class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
+                  </div>
+                </div>
+
+                <div class="flex gap-3">
+                  <button (click)="skipSecurityQuestions()" class="flex-1 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">
+                    Skip for now
+                  </button>
+                  <button (click)="finishSignup()" [disabled]="!ans1 || !ans2 || isLoading()" class="flex-1 btn-primary py-4 shadow-lg shadow-indigo-100">
+                    {{ isLoading() ? 'Saving...' : 'Finish Signup' }}
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <form (ngSubmit)="submitForm()" class="space-y-4">
+                @if (isSignup()) {
+                  <div class="animate-in fade-in slide-in-from-top-2 duration-300">
+                    <label for="username" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Username</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">person</mat-icon>
+                      </div>
+                      <input type="text" id="username" [(ngModel)]="username" name="username" placeholder="Choose a username" required 
+                             enterkeyhint="next"
+                             class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                    </div>
+                  </div>
+                }
+
+                @if (authMode() === 'phone') {
+                  <div class="animate-in fade-in slide-in-from-top-2 duration-300">
+                    <label for="phone" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Phone Number</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">phone</mat-icon>
+                      </div>
+                      <input type="tel" id="phone" [(ngModel)]="phone" name="phone" placeholder="e.g. 0991234567" required 
+                             enterkeyhint="next"
+                             class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                    </div>
+                  </div>
+                } @else {
+                  <div class="animate-in fade-in slide-in-from-top-2 duration-300">
+                    <label for="email" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">email</mat-icon>
+                      </div>
+                      <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="you@example.com" required 
+                             enterkeyhint="next"
+                             class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                    </div>
+                  </div>
+                }
+
+                <div class="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div class="flex justify-between items-center mb-1.5 ml-1">
+                    <label for="password" id="password-label" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Password</label>
+                    @if (!isSignup()) {
+                      <button (click)="view.set('forgot-password')" type="button" class="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Forgot?</button>
+                    }
+                  </div>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">lock</mat-icon>
+                    </div>
+                    <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="••••••••" required 
+                           aria-labelledby="password-label"
+                           enterkeyhint="done" (keyup.enter)="submitForm()"
+                           class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                  </div>
+                </div>
+
+                @if (errorMsg()) {
+                  <div class="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 animate-in shake duration-500">
+                    <mat-icon class="text-rose-500 !w-5 !h-5 !text-[20px]">error_outline</mat-icon>
+                    <span class="text-rose-700 text-xs font-bold leading-tight">{{errorMsg()}}</span>
+                  </div>
+                }
+
+                @if (successMsg()) {
+                  <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-start gap-3 animate-in fade-in duration-500">
+                    <mat-icon class="text-emerald-500 !w-5 !h-5 !text-[20px]">check_circle_outline</mat-icon>
+                    <span class="text-emerald-700 text-xs font-bold leading-tight">{{successMsg()}}</span>
+                  </div>
+                }
+
+                <div class="pt-2 sm:pt-4 space-y-3">
+                  <button type="submit" [disabled]="isLoading()" 
+                          class="btn-primary w-full py-3.5 sm:py-4 text-sm sm:text-[15px] shadow-xl shadow-indigo-200 active:scale-[0.98] transition-all">
+                    {{ isLoading() ? 'Processing...' : (isSignup() ? 'Create Free Account' : 'Sign In to Dashboard') }}
+                  </button>
+                  
+                  @if (!isSignup()) {
+                    <button (click)="loginAsGuest()" type="button" [disabled]="isLoading()"
+                            class="w-full py-3.5 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                      <mat-icon class="text-sm">person_outline</mat-icon>
+                      Sign in as Guest
+                    </button>
+                    <p class="text-[9px] text-center text-slate-400 font-bold px-4">
+                      Guest accounts have 2 AI credits. Create an account for 5 credits per day!
+                    </p>
+                  }
+                </div>
+              </form>
+            }
+
+            <!-- Removed bottom signup toggle -->
           </div>
         </div>
       </div>
@@ -161,11 +286,23 @@ export class LoginComponent {
   isSignup = signal(false);
   isLoading = signal(false);
   errorMsg = signal('');
+  successMsg = signal('');
+  view = signal<'login' | 'forgot-password' | 'security-setup'>('login');
+  recoveryMethod = signal<'email' | 'questions'>('email');
 
   username = '';
   phone = '';
   email = '';
   password = '';
+
+  // Recovery
+  recoveryIdentifier = '';
+  recoveryUser = signal<{ uid: string, questions: SecurityQuestion[] } | null>(null);
+  recoveryAnswers: string[] = [];
+
+  // Security Setup
+  ans1 = '';
+  ans2 = '';
 
   constructor() {
     // Redirect if already logged in
@@ -177,17 +314,32 @@ export class LoginComponent {
   toggleSignup() {
     this.isSignup.update(v => !v);
     this.errorMsg.set('');
+    this.successMsg.set('');
+    this.view.set('login');
   }
 
   async submitForm() {
     this.errorMsg.set('');
+    this.successMsg.set('');
     
-    if (this.isSignup() && !this.username.trim()) {
-      this.errorMsg.set('Username is required');
-      return;
-    }
-    if (!this.password || this.password.length < 6) {
-      this.errorMsg.set('Password must be at least 6 characters');
+    if (this.isSignup()) {
+      if (!this.username.trim()) {
+        this.errorMsg.set('Username is required');
+        return;
+      }
+      if (this.authMode() === 'phone' && !this.phone.trim()) {
+        this.errorMsg.set('Phone number is required');
+        return;
+      }
+      if (this.authMode() === 'email' && !this.email.trim()) {
+        this.errorMsg.set('Email is required');
+        return;
+      }
+      if (!this.password || this.password.length < 6) {
+        this.errorMsg.set('Password must be at least 6 characters');
+        return;
+      }
+      this.view.set('security-setup');
       return;
     }
 
@@ -199,36 +351,136 @@ export class LoginComponent {
           this.isLoading.set(false);
           return;
         }
-        if (this.isSignup()) {
-          await this.authService.signupWithPhone(this.phone, this.password, this.username);
-        } else {
-          await this.authService.loginWithPhone(this.phone, this.password);
-        }
+        await this.authService.loginWithPhone(this.phone, this.password);
       } else {
         if (!this.email.trim()) {
           this.errorMsg.set('Email is required');
           this.isLoading.set(false);
           return;
         }
-        if (this.isSignup()) {
-          await this.authService.signupWithEmail(this.email, this.password, this.username);
-        } else {
-          await this.authService.loginWithEmail(this.email, this.password);
-        }
+        await this.authService.loginWithEmail(this.email, this.password);
       }
       this.router.navigate(['/dashboard']);
     } catch (error: unknown) {
       console.error('Auth error', error);
       const err = error as { code?: string; message?: string };
-      if (err.code === 'auth/email-already-in-use') {
-        this.errorMsg.set('This account already exists. Please sign in.');
-      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
         this.errorMsg.set('Invalid credentials. Please try again.');
       } else {
         this.errorMsg.set(err.message || 'Authentication failed');
       }
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  async finishSignup() {
+    this.isLoading.set(true);
+    this.errorMsg.set('');
+    
+    const questions = [
+      { question: 'What is your home district?', answer: this.ans1.trim().toLowerCase() },
+      { question: 'What is your mother\'s maiden name?', answer: this.ans2.trim().toLowerCase() }
+    ];
+
+    try {
+      if (this.authMode() === 'phone') {
+        await this.authService.signupWithPhone(this.phone, this.password, this.username, questions);
+      } else {
+        await this.authService.signupWithEmail(this.email, this.password, this.username, questions);
+      }
+      this.router.navigate(['/dashboard']);
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      this.errorMsg.set(err.message || 'Signup failed');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async skipSecurityQuestions() {
+    this.isLoading.set(true);
+    try {
+      if (this.authMode() === 'phone') {
+        await this.authService.signupWithPhone(this.phone, this.password, this.username);
+      } else {
+        await this.authService.signupWithEmail(this.email, this.password, this.username);
+      }
+      this.router.navigate(['/dashboard']);
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      this.errorMsg.set(err.message || 'Signup failed');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async loginAsGuest() {
+    this.isLoading.set(true);
+    try {
+      await this.authService.loginAsGuest();
+      this.router.navigate(['/dashboard']);
+    } catch (error: unknown) {
+      console.error('Guest login error', error);
+      this.errorMsg.set('Guest login failed');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async sendResetEmail() {
+    if (!this.email) {
+      this.errorMsg.set('Please enter your email address');
+      return;
+    }
+    this.isLoading.set(true);
+    try {
+      await this.authService.sendPasswordReset(this.email);
+      this.successMsg.set('Password reset link sent to your email!');
+      setTimeout(() => this.view.set('login'), 3000);
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      this.errorMsg.set(err.message || 'Failed to send reset email');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async findUserForRecovery() {
+    if (!this.recoveryIdentifier) {
+      this.errorMsg.set('Please enter your phone or email');
+      return;
+    }
+    this.isLoading.set(true);
+    try {
+      const recoveryData = await this.authService.getSecurityQuestions(this.recoveryIdentifier);
+
+      if (recoveryData && recoveryData.questions && recoveryData.questions.length > 0) {
+        this.recoveryUser.set(recoveryData);
+        this.recoveryAnswers = new Array(recoveryData.questions.length).fill('');
+      } else {
+        this.errorMsg.set('No security questions found for this account. Please use email recovery.');
+      }
+    } catch (error: unknown) {
+      console.error('Recovery error', error);
+      this.errorMsg.set('Failed to find account');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async verifyQuestions() {
+    const recoveryData = this.recoveryUser();
+    if (!recoveryData) return;
+
+    const allCorrect = recoveryData.questions.every((q, i: number) => 
+      q.answer.toLowerCase() === this.recoveryAnswers[i].trim().toLowerCase()
+    );
+
+    if (allCorrect) {
+      this.successMsg.set('Identity verified! Please contact support at support@educatemw.com to reset your password (manual reset for non-email accounts).');
+    } else {
+      this.errorMsg.set('Incorrect answers. Please try again.');
     }
   }
 

@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../../firebase';
 import { AuthService } from '../../core/services/auth.service';
 import { DataService } from '../../core/services/data.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 @Component({
   selector: 'app-upgrade',
@@ -80,63 +79,39 @@ import { DataService } from '../../core/services/data.service';
             </div>
 
             <button (click)="startPayment()" [disabled]="isProcessing()" class="btn-primary w-full py-4 text-[16px] flex items-center justify-center gap-2 shadow-xl shadow-indigo-100">
-              <mat-icon>{{ isProcessing() ? 'sync' : 'payment' }}</mat-icon>
-              {{ isProcessing() ? 'Processing...' : 'Pay with Mobile Money' }}
+              @if (isProcessing()) {
+                <mat-icon class="animate-spin">sync</mat-icon>
+              } @else {
+                <mat-icon>payment</mat-icon>
+              }
+              {{ isProcessing() ? 'Initializing...' : 'Pay with Mobile Money' }}
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Mock Payment Modal -->
-      @if (showPaymentModal()) {
+      <!-- Guest Warning Modal -->
+      @if (showGuestWarning()) {
         <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
           <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md relative z-10 overflow-hidden animate-in zoom-in-95 duration-300">
-            <div class="bg-indigo-600 p-8 text-white text-center">
-              <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md">
-                <mat-icon class="!w-10 !h-10 !text-[40px]">smartphone</mat-icon>
+            <div class="p-8 text-center">
+              <div class="w-20 h-20 bg-amber-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <mat-icon class="!w-10 !h-10 !text-[40px] text-amber-600">account_circle</mat-icon>
               </div>
-              <h3 class="text-2xl font-black mb-1 tracking-tight">PayChangu Checkout</h3>
-              <p class="text-indigo-100 text-sm font-medium">Secure Payment Gateway</p>
-            </div>
-            
-            <div class="p-8">
-              <div class="flex items-center justify-between mb-8 pb-6 border-b border-slate-100">
-                <div>
-                  <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Amount to Pay</p>
-                  <p class="text-3xl font-black text-slate-900">MWK 5,000</p>
-                </div>
-                <div class="text-right">
-                  <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Plan</p>
-                  <p class="text-sm font-black text-indigo-600">PRO UNTIL EXAMS</p>
-                </div>
-              </div>
-
-              <div class="space-y-4 mb-8">
-                <button (click)="completePayment('Airtel Money')" class="w-full flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:border-red-500 hover:bg-red-50 transition-all group">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-100">
-                      <mat-icon>phone_android</mat-icon>
-                    </div>
-                    <span class="font-black text-slate-900">Airtel Money</span>
-                  </div>
-                  <mat-icon class="text-slate-300 group-hover:text-red-500">chevron_right</mat-icon>
+              <h3 class="text-2xl font-black text-slate-900 mb-2">Account Required</h3>
+              <p class="text-slate-500 font-medium mb-8">
+                You are currently signed in as a <span class="text-amber-600 font-bold">Guest</span>. To upgrade to Pro and save your progress, you must create a permanent account first.
+              </p>
+              
+              <div class="space-y-3">
+                <button (click)="router.navigate(['/login'])" class="btn-primary w-full py-4 shadow-lg shadow-indigo-100">
+                  Create Account Now
                 </button>
-
-                <button (click)="completePayment('TNM Mpamba')" class="w-full flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:border-emerald-500 hover:bg-emerald-50 transition-all group">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-100">
-                      <mat-icon>phone_android</mat-icon>
-                    </div>
-                    <span class="font-black text-slate-900">TNM Mpamba</span>
-                  </div>
-                  <mat-icon class="text-slate-300 group-hover:text-emerald-500">chevron_right</mat-icon>
+                <button (click)="showGuestWarning.set(false)" class="w-full py-3 text-slate-400 font-bold hover:text-slate-600 transition-colors">
+                  Maybe Later
                 </button>
               </div>
-
-              <button (click)="showPaymentModal.set(false)" class="w-full py-3 text-slate-400 font-bold hover:text-slate-600 transition-colors">
-                Cancel Payment
-              </button>
             </div>
           </div>
         </div>
@@ -147,43 +122,25 @@ import { DataService } from '../../core/services/data.service';
 export class UpgradeComponent {
   authService = inject(AuthService);
   dataService = inject(DataService);
+  paymentService = inject(PaymentService);
   router = inject(Router);
 
   isProcessing = signal(false);
-  showPaymentModal = signal(false);
+  showGuestWarning = signal(false);
 
-  startPayment() {
-    this.showPaymentModal.set(true);
-  }
-
-  async completePayment(method: string) {
+  async startPayment() {
     const user = this.authService.currentUser();
-    if (!user) return;
+    if (user?.isGuest) {
+      this.showGuestWarning.set(true);
+      return;
+    }
 
-    this.showPaymentModal.set(false);
     this.isProcessing.set(true);
-
     try {
-      // 1. Update User Pro Status
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, { isPro: true });
-      
-      // 2. Record Revenue for Admin
-      await this.dataService.recordRevenue({
-        userId: user.uid,
-        userName: user.displayName,
-        amount: 5000,
-        plan: 'PRO_TILL_EXAMS'
-      });
-
-      // 3. Update local state
-      this.authService.currentUser.update(u => u ? { ...u, isPro: true } : null);
-      
-      alert(`Payment successful via ${method}! Welcome to Pro.`);
-      this.router.navigate(['/']);
+      await this.paymentService.initializePayment(5000);
     } catch (error) {
-      console.error(error);
-      alert('Payment processing failed. Please try again.');
+      console.error('Payment Initialization Failed:', error);
+      alert('Failed to start payment. Please try again later.');
     } finally {
       this.isProcessing.set(false);
     }
