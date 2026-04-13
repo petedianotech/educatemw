@@ -1,7 +1,8 @@
 import { Injectable, signal } from '@angular/core';
-import { auth } from '../../../firebase';
+import { auth, storage } from '../../../firebase';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, handleFirestoreError, OperationType } from '../../../firebase';
 
 export interface SecurityQuestion {
@@ -252,6 +253,20 @@ export class AuthService {
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, { displayName: newUsername });
     this.currentUser.set({ ...user, displayName: newUsername });
+  }
+
+  async uploadProfilePicture(file: File): Promise<string> {
+    const user = this.currentUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const storageRef = ref(storage, `profilePictures/${user.uid}/profile.jpg`);
+    await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(storageRef);
+
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, { photoURL: downloadURL });
+    this.currentUser.set({ ...user, photoURL: downloadURL });
+    return downloadURL;
   }
 
   async getUserByPhone(phone: string): Promise<UserProfile | null> {

@@ -32,8 +32,10 @@ import { CommonModule } from '@angular/common';
             <div class="relative">
               <img [src]="authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid" 
                    alt="Profile" 
-                   class="w-24 h-24 rounded-[1.5rem] bg-slate-100 border-4 border-white shadow-xl object-cover" 
+                   class="w-24 h-24 rounded-[1.5rem] bg-slate-100 border-4 border-white shadow-xl object-cover cursor-pointer hover:opacity-80 transition-all" 
+                   (click)="fileInput.click()"
                    referrerpolicy="no-referrer">
+              <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" class="hidden">
             </div>
             <div class="mt-4 sm:mt-0 flex-1">
               <h2 class="text-xl font-black text-slate-900 leading-tight">{{authService.currentUser()?.displayName}}</h2>
@@ -209,6 +211,24 @@ export class SettingsComponent {
     } catch (error) {
       console.error('Failed to update username', error);
       this.updateMsg.set('Failed to update username.');
+    } finally {
+      this.isUpdating.set(false);
+    }
+  }
+
+  async onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.isUpdating.set(true);
+    this.updateMsg.set('Uploading...');
+    try {
+      await this.authService.uploadProfilePicture(file);
+      this.updateMsg.set('Profile picture updated successfully!');
+      setTimeout(() => this.updateMsg.set(''), 3000);
+    } catch (error) {
+      console.error('Failed to upload profile picture', error);
+      this.updateMsg.set('Failed to upload profile picture.');
     } finally {
       this.isUpdating.set(false);
     }
