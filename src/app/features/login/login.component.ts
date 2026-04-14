@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService, SecurityQuestion } from '../../core/services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 
@@ -270,8 +270,6 @@ import { FormsModule } from '@angular/forms';
                 </div>
               </form>
             }
-
-            <!-- Removed bottom signup toggle -->
           </div>
         </div>
       </div>
@@ -279,37 +277,30 @@ import { FormsModule } from '@angular/forms';
   `
 })
 export class LoginComponent {
-  private authService = inject(AuthService);
-  private router = inject(Router);
-
+  authService = inject(AuthService);
+  router = inject(Router);
+  
   authMode = signal<'phone' | 'email'>('phone');
   isSignup = signal(false);
   isLoading = signal(false);
+  view = signal<'login' | 'forgot-password' | 'security-setup'>('login');
+  
+  username = '';
+  email = '';
+  phone = '';
+  password = '';
   errorMsg = signal('');
   successMsg = signal('');
-  view = signal<'login' | 'forgot-password' | 'security-setup'>('login');
-  recoveryMethod = signal<'email' | 'questions'>('email');
-
-  username = '';
-  phone = '';
-  email = '';
-  password = '';
 
   // Recovery
+  recoveryMethod = signal<'email' | 'questions'>('email');
   recoveryIdentifier = '';
-  recoveryUser = signal<{ uid: string, questions: SecurityQuestion[] } | null>(null);
+  recoveryUser = signal<{ questions: { question: string; answer: string }[] } | null>(null);
   recoveryAnswers: string[] = [];
 
   // Security Setup
   ans1 = '';
   ans2 = '';
-
-  constructor() {
-    // Redirect if already logged in
-    if (this.authService.currentUser()) {
-      this.router.navigate(['/dashboard']);
-    }
-  }
 
   toggleSignup() {
     this.isSignup.update(v => !v);
@@ -339,7 +330,8 @@ export class LoginComponent {
         this.errorMsg.set('Password must be at least 6 characters');
         return;
       }
-      this.view.set('security-setup');
+      // Skip security setup, proceed directly to signup
+      await this.finishSignup();
       return;
     }
 
@@ -378,28 +370,6 @@ export class LoginComponent {
     this.isLoading.set(true);
     this.errorMsg.set('');
     
-    const questions = [
-      { question: 'What is your home district?', answer: this.ans1.trim().toLowerCase() },
-      { question: 'What is your mother\'s maiden name?', answer: this.ans2.trim().toLowerCase() }
-    ];
-
-    try {
-      if (this.authMode() === 'phone') {
-        await this.authService.signupWithPhone(this.phone, this.password, this.username, questions);
-      } else {
-        await this.authService.signupWithEmail(this.email, this.password, this.username, questions);
-      }
-      this.router.navigate(['/dashboard']);
-    } catch (error: unknown) {
-      const err = error as { message?: string };
-      this.errorMsg.set(err.message || 'Signup failed');
-    } finally {
-      this.isLoading.set(false);
-    }
-  }
-
-  async skipSecurityQuestions() {
-    this.isLoading.set(true);
     try {
       if (this.authMode() === 'phone') {
         await this.authService.signupWithPhone(this.phone, this.password, this.username);

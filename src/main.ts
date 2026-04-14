@@ -4,7 +4,7 @@ import {appConfig} from './app/app.config';
 
 bootstrapApplication(App, appConfig).catch((err) => console.error(err));
 
-if ('serviceWorker' in navigator) {
+if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').then(registration => {
       console.log('SW registered: ', registration);

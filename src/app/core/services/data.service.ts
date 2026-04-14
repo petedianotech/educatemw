@@ -64,6 +64,7 @@ export interface QuizResult {
   score: number;
   total: number;
   completedAt: Date | Timestamp;
+  isFirstAttempt?: boolean;
 }
 
 export interface AppUpdate {
@@ -358,6 +359,8 @@ export class DataService {
         ...quiz,
         createdAt: serverTimestamp()
       });
+      // Analytics: Track quiz creation
+      console.log('Analytics: Quiz created', { title: quiz.title, category: quiz.category });
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'quizzes');
     }
@@ -431,6 +434,8 @@ export class DataService {
         ...result,
         completedAt: serverTimestamp()
       });
+      // Analytics: Track quiz participation
+      console.log('Analytics: Quiz completed', { quizId: result.quizId, score: result.score });
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, 'quizResults');
     }
@@ -678,7 +683,7 @@ export class DataService {
       
       let q = query(
         collection(db, 'users'), 
-        orderBy('aiCredits', 'desc'), 
+        orderBy('coins', 'desc'), 
         limit(limitCount)
       );
       
@@ -686,7 +691,7 @@ export class DataService {
         const { startAfter } = await import('firebase/firestore');
         q = query(
           collection(db, 'users'), 
-          orderBy('aiCredits', 'desc'), 
+          orderBy('coins', 'desc'), 
           startAfter(lastDoc),
           limit(limitCount)
         );
@@ -694,6 +699,10 @@ export class DataService {
       
       const snapshot = await getDocs(q);
       const students = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserProfile));
+      
+      // Analytics: Track leaderboard view
+      console.log('Analytics: Leaderboard viewed', { count: students.length });
+      
       return {
         students,
         lastDoc: snapshot.docs[snapshot.docs.length - 1]

@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import { GoogleGenAI } from '@google/genai';
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import type { GoogleGenAI } from '@google/genai';
+import type { DBSchema, IDBPDatabase } from 'idb';
 
 interface ChatDB extends DBSchema {
   messages: {
@@ -38,29 +38,39 @@ export interface GeneratedQuiz {
 
 @Injectable({ providedIn: 'root' })
 export class GeminiService {
-  private ai: GoogleGenAI;
-  private dbPromise: Promise<IDBPDatabase<ChatDB>>;
+  private ai: GoogleGenAI | null = null;
+  private dbPromise: Promise<IDBPDatabase<ChatDB>> | null = null;
   
   messages = signal<ChatMessage[]>([]);
   isLoading = signal<boolean>(false);
 
   constructor() {
-    // Initialize Gemini API
-    const apiKey = typeof GEMINI_API_KEY !== 'undefined' ? GEMINI_API_KEY : '';
-    if (!apiKey) {
-      console.error('GEMINI_API_KEY is not defined. AI features will not work.');
-    }
-    this.ai = new GoogleGenAI({ apiKey });
-
-    // Initialize IndexedDB for offline chat history
-    this.dbPromise = openDB<ChatDB>('edu-chat-db', 1, {
-      upgrade(db) {
-        const store = db.createObjectStore('messages', { keyPath: 'id' });
-        store.createIndex('by-timestamp', 'timestamp');
-      },
-    });
-
     this.loadHistory();
+  }
+
+  private async getAI() {
+    if (!this.ai) {
+      const { GoogleGenAI } = await import('@google/genai');
+      const apiKey = typeof GEMINI_API_KEY !== 'undefined' ? GEMINI_API_KEY : '';
+      if (!apiKey) {
+        console.error('GEMINI_API_KEY is not defined. AI features will not work.');
+      }
+      this.ai = new GoogleGenAI({ apiKey });
+    }
+    return this.ai;
+  }
+
+  private async getDB() {
+    if (!this.dbPromise) {
+      const { openDB } = await import('idb');
+      this.dbPromise = openDB<ChatDB>('edu-chat-db', 1, {
+        upgrade(db) {
+          const store = db.createObjectStore('messages', { keyPath: 'id' });
+          store.createIndex('by-timestamp', 'timestamp');
+        },
+      });
+    }
+    return this.dbPromise;
   }
 
   private generateId(): string {
@@ -71,9 +81,13 @@ export class GeminiService {
   }
 
   private async loadHistory() {
-    const db = await this.dbPromise;
-    const allMessages = await db.getAllFromIndex('messages', 'by-timestamp');
-    this.messages.set(allMessages);
+    try {
+      const db = await this.getDB();
+      const allMessages = await db.getAllFromIndex('messages', 'by-timestamp');
+      this.messages.set(allMessages);
+    } catch (e) {
+      console.warn('Could not load chat history:', e);
+    }
   }
 
   async sendMessage(content: string) {
@@ -88,19 +102,25 @@ export class GeminiService {
 
     // Optimistically add to UI and DB
     this.messages.update(msgs => [...msgs, userMessage]);
-    const db = await this.dbPromise;
-    await db.put('messages', userMessage);
+    
+    try {
+      const db = await this.getDB();
+      await db.put('messages', userMessage);
+    } catch (e) {
+      console.warn('Could not save message to history:', e);
+    }
 
     this.isLoading.set(true);
 
     try {
+      const ai = await this.getAI();
       // Format history for Gemini
       const history = this.messages().slice(0, -1).map(msg => ({
         role: msg.role,
         parts: [{ text: msg.content }]
       }));
 
-      const chat = this.ai.chats.create({
+      const chat = ai.chats.create({
         model: 'gemini-3-flash-preview',
         history,
         config: {
@@ -144,7 +164,13 @@ Guidelines for your responses:
       };
 
       this.messages.update(msgs => [...msgs, modelMessage]);
-      await db.put('messages', modelMessage);
+      
+      try {
+        const db = await this.getDB();
+        await db.put('messages', modelMessage);
+      } catch (e) {
+        console.warn('Could not save model response to history:', e);
+      }
       
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -173,9 +199,13 @@ Guidelines for your responses:
   }
 
   async clearHistory() {
-    const db = await this.dbPromise;
-    await db.clear('messages');
-    this.messages.set([]);
+    try {
+      const db = await this.getDB();
+      await db.clear('messages');
+      this.messages.set([]);
+    } catch (e) {
+      console.warn('Could not clear history:', e);
+    }
   }
 
   async generateQuiz(topic: string): Promise<GeneratedQuiz> {
@@ -186,7 +216,7 @@ Guidelines for your responses:
       "title": "Quiz Title",
       "description": "Brief description",
       "category": "Subject Name",
-      "timeLimit": 15,
+      "timeLimit": 5,
       "isProOnly": false,
       "questions": [
         {
@@ -200,7 +230,8 @@ Guidelines for your responses:
     Generate 5 challenging questions. Do not include any other text or markdown formatting.`;
 
     try {
-      const response = await this.ai.models.generateContent({
+      const ai = await this.getAI();
+      const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: prompt,
         config: {

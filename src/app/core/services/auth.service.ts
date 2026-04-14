@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { auth, storage } from '../../../firebase';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
@@ -20,6 +21,7 @@ export interface UserProfile {
   isGuest?: boolean;
   aiCredits?: number;
   streak?: number;
+  coins?: number;
   lastCreditReset?: string; // ISO date string
   pwaInstalled?: boolean;
   referralCode?: string;
@@ -34,6 +36,7 @@ export class AuthService {
   currentUser = signal<UserProfile | null>(null);
   isAuthReady = signal<boolean>(false);
   rewardMessage = signal<string | null>(null);
+  private platformId = inject(PLATFORM_ID);
 
   constructor() {
     onAuthStateChanged(auth, async (user) => {
@@ -135,28 +138,32 @@ export class AuthService {
         questions: securityQuestions.map(q => ({ question: q.question, answer: q.answer.toLowerCase().trim() }))
       });
     }
-    const urlParams = new URLSearchParams(window.location.search);
-    const referralCode = urlParams.get('ref');
+    
     let referredBy: string | undefined;
+    
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const referralCode = urlParams.get('ref');
 
-    if (referralCode) {
-      // Find user with this referral code
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('referralCode', '==', referralCode));
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        const referrerDoc = querySnapshot.docs[0];
-        referredBy = referrerDoc.id;
-        
-        // Reward the referrer
-        const referrerData = referrerDoc.data();
-        const currentReferrals = referrerData['referralsCount'] || 0;
-        const currentCredits = referrerData['aiCredits'] || 0;
-        
-        await updateDoc(doc(db, 'users', referredBy), {
-          referralsCount: currentReferrals + 1,
-          aiCredits: currentCredits + 10
-        });
+      if (referralCode) {
+        // Find user with this referral code
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('referralCode', '==', referralCode));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const referrerDoc = querySnapshot.docs[0];
+          referredBy = referrerDoc.id;
+          
+          // Reward the referrer
+          const referrerData = referrerDoc.data();
+          const currentReferrals = referrerData['referralsCount'] || 0;
+          const currentCredits = referrerData['aiCredits'] || 0;
+          
+          await updateDoc(doc(db, 'users', referredBy), {
+            referralsCount: currentReferrals + 1,
+            aiCredits: currentCredits + 10
+          });
+        }
       }
     }
 
@@ -170,6 +177,7 @@ export class AuthService {
       isGuest: user.isAnonymous,
       aiCredits: user.isAnonymous ? 2 : 5,
       streak: 0,
+      coins: 0,
       lastCreditReset: new Date().toISOString(),
       referralCode: user.uid.substring(0, 8).toUpperCase(),
       referralsCount: 0,

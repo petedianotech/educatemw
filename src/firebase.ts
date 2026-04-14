@@ -2,12 +2,31 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
+import { getPerformance } from 'firebase/performance';
 import firebaseConfig from '../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
+
+import { Analytics } from 'firebase/analytics';
+import { FirebasePerformance } from 'firebase/performance';
+
+let analytics: Analytics | null = null;
+let performance: FirebasePerformance | null = null;
+
+if (typeof window !== 'undefined') {
+  isAnalyticsSupported().then(supported => {
+    if (supported) {
+      analytics = getAnalytics(app);
+    }
+  });
+  performance = getPerformance(app);
+}
+
+export { analytics, performance };
 
 export enum OperationType {
   CREATE = 'create',

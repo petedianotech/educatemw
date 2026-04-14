@@ -1,17 +1,19 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   permission = signal<NotificationPermission>('default');
+  private platformId = inject(PLATFORM_ID);
 
   constructor() {
-    if ('Notification' in window) {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined' && 'Notification' in window) {
       this.permission.set(Notification.permission);
     }
   }
 
   async requestPermission() {
-    if ('Notification' in window) {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined' && 'Notification' in window) {
       const result = await Notification.requestPermission();
       this.permission.set(result);
       return result;
@@ -20,7 +22,7 @@ export class NotificationService {
   }
 
   showNotification(title: string, options?: NotificationOptions) {
-    if ('Notification' in window && Notification.permission === 'granted') {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       // Use service worker for better background support if available
       navigator.serviceWorker.ready.then(registration => {
         registration.showNotification(title, {

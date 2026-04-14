@@ -5,11 +5,12 @@ import { DataService } from '../../core/services/data.service';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe } from '@angular/common';
 import { Timestamp } from 'firebase/firestore';
+import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, MatIconModule, DatePipe],
+  imports: [RouterLink, RouterLinkActive, MatIconModule, DatePipe, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="h-full bg-slate-50 relative flex flex-col overflow-hidden">
@@ -32,9 +33,9 @@ import { Timestamp } from 'firebase/firestore';
             </h1>
             <p class="text-xs font-medium text-indigo-200 mt-1">Welcome back, {{authService.currentUser()?.displayName?.split(' ')?.[0] || 'Student'}}</p>
           </div>
-          <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-sm hover:bg-white/20 transition-colors">
+          <button aria-label="Notifications" class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-sm hover:bg-white/20 transition-all hover:scale-105 active:scale-95">
             <mat-icon class="!w-6 !h-6 !text-[24px]">notifications_none</mat-icon>
-          </div>
+          </button>
         </div>
 
         <!-- Guest Banner -->
@@ -48,7 +49,7 @@ import { Timestamp } from 'firebase/firestore';
                 <h4 class="text-sm font-black text-amber-900">Guest Account</h4>
                 <p class="text-[10px] text-amber-700 font-bold mt-0.5">Create an account for 5 AI credits per day and to save your progress!</p>
               </div>
-              <a routerLink="/login" class="bg-amber-600 text-white px-3 py-1.5 rounded-lg font-black text-[10px] shadow-sm active:scale-95 transition-transform">
+              <a routerLink="/login" aria-label="Sign up" class="bg-amber-600 text-white px-3 py-1.5 rounded-lg font-black text-[10px] shadow-sm active:scale-95 transition-all hover:scale-105">
                 Sign Up
               </a>
             </div>
@@ -56,13 +57,18 @@ import { Timestamp } from 'firebase/firestore';
         }
 
         <!-- App Updates Section -->
-        @if (dataService.appUpdates().length > 0 && !updateDismissed()) {
+        @if (isLoading()) {
+          <div class="mb-6 shrink-0">
+            <app-skeleton className="w-full h-24 rounded-2xl"></app-skeleton>
+          </div>
+        } @else if (dataService.appUpdates().length > 0 && !updateDismissed()) {
           <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors active:scale-95" 
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-all hover:scale-[1.01] active:scale-95" 
                  (click)="dismissUpdate()"
                  (keydown.enter)="dismissUpdate()"
                  tabindex="0"
-                 role="button">
+                 role="button"
+                 aria-label="Dismiss update">
               <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 border border-indigo-100">
                 <mat-icon class="!w-5 !h-5 !text-[20px]">campaign</mat-icon>
               </div>
@@ -70,7 +76,7 @@ import { Timestamp } from 'firebase/firestore';
                 <h4 class="text-sm font-black text-slate-900 truncate">{{ dataService.appUpdates()[0].title }}</h4>
                 <p class="text-xs text-slate-500 truncate mt-0.5">{{ dataService.appUpdates()[0].content }}</p>
                 @if (dataService.appUpdates()[0].driveUrl) {
-                  <a [href]="dataService.appUpdates()[0].driveUrl" target="_blank" class="inline-block mt-2 px-3 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-indigo-700 transition-colors">
+                  <a [href]="dataService.appUpdates()[0].driveUrl" target="_blank" aria-label="Download update" class="inline-block mt-2 px-3 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-indigo-700 transition-all hover:scale-105">
                     Download Update
                   </a>
                 }
@@ -81,85 +87,97 @@ import { Timestamp } from 'firebase/firestore';
         }
 
         <!-- Quick Actions Grid (Compact Sizing, 2 Columns) -->
-        <div class="grid grid-cols-2 gap-3 mb-4 shrink-0">
-          
-          <!-- Cleo AI Tutor -->
-          <a routerLink="/chat" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/30 relative z-10 group-hover:scale-105 transition-transform">
-              <mat-icon class="!w-6 !h-6 !text-[24px]">auto_awesome</mat-icon>
-              @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 5) <= 0) {
-                <div class="absolute -top-1.5 -right-1.5 bg-slate-900 text-amber-400 p-1 rounded-lg border-2 border-white shadow-sm">
-                  <mat-icon class="!w-3 !h-3 !text-[12px]">lock</mat-icon>
-                </div>
-              }
-            </div>
-            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Cleo AI Tutor</h3>
-            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Interactive learning</p>
-          </a>
+        @if (isLoading()) {
+          <div class="grid grid-cols-2 gap-3 mb-4 shrink-0">
+            @for (i of [1, 2, 3, 4, 5, 6, 7]; track i) {
+              <app-skeleton className="w-full h-28 rounded-2xl"></app-skeleton>
+            }
+          </div>
+        } @else {
+          <div class="grid grid-cols-2 gap-3 mb-4 shrink-0">
+            
+            <!-- Cleo AI Tutor -->
+            <a routerLink="/chat" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/30 relative z-10 group-hover:scale-105 transition-transform">
+                <mat-icon class="!w-6 !h-6 !text-[24px]">auto_awesome</mat-icon>
+                @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 5) <= 0) {
+                  <div class="absolute -top-1.5 -right-1.5 bg-slate-900 text-amber-400 p-1 rounded-lg border-2 border-white shadow-sm">
+                    <mat-icon class="!w-3 !h-3 !text-[12px]">lock</mat-icon>
+                  </div>
+                }
+              </div>
+              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Cleo AI Tutor</h3>
+              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Interactive learning</p>
+            </a>
 
-          <!-- Video Lessons -->
-          <a routerLink="/video-lessons" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-rose-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-md shadow-rose-500/30 relative z-10 group-hover:scale-105 transition-transform">
-              <mat-icon class="!w-6 !h-6 !text-[24px]">play_circle_outline</mat-icon>
-            </div>
-            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Video Lessons</h3>
-            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Visual tutorials</p>
-          </a>
+            <!-- Video Lessons -->
+            <a routerLink="/video-lessons" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-rose-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-md shadow-rose-500/30 relative z-10 group-hover:scale-105 transition-transform">
+                <mat-icon class="!w-6 !h-6 !text-[24px]">play_circle_outline</mat-icon>
+              </div>
+              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Video Lessons</h3>
+              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Visual tutorials</p>
+            </a>
 
-          <!-- Study Library -->
-          <a routerLink="/notes" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-sky-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-md shadow-sky-500/30 relative z-10 group-hover:scale-105 transition-transform">
-              <mat-icon class="!w-6 !h-6 !text-[24px]">library_books</mat-icon>
-            </div>
-            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Study Library</h3>
-            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Past papers & notes</p>
-          </a>
+            <!-- Study Library -->
+            <a routerLink="/notes" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-sky-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-md shadow-sky-500/30 relative z-10 group-hover:scale-105 transition-transform">
+                <mat-icon class="!w-6 !h-6 !text-[24px]">library_books</mat-icon>
+              </div>
+              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Study Library</h3>
+              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Past papers & notes</p>
+            </a>
 
-          <!-- Practice Quizzes -->
-          <a routerLink="/quizzes" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-emerald-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-emerald-400 to-teal-600 text-white shadow-md shadow-emerald-500/30 relative z-10 group-hover:scale-105 transition-transform">
-              <mat-icon class="!w-6 !h-6 !text-[24px]">quiz</mat-icon>
-            </div>
-            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Practice Quizzes</h3>
-            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Test your knowledge</p>
-          </a>
+            <!-- Practice Quizzes -->
+            <a routerLink="/quizzes" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-emerald-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-emerald-400 to-teal-600 text-white shadow-md shadow-emerald-500/30 relative z-10 group-hover:scale-105 transition-transform">
+                <mat-icon class="!w-6 !h-6 !text-[24px]">quiz</mat-icon>
+              </div>
+              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Practice Quizzes</h3>
+              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Test your knowledge</p>
+            </a>
 
-          <!-- Exam Countdown -->
-          <a routerLink="/exam-countdown" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-rose-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/30 relative z-10 group-hover:scale-105 transition-transform">
-              <mat-icon class="!w-6 !h-6 !text-[24px]">timer</mat-icon>
-            </div>
-            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Exam Dates</h3>
-            <div class="mt-1 relative z-10">
-              <p class="text-blue-600 text-[10px] font-black uppercase tracking-tighter">MSCE in {{ getMsceDays() }} Days</p>
-            </div>
-          </a>
+            <!-- Exam Countdown -->
+            <a routerLink="/exam-countdown" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-rose-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/30 relative z-10 group-hover:scale-105 transition-transform">
+                <mat-icon class="!w-6 !h-6 !text-[24px]">timer</mat-icon>
+              </div>
+              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Exam Dates</h3>
+              <div class="mt-1 relative z-10">
+                @if (dataService.examDates().length > 0) {
+                  <p class="text-blue-600 text-[10px] font-black uppercase tracking-tighter">{{ dataService.examDates()[0].subject }} in {{ getExamDays(dataService.examDates()[0].date) }} Days</p>
+                } @else {
+                  <p class="text-blue-600 text-[10px] font-black uppercase tracking-tighter">No Exams Scheduled</p>
+                }
+              </div>
+            </a>
 
-          <!-- Community Chat -->
-          <a routerLink="/community" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-md shadow-purple-500/30 relative z-10 group-hover:scale-105 transition-transform">
-              <mat-icon class="!w-6 !h-6 !text-[24px]">groups</mat-icon>
-            </div>
-            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Community Chat</h3>
-            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Live study discussion</p>
-          </a>
+            <!-- Community Chat -->
+            <a routerLink="/community" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-md shadow-purple-500/30 relative z-10 group-hover:scale-105 transition-transform">
+                <mat-icon class="!w-6 !h-6 !text-[24px]">groups</mat-icon>
+              </div>
+              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Community Chat</h3>
+              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Live study discussion</p>
+            </a>
 
-          <!-- Career Guidance -->
-          <a routerLink="/career-guidance" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all active:scale-95 group relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-orange-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-400 to-amber-500 text-white shadow-md shadow-orange-500/30 relative z-10 group-hover:scale-105 transition-transform">
-              <mat-icon class="!w-6 !h-6 !text-[24px]">explore</mat-icon>
-            </div>
-            <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Career Guidance</h3>
-            <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">MSCE points calculator</p>
-          </a>
-        </div>
+            <!-- Career Guidance -->
+            <a routerLink="/career-guidance" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-orange-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-400 to-amber-500 text-white shadow-md shadow-orange-500/30 relative z-10 group-hover:scale-105 transition-transform">
+                <mat-icon class="!w-6 !h-6 !text-[24px]">explore</mat-icon>
+              </div>
+              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Career Guidance</h3>
+              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">MSCE points calculator</p>
+            </a>
+          </div>
+        }
 
         <!-- Pro Upgrade Banner -->
         @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
@@ -189,9 +207,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   route = inject(ActivatedRoute);
   
   updateDismissed = signal(false);
+  isLoading = signal(true);
 
   ngOnInit() {
     this.dataService.subscribeToAppUpdates();
+    this.dataService.subscribeToExamDates();
+    
+    // Simulate loading for demonstration
+    setTimeout(() => this.isLoading.set(false), 1000);
     
     // Check for payment success
     this.route.queryParams.subscribe(params => {
@@ -208,15 +231,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.dataService.unsubscribeFromAppUpdates();
+    this.dataService.unsubscribeFromExamDates();
   }
 
   dismissUpdate() {
     this.updateDismissed.set(true);
   }
 
-  getMsceDays(): number {
-    const msceDate = new Date('2026-06-29T08:00:00');
-    const diff = msceDate.getTime() - Date.now();
+  getExamDays(date: Date | Timestamp | string): number {
+    const examDate = this.toDate(date);
+    if (!examDate) return 0;
+    const diff = examDate.getTime() - Date.now();
     if (diff <= 0) return 0;
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   }

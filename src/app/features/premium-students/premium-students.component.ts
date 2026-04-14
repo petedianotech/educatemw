@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { DataService } from '../../core/services/data.service';
 import { RouterLink } from '@angular/router';
@@ -7,7 +7,7 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-premium-students',
   standalone: true,
-  imports: [CommonModule, MatIconModule, RouterLink],
+  imports: [CommonModule, MatIconModule, RouterLink, NgOptimizedImage],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-slate-50 pb-safe">
@@ -23,9 +23,11 @@ import { RouterLink } from '@angular/router';
           <div class="space-y-4">
             @for (user of premiumUsers(); track user.uid) {
               <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <img [src]="user.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid" 
+                <img ngSrc="{{user.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid}}" 
                      alt="Profile" 
-                     class="w-12 h-12 rounded-xl bg-slate-200 object-cover" 
+                     width="48"
+                     height="48"
+                     class="rounded-xl bg-slate-200 object-cover" 
                      referrerpolicy="no-referrer">
                 <div class="flex-1">
                   <p class="font-black text-slate-900">{{user.displayName}}</p>

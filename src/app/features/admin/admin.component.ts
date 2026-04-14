@@ -1,15 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DataService, Quiz, QuizQuestion, Note } from '../../core/services/data.service';
 import { Timestamp } from 'firebase/firestore';
 import { MatIconModule } from '@angular/material/icon';
-import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
+import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [FormsModule, MatIconModule, DatePipe, DecimalPipe, CommonModule, RouterLink],
+  imports: [FormsModule, MatIconModule, DatePipe, DecimalPipe, CommonModule, RouterLink, NgOptimizedImage],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex h-screen bg-slate-50 overflow-hidden">
@@ -332,16 +332,12 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
                   <h3 class="text-xl font-black text-slate-900 mb-8">Add Exam Date</h3>
                   <div class="space-y-6">
                     <div>
-                      <label for="exam-subject" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Subject</label>
-                      <input id="exam-subject" type="text" [(ngModel)]="examSubject" placeholder="e.g. Biology Paper 1" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                      <label for="exam-subject" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">School Level (e.g., MSCE)</label>
+                      <input id="exam-subject" type="text" [ngModel]="examSubject()" (ngModelChange)="examSubject.set($event)" placeholder="e.g. MSCE" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
                     </div>
                     <div>
                       <label for="exam-date" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Exam Date</label>
-                      <input id="exam-date" type="date" [(ngModel)]="examDate" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
-                    </div>
-                    <div>
-                      <label for="exam-description" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Description</label>
-                      <textarea id="exam-description" [(ngModel)]="examDescription" rows="3" placeholder="Additional details..." class="w-full p-6 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 resize-none"></textarea>
+                      <input id="exam-date" type="date" [ngModel]="examDate()" (ngModelChange)="examDate.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
                     </div>
                     <button (click)="saveExamDate()" [disabled]="isSubmitting()" class="w-full py-4 bg-rose-600 text-white rounded-2xl font-black hover:bg-rose-700 transition-all shadow-xl shadow-rose-200 uppercase tracking-widest disabled:opacity-50">
                       {{ isSubmitting() ? 'Saving...' : 'Add Exam Date' }}
@@ -361,7 +357,6 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
                       </div>
                       <div>
                         <h4 class="text-lg font-black text-slate-900 tracking-tight">{{ exam.subject }}</h4>
-                        <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">{{ exam.description }}</p>
                       </div>
                     </div>
                     <button (click)="deleteExamDate(exam.id)" class="w-12 h-12 rounded-xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all border border-slate-100 flex items-center justify-center">
@@ -459,7 +454,7 @@ import { DatePipe, DecimalPipe, CommonModule } from '@angular/common';
                     <tr class="hover:bg-slate-50/50 transition-colors">
                       <td class="px-8 py-6">
                         <div class="flex items-center gap-4">
-                          <img [src]="student.photoURL" [alt]="student.displayName" class="w-10 h-10 rounded-full border border-slate-200" referrerpolicy="no-referrer">
+                          <img ngSrc="{{student.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + student.uid}}" [alt]="student.displayName" width="40" height="40" class="rounded-full border border-slate-200" referrerpolicy="no-referrer">
                           <div>
                             <p class="text-sm font-black text-slate-900">{{ student.displayName }}</p>
                             <p class="text-[10px] text-slate-400 font-bold">{{ student.email }}</p>
@@ -603,7 +598,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   router = inject(Router);
   
-  isSidebarOpen = signal(true);
+  isSidebarOpen = signal(false);
   activeTab = signal<'overview' | 'upload' | 'manage' | 'students' | 'quizzes' | 'revenue' | 'updates' | 'exams'>('overview');
   
   title = signal('');
@@ -633,7 +628,6 @@ export class AdminComponent implements OnInit, OnDestroy {
   // Exam Dates State
   examSubject = signal('');
   examDate = signal('');
-  examDescription = signal('');
 
   totalStudents = computed(() => this.dataService.users().length);
   proSubscribers = computed(() => this.dataService.users().filter(u => u.isPro).length);
@@ -667,8 +661,10 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.dataService.unsubscribeFromExamDates();
   }
 
+  private platformId = inject(PLATFORM_ID);
+
   goBack() {
-    if (window.history.length > 1) {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined' && window.history.length > 1) {
       window.history.back();
     } else {
       this.router.navigate(['/']);
@@ -705,12 +701,10 @@ export class AdminComponent implements OnInit, OnDestroy {
     try {
       await this.dataService.createExamDate({
         subject: this.examSubject(),
-        date: new Date(this.examDate()),
-        description: this.examDescription()
+        date: new Date(this.examDate())
       });
       this.examSubject.set('');
       this.examDate.set('');
-      this.examDescription.set('');
     } catch (error) {
       console.error(error);
     } finally {

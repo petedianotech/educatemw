@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { DataService, Note } from '../../core/services/data.service';
 import { MatIconModule } from '@angular/material/icon';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-video-lessons',
   standalone: true,
-  imports: [MatIconModule, CommonModule, RouterLink],
+  imports: [MatIconModule, CommonModule, RouterLink, NgOptimizedImage],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-slate-950 overflow-hidden">
@@ -79,7 +79,8 @@ import { RouterLink } from '@angular/router';
               
               <!-- Thumbnail -->
               <div class="w-32 h-20 bg-slate-900 rounded-xl shrink-0 relative overflow-hidden border border-white/5 flex items-center justify-center shadow-lg group-hover:border-white/20 transition-colors">
-                <img [src]="getThumbnail(note.youtubeUrl!)" 
+                <img ngSrc="{{getThumbnail(note.youtubeUrl!)}}" 
+                     fill
                      class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" 
                      alt="Thumbnail">
                 

@@ -210,17 +210,25 @@ import { RouterLink } from '@angular/router';
                     @for (option of activeQuiz()?.questions?.[currentQuestionIndex()]?.options; track option; let i = $index) {
                       <button 
                         (click)="selectAnswer(option)"
-                        [class.bg-indigo-600]="selectedAnswer() === option"
+                        [disabled]="isAnswered()"
+                        [class.bg-emerald-500]="isAnswered() && option === activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                        [class.bg-rose-500]="isAnswered() && selectedAnswer() === option && option !== activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                        [class.bg-indigo-600]="!isAnswered() && selectedAnswer() === option"
                         [class.text-white]="selectedAnswer() === option"
-                        [class.border-indigo-600]="selectedAnswer() === option"
+                        [class.border-emerald-500]="isAnswered() && option === activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                        [class.border-rose-500]="isAnswered() && selectedAnswer() === option && option !== activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                        [class.border-indigo-600]="!isAnswered() && selectedAnswer() === option"
                         [class.bg-white]="selectedAnswer() !== option"
                         [class.text-slate-700]="selectedAnswer() !== option"
                         [class.border-slate-200]="selectedAnswer() !== option"
                         class="w-full p-4 text-left rounded-2xl border-2 font-semibold transition-all hover:border-indigo-400 flex items-center gap-4 group">
                         <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm border transition-colors"
-                             [class.bg-indigo-500]="selectedAnswer() === option"
-                             [class.text-white]="selectedAnswer() === option"
-                             [class.border-indigo-400]="selectedAnswer() === option"
+                             [class.bg-emerald-500]="isAnswered() && option === activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                             [class.text-white]="isAnswered() && option === activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                             [class.border-emerald-400]="isAnswered() && option === activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                             [class.bg-indigo-500]="!isAnswered() && selectedAnswer() === option"
+                             [class.text-white]="!isAnswered() && selectedAnswer() === option"
+                             [class.border-indigo-400]="!isAnswered() && selectedAnswer() === option"
                              [class.bg-slate-50]="selectedAnswer() !== option"
                              [class.text-slate-500]="selectedAnswer() !== option"
                              [class.border-slate-200]="selectedAnswer() !== option">
@@ -233,17 +241,27 @@ import { RouterLink } from '@angular/router';
                     <div class="grid grid-cols-2 gap-4">
                       <button 
                         (click)="selectAnswer('True')"
-                        [class.bg-indigo-600]="selectedAnswer() === 'True'"
+                        [disabled]="isAnswered()"
+                        [class.bg-emerald-500]="isAnswered() && 'True' === activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                        [class.bg-rose-500]="isAnswered() && selectedAnswer() === 'True' && 'True' !== activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                        [class.bg-indigo-600]="!isAnswered() && selectedAnswer() === 'True'"
                         [class.text-white]="selectedAnswer() === 'True'"
-                        [class.border-indigo-600]="selectedAnswer() === 'True'"
+                        [class.border-emerald-500]="isAnswered() && 'True' === activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                        [class.border-rose-500]="isAnswered() && selectedAnswer() === 'True' && 'True' !== activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                        [class.border-indigo-600]="!isAnswered() && selectedAnswer() === 'True'"
                         class="p-6 text-center rounded-2xl border-2 font-bold transition-all hover:border-indigo-400 bg-white text-slate-700 border-slate-200">
                         True
                       </button>
                       <button 
                         (click)="selectAnswer('False')"
-                        [class.bg-indigo-600]="selectedAnswer() === 'False'"
+                        [disabled]="isAnswered()"
+                        [class.bg-emerald-500]="isAnswered() && 'False' === activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                        [class.bg-rose-500]="isAnswered() && selectedAnswer() === 'False' && 'False' !== activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                        [class.bg-indigo-600]="!isAnswered() && selectedAnswer() === 'False'"
                         [class.text-white]="selectedAnswer() === 'False'"
-                        [class.border-indigo-600]="selectedAnswer() === 'False'"
+                        [class.border-emerald-500]="isAnswered() && 'False' === activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                        [class.border-rose-500]="isAnswered() && selectedAnswer() === 'False' && 'False' !== activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer"
+                        [class.border-indigo-600]="!isAnswered() && selectedAnswer() === 'False'"
                         class="p-6 text-center rounded-2xl border-2 font-bold transition-all hover:border-indigo-400 bg-white text-slate-700 border-slate-200">
                         False
                       </button>
@@ -340,6 +358,8 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   activeQuiz = signal<Quiz | null>(null);
   currentQuestionIndex = signal(0);
   userAnswers = signal<Record<number, string>>({});
+  isAnswered = signal(false);
+  isCorrect = signal(false);
   selectedAnswer = computed(() => this.userAnswers()[this.currentQuestionIndex()]);
   
   timeLeft = signal(0);
@@ -413,21 +433,34 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   }
 
   selectAnswer(answer: string) {
+    if (this.isAnswered()) return;
+    
     this.userAnswers.update(answers => ({
       ...answers,
       [this.currentQuestionIndex()]: answer
     }));
+    
+    const quiz = this.activeQuiz();
+    if (quiz) {
+      const correct = quiz.questions[this.currentQuestionIndex()].correctAnswer;
+      this.isCorrect.set(answer === correct);
+      this.isAnswered.set(true);
+    }
   }
 
   nextQuestion() {
     if (this.currentQuestionIndex() < (this.activeQuiz()?.questions?.length ?? 0) - 1) {
       this.currentQuestionIndex.update(i => i + 1);
+      this.isAnswered.set(false);
+      this.isCorrect.set(false);
     }
   }
 
   prevQuestion() {
     if (this.currentQuestionIndex() > 0) {
       this.currentQuestionIndex.update(i => i - 1);
+      this.isAnswered.set(false);
+      this.isCorrect.set(false);
     }
   }
 
@@ -444,15 +477,27 @@ export class QuizzesComponent implements OnInit, OnDestroy {
       }
     });
 
+    // Check if first attempt
+    const isFirstAttempt = !this.userResults().some(r => r.quizId === quiz.id);
+    
     const result: Omit<QuizResult, 'id' | 'completedAt'> = {
       userId: user.uid,
       quizId: quiz.id,
       quizTitle: quiz.title,
       score,
-      total: quiz.questions.length
+      total: quiz.questions.length,
+      isFirstAttempt
     };
 
     await this.dataService.saveQuizResult(result);
+
+    // Award points if first attempt and all correct
+    if (isFirstAttempt && score === quiz.questions.length) {
+      const newCoins = (user.coins || 0) + 5;
+      const newStreak = (user.streak || 0) + 1;
+      await this.dataService.updateUserProfile(user.uid, { coins: newCoins, streak: newStreak });
+      this.authService.currentUser.set({ ...user, coins: newCoins, streak: newStreak });
+    }
     
     // We don't get the ID back immediately from saveQuizResult, so we'll just set a local lastResult
     this.lastResult.set({

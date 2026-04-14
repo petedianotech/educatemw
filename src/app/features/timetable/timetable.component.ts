@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 
@@ -26,7 +26,11 @@ import { RouterLink } from '@angular/router';
   `
 })
 export class TimetableComponent {
+  private platformId = inject(PLATFORM_ID);
+  
   goBack() {
-    window.history.back();
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+      window.history.back();
+    }
   }
 }

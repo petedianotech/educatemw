@@ -1,15 +1,17 @@
 import {ChangeDetectionStrategy, Component, PLATFORM_ID, inject, signal, OnInit} from '@angular/core';
-import {isPlatformBrowser} from '@angular/common';
+import {isPlatformBrowser, NgOptimizedImage} from '@angular/common';
 import {RouterOutlet, RouterLink, RouterLinkActive, Router} from '@angular/router';
 import {AuthService} from './core/services/auth.service';
 import {LoadingService} from './core/services/loading.service';
 import {MatIconModule} from '@angular/material/icon';
+import { ErrorToastComponent } from './shared/components/error-toast/error-toast.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIconModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIconModule, ErrorToastComponent, NgOptimizedImage],
   template: `
+    <app-error-toast></app-error-toast>
     @if (loadingService.isLoading() || !authService.isAuthReady()) {
       <div class="min-h-screen flex flex-col items-center justify-center bg-slate-950 relative overflow-hidden">
         <!-- Animated Background Orbs -->
@@ -86,7 +88,6 @@ import {MatIconModule} from '@angular/material/icon';
                 </div>
               </div>
             }
-
             <router-outlet></router-outlet>
           </main>
 
@@ -109,11 +110,11 @@ import {MatIconModule} from '@angular/material/icon';
               <!-- Cleo AI (Center, Prominent) -->
               <div class="relative -top-1">
                 <a routerLink="/chat" class="flex flex-col items-center justify-center gap-1 transition-all active:scale-90 group">
-                  <div class="relative flex items-center justify-center w-12 h-10 rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/40 border-2 border-white/20 group-hover:scale-105 transition-transform overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-indigo-500 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div class="relative flex items-center justify-center w-12 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/40 border-2 border-white/20 group-hover:scale-105 transition-transform overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-indigo-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <mat-icon class="!w-6 !h-6 !text-[24px] text-white relative z-10">auto_awesome</mat-icon>
                   </div>
-                  <span class="text-[10px] font-black tracking-wide text-indigo-400">Cleo AI</span>
+                  <span class="text-[10px] font-black tracking-wide text-indigo-300">Cleo AI</span>
                 </a>
               </div>
 
@@ -166,7 +167,7 @@ import {MatIconModule} from '@angular/material/icon';
             <!-- User Profile Section -->
             <div class="p-6 border-b border-white/5">
               <div class="flex items-center gap-3 mb-4">
-                <img [src]="authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid" alt="Profile" class="w-12 h-12 rounded-2xl bg-slate-800 border-2 border-white/10" referrerpolicy="no-referrer">
+                <img ngSrc="{{authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid}}" alt="Profile" width="48" height="48" class="rounded-2xl bg-slate-800 border-2 border-white/10" referrerpolicy="no-referrer">
                 <div class="flex flex-col">
                   <h3 class="text-white font-bold">{{authService.currentUser()?.displayName}}</h3>
                   <span class="text-xs text-slate-400">{{authService.currentUser()?.email}}</span>
@@ -317,7 +318,7 @@ export class App implements OnInit {
   showInstallPopup = signal(false);
 
   constructor() {
-    if (isPlatformBrowser(this.platformId)) {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
       window.addEventListener('beforeinstallprompt', (e) => {
         // Prevent the mini-infobar from appearing on mobile
         e.preventDefault();
@@ -352,7 +353,7 @@ export class App implements OnInit {
   }
 
   goBack() {
-    if (window.history.length > 1) {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined' && window.history.length > 1) {
       window.history.back();
     } else {
       this.router.navigate([this.authService.currentUser() ? '/dashboard' : '/']);

@@ -3,14 +3,14 @@ import { FormsModule } from '@angular/forms';
 import { DataService } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgOptimizedImage } from '@angular/common';
 import { Timestamp } from 'firebase/firestore';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-community',
   standalone: true,
-  imports: [FormsModule, MatIconModule, DatePipe, RouterLink],
+  imports: [FormsModule, MatIconModule, DatePipe, RouterLink, NgOptimizedImage],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     textarea::-webkit-scrollbar {
@@ -69,9 +69,11 @@ import { RouterLink } from '@angular/router';
             
             <!-- Avatar -->
             <div class="shrink-0 mt-1">
-              <img [src]="msg.authorPhoto || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + msg.authorId" 
+              <img ngSrc="{{msg.authorPhoto || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + msg.authorId}}" 
                    alt="Avatar"
-                   class="w-8 h-8 rounded-xl bg-slate-200 border border-slate-100 object-cover shadow-sm" 
+                   width="32"
+                   height="32"
+                   class="rounded-xl bg-slate-200 border border-slate-100 object-cover shadow-sm" 
                    referrerpolicy="no-referrer">
             </div>
 

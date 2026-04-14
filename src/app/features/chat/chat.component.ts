@@ -5,12 +5,13 @@ import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
-import { marked } from 'marked';
+import { NgOptimizedImage } from '@angular/common';
+import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [FormsModule, MatIconModule, RouterLink],
+  imports: [FormsModule, MatIconModule, RouterLink, NgOptimizedImage, MarkdownPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     :host {
@@ -118,9 +119,11 @@ import { marked } from 'marked';
                   <mat-icon class="!w-4 !h-4 !text-[16px]">auto_awesome</mat-icon>
                 </div>
               } @else {
-                <img [src]="authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid" 
+                <img ngSrc="{{authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid}}" 
                      alt="User Avatar"
-                     class="w-8 h-8 rounded-lg bg-slate-200 border border-slate-100 object-cover" 
+                     width="32"
+                     height="32"
+                     class="rounded-lg bg-slate-200 border border-slate-100 object-cover" 
                      referrerpolicy="no-referrer">
               }
             </div>
@@ -132,7 +135,7 @@ import { marked } from 'marked';
               </p>
               
               @if (msg.role === 'model') {
-                <div class="prose prose-sm max-w-none prose-slate leading-relaxed text-slate-800 font-medium no-highlight" [innerHTML]="parseMarkdown(msg.content)"></div>
+                <div class="prose prose-sm max-w-none prose-slate leading-relaxed text-slate-800 font-medium no-highlight" [innerHTML]="msg.content | markdown | async"></div>
               } @else {
                 <p class="whitespace-pre-wrap text-[15px] leading-relaxed font-medium text-slate-900">{{msg.content}}</p>
               }
@@ -208,10 +211,6 @@ export class ChatComponent {
       this.gemini.messages();
       setTimeout(() => this.scrollToBottom(), 100);
     });
-  }
-
-  parseMarkdown(content: string): string {
-    return marked.parse(content) as string;
   }
 
   handleEnter(event: Event) {

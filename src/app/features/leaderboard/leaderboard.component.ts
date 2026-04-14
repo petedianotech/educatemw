@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { DataService } from '../../core/services/data.service';
 import { UserProfile } from '../../core/services/auth.service';
@@ -9,7 +9,7 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
-  imports: [CommonModule, MatIconModule, RouterLink],
+  imports: [CommonModule, MatIconModule, RouterLink, NgOptimizedImage],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-slate-50 pb-safe">
@@ -29,14 +29,16 @@ import { RouterLink } from '@angular/router';
           @if (topStudents().length > 1) {
             <div class="flex flex-col items-center gap-2 animate-in slide-in-from-bottom-10 duration-700 delay-100">
               <div class="relative">
-                <img [src]="topStudents()[1].photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + topStudents()[1].uid" 
+                <img ngSrc="{{topStudents()[1].photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + topStudents()[1].uid}}" 
                      alt="2nd Place"
-                     class="w-16 h-16 rounded-2xl border-4 border-slate-300 shadow-lg object-cover" referrerpolicy="no-referrer">
+                     width="64"
+                     height="64"
+                     class="rounded-2xl border-4 border-slate-300 shadow-lg object-cover" referrerpolicy="no-referrer">
                 <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-slate-400 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm">2nd</div>
               </div>
               <div class="text-center">
                 <p class="text-xs font-bold text-slate-700 truncate w-20">{{topStudents()[1].displayName}}</p>
-                <p class="text-[10px] font-black text-indigo-600">{{topStudents()[1].aiCredits || 0}} pts</p>
+                <p class="text-[10px] font-black text-indigo-600">{{topStudents()[1].coins || 0}} coins</p>
                 <div class="flex items-center justify-center gap-0.5 mt-0.5">
                   <mat-icon class="!w-3 !h-3 !text-[12px] text-orange-500">local_fire_department</mat-icon>
                   <span class="text-[10px] font-black text-orange-600">{{topStudents()[1].streak || 0}}</span>
@@ -52,14 +54,16 @@ import { RouterLink } from '@angular/router';
                 <div class="absolute -top-6 left-1/2 -translate-x-1/2 animate-bounce">
                   <mat-icon class="text-amber-400 !w-8 !h-8 !text-[32px]">emoji_events</mat-icon>
                 </div>
-                <img [src]="topStudents()[0].photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + topStudents()[0].uid" 
+                <img ngSrc="{{topStudents()[0].photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + topStudents()[0].uid}}" 
                      alt="1st Place"
-                     class="w-24 h-24 rounded-3xl border-4 border-amber-400 shadow-xl shadow-amber-200/50 object-cover" referrerpolicy="no-referrer">
+                     width="96"
+                     height="96"
+                     class="rounded-3xl border-4 border-amber-400 shadow-xl shadow-amber-200/50 object-cover" referrerpolicy="no-referrer">
                 <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-amber-400 text-white text-[12px] font-black px-3 py-1 rounded-full shadow-md">1st</div>
               </div>
               <div class="text-center">
                 <p class="text-sm font-black text-slate-900 truncate w-24">{{topStudents()[0].displayName}}</p>
-                <p class="text-xs font-black text-indigo-600">{{topStudents()[0].aiCredits || 0}} pts</p>
+                <p class="text-xs font-black text-indigo-600">{{topStudents()[0].coins || 0}} coins</p>
                 <div class="flex items-center justify-center gap-0.5 mt-0.5">
                   <mat-icon class="!w-4 !h-4 !text-[14px] text-orange-500">local_fire_department</mat-icon>
                   <span class="text-xs font-black text-orange-600">{{topStudents()[0].streak || 0}}</span>
@@ -72,14 +76,16 @@ import { RouterLink } from '@angular/router';
           @if (topStudents().length > 2) {
             <div class="flex flex-col items-center gap-2 animate-in slide-in-from-bottom-10 duration-700 delay-200">
               <div class="relative">
-                <img [src]="topStudents()[2].photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + topStudents()[2].uid" 
+                <img ngSrc="{{topStudents()[2].photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + topStudents()[2].uid}}" 
                      alt="3rd Place"
-                     class="w-16 h-16 rounded-2xl border-4 border-orange-300 shadow-lg object-cover" referrerpolicy="no-referrer">
+                     width="64"
+                     height="64"
+                     class="rounded-2xl border-4 border-orange-300 shadow-lg object-cover" referrerpolicy="no-referrer">
                 <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-orange-400 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm">3rd</div>
               </div>
               <div class="text-center">
                 <p class="text-xs font-bold text-slate-700 truncate w-20">{{topStudents()[2].displayName}}</p>
-                <p class="text-[10px] font-black text-indigo-600">{{topStudents()[2].aiCredits || 0}} pts</p>
+                <p class="text-[10px] font-black text-indigo-600">{{topStudents()[2].coins || 0}} coins</p>
                 <div class="flex items-center justify-center gap-0.5 mt-0.5">
                   <mat-icon class="!w-3 !h-3 !text-[12px] text-orange-500">local_fire_department</mat-icon>
                   <span class="text-[10px] font-black text-orange-600">{{topStudents()[2].streak || 0}}</span>
@@ -101,13 +107,15 @@ import { RouterLink } from '@angular/router';
               @if (i >= 3) {
                 <div class="flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors group">
                   <div class="w-8 font-black text-slate-300 group-hover:text-indigo-400 transition-colors text-center text-sm">{{i + 1}}</div>
-                  <img [src]="student.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + student.uid" 
+                  <img ngSrc="{{student.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + student.uid}}" 
                        alt="Student Avatar"
-                       class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-100 object-cover" referrerpolicy="no-referrer">
+                       width="40"
+                       height="40"
+                       class="rounded-xl bg-slate-100 border border-slate-100 object-cover" referrerpolicy="no-referrer">
                   <div class="flex-1 min-w-0">
                     <p class="font-bold text-slate-900 truncate text-sm">{{student.displayName}}</p>
                     <div class="flex items-center gap-2 mt-0.5">
-                      <span class="text-[10px] font-black text-indigo-500 uppercase tracking-tighter">{{student.aiCredits || 0}} points</span>
+                      <span class="text-[10px] font-black text-indigo-500 uppercase tracking-tighter">{{student.coins || 0}} coins</span>
                     </div>
                   </div>
                   <div class="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-lg">

@@ -1,4 +1,5 @@
 declare const GEMINI_API_KEY: string;
+declare const PRODUCTION_API_URL: string;
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];

@@ -1,15 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, PLATFORM_ID } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [MatIconModule, FormsModule, CommonModule, RouterLink],
+  imports: [MatIconModule, FormsModule, CommonModule, RouterLink, NgOptimizedImage],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-slate-50 pb-safe">
@@ -30,10 +30,14 @@ import { CommonModule } from '@angular/common';
           </div>
           <div class="px-6 pb-6 -mt-12 relative flex flex-col items-center sm:flex-row sm:items-end sm:gap-6 sm:text-left">
             <div class="relative">
-              <img [src]="authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid" 
+              <img ngSrc="{{authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid}}" 
                    alt="Profile" 
-                   class="w-24 h-24 rounded-[1.5rem] bg-slate-100 border-4 border-white shadow-xl object-cover cursor-pointer hover:opacity-80 transition-all" 
+                   width="96"
+                   height="96"
+                   class="rounded-[1.5rem] bg-slate-100 border-4 border-white shadow-xl object-cover cursor-pointer hover:opacity-80 transition-all" 
                    (click)="fileInput.click()"
+                   (keydown.enter)="fileInput.click()"
+                   tabindex="0"
                    referrerpolicy="no-referrer">
               <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" class="hidden">
             </div>
@@ -178,8 +182,9 @@ import { CommonModule } from '@angular/common';
 })
 export class SettingsComponent {
   authService = inject(AuthService);
-  dataService = inject(DataService);
   router = inject(Router);
+  dataService = inject(DataService);
+  platformId = inject(PLATFORM_ID);
   
   newUsername = signal('');
   isUpdating = signal(false);
@@ -216,8 +221,9 @@ export class SettingsComponent {
     }
   }
 
-  async onFileSelected(event: any) {
-    const file = event.target.files[0];
+  async onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file) return;
 
     this.isUpdating.set(true);
@@ -237,13 +243,13 @@ export class SettingsComponent {
   getReferralLink() {
     const user = this.authService.currentUser();
     if (!user) return '';
-    const baseUrl = window.location.origin;
+    const baseUrl = isPlatformBrowser(this.platformId) && typeof window !== 'undefined' ? window.location.origin : '';
     return `${baseUrl}?ref=${user.referralCode}`;
   }
 
   async shareApp() {
     const link = this.getReferralLink();
-    if (navigator.share) {
+    if (isPlatformBrowser(this.platformId) && typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
           title: 'Educate MW',
@@ -261,20 +267,24 @@ export class SettingsComponent {
   }
 
   copyToClipboard(link: string) {
-    navigator.clipboard.writeText(link);
-    this.updateMsg.set('Referral link copied to clipboard!');
-    setTimeout(() => this.updateMsg.set(''), 3000);
+    if (isPlatformBrowser(this.platformId) && typeof navigator !== 'undefined') {
+      navigator.clipboard.writeText(link);
+      this.updateMsg.set('Referral link copied to clipboard!');
+      setTimeout(() => this.updateMsg.set(''), 3000);
+    }
   }
 
   async logout() {
-    if (confirm('Are you sure you want to sign out?')) {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined' && window.confirm('Are you sure you want to sign out?')) {
       await this.authService.logout();
       this.router.navigate(['/login']);
     }
   }
 
   goBack() {
-    window.history.back();
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+      window.history.back();
+    }
   }
 }
 
