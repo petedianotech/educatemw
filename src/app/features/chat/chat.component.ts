@@ -5,13 +5,13 @@ import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
-import { NgOptimizedImage } from '@angular/common';
+import { NgOptimizedImage, AsyncPipe } from '@angular/common';
 import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [FormsModule, MatIconModule, RouterLink, NgOptimizedImage, MarkdownPipe],
+  imports: [FormsModule, MatIconModule, RouterLink, NgOptimizedImage, MarkdownPipe, AsyncPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     :host {

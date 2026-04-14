@@ -146,37 +146,6 @@ import { FormsModule } from '@angular/forms';
                   Back to Login
                 </button>
               </div>
-            } @else if (view() === 'security-setup') {
-              <div class="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                <div class="p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-3">
-                  <mat-icon class="text-amber-500 !w-5 !h-5 !text-[20px]">warning</mat-icon>
-                  <p class="text-amber-700 text-[10px] font-bold leading-tight">
-                    Set security questions to recover your account if you forget your password. If you skip this, you will not be able to recover your account.
-                  </p>
-                </div>
-
-                <div class="space-y-4">
-                  <div>
-                    <label for="ans1" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Question 1: What is your home district?</label>
-                    <input type="text" id="ans1" [(ngModel)]="ans1" name="ans1" placeholder="Answer"
-                           class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
-                  </div>
-                  <div>
-                    <label for="ans2" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Question 2: What is your mother's maiden name?</label>
-                    <input type="text" id="ans2" [(ngModel)]="ans2" name="ans2" placeholder="Answer"
-                           class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
-                  </div>
-                </div>
-
-                <div class="flex gap-3">
-                  <button (click)="skipSecurityQuestions()" class="flex-1 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">
-                    Skip for now
-                  </button>
-                  <button (click)="finishSignup()" [disabled]="!ans1 || !ans2 || isLoading()" class="flex-1 btn-primary py-4 shadow-lg shadow-indigo-100">
-                    {{ isLoading() ? 'Saving...' : 'Finish Signup' }}
-                  </button>
-                </div>
-              </div>
             } @else {
               <form (ngSubmit)="submitForm()" class="space-y-4">
                 @if (isSignup()) {
@@ -297,10 +266,6 @@ export class LoginComponent {
   recoveryIdentifier = '';
   recoveryUser = signal<{ questions: { question: string; answer: string }[] } | null>(null);
   recoveryAnswers: string[] = [];
-
-  // Security Setup
-  ans1 = '';
-  ans2 = '';
 
   toggleSignup() {
     this.isSignup.update(v => !v);

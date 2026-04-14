@@ -78,6 +78,41 @@ import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/comm
           </div>
         </section>
 
+        <!-- Security Questions Section -->
+        <section class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
+          <div class="p-5 border-b border-slate-50">
+            <h3 class="font-black text-slate-900 text-sm flex items-center gap-2">
+              <mat-icon class="text-indigo-600 text-sm">security</mat-icon>
+              Security Questions
+            </h3>
+          </div>
+          <div class="p-5 space-y-4">
+            <p class="text-[10px] text-slate-500 font-medium leading-tight px-1">
+              Set these questions to recover your account if you forget your password.
+            </p>
+            
+            <div class="space-y-4">
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <label for="ans1" class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Question 1: What is your home district?</label>
+                <input type="text" id="ans1" [(ngModel)]="ans1" placeholder="Your answer" 
+                       class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all outline-none text-sm text-slate-700 shadow-sm">
+              </div>
+              
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <label for="ans2" class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Question 2: What is your mother's maiden name?</label>
+                <input type="text" id="ans2" [(ngModel)]="ans2" placeholder="Your answer" 
+                       class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all outline-none text-sm text-slate-700 shadow-sm">
+              </div>
+            </div>
+
+            <button (click)="saveSecurityQuestions()" [disabled]="!ans1().trim() || !ans2().trim() || isUpdating()" 
+                    class="w-full py-4 bg-indigo-600 text-white rounded-xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2">
+              <mat-icon class="text-sm">verified_user</mat-icon>
+              Save Security Questions
+            </button>
+          </div>
+        </section>
+
         <!-- Referral System -->
         <section class="bg-slate-950 rounded-[2rem] p-6 text-white shadow-2xl shadow-indigo-900/20 relative overflow-hidden border border-white/5">
           <!-- Decorative background -->
@@ -190,10 +225,17 @@ export class SettingsComponent {
   isUpdating = signal(false);
   updateMsg = signal('');
 
+  ans1 = signal('');
+  ans2 = signal('');
+
   constructor() {
     const user = this.authService.currentUser();
     if (user) {
       this.newUsername.set(user.displayName || '');
+      if (user.securityQuestions && user.securityQuestions.length >= 2) {
+        this.ans1.set(user.securityQuestions[0].answer);
+        this.ans2.set(user.securityQuestions[1].answer);
+      }
     }
   }
 
@@ -216,6 +258,28 @@ export class SettingsComponent {
     } catch (error) {
       console.error('Failed to update username', error);
       this.updateMsg.set('Failed to update username.');
+    } finally {
+      this.isUpdating.set(false);
+    }
+  }
+
+  async saveSecurityQuestions() {
+    const a1 = this.ans1().trim();
+    const a2 = this.ans2().trim();
+    if (!a1 || !a2) return;
+
+    this.isUpdating.set(true);
+    this.updateMsg.set('');
+    try {
+      await this.authService.saveSecurityQuestions([
+        { question: 'What is your home district?', answer: a1 },
+        { question: "What is your mother's maiden name?", answer: a2 }
+      ]);
+      this.updateMsg.set('Security questions saved successfully!');
+      setTimeout(() => this.updateMsg.set(''), 3000);
+    } catch (error) {
+      console.error('Failed to save security questions', error);
+      this.updateMsg.set('Failed to save security questions.');
     } finally {
       this.isUpdating.set(false);
     }

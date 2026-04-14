@@ -2,14 +2,13 @@ import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject } from '@
 import { DataService } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
-import { DatePipe } from '@angular/common';
 import { Timestamp } from 'firebase/firestore';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-notes',
   standalone: true,
-  imports: [MatIconModule, DatePipe, RouterLink],
+  imports: [MatIconModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-slate-50 overflow-hidden relative">

@@ -13,7 +13,7 @@ export class PaymentService {
     const user = this.authService.currentUser();
     if (!user) throw new Error('User not authenticated');
 
-    const isNative = isPlatformBrowser(this.platformId) && typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform();
+    const isNative = isPlatformBrowser(this.platformId) && typeof window !== 'undefined' && (window as unknown as { Capacitor?: { isNativePlatform: () => boolean } }).Capacitor?.isNativePlatform();
     const baseUrl = isNative ? PRODUCTION_API_URL : '';
     const origin = isNative ? PRODUCTION_API_URL : (isPlatformBrowser(this.platformId) && typeof window !== 'undefined' ? window.location.origin : '');
 

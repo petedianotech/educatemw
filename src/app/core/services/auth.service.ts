@@ -326,4 +326,25 @@ export class AuthService {
       pwaInstalled: true 
     });
   }
+
+  async saveSecurityQuestions(questions: SecurityQuestion[]) {
+    const user = this.currentUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const userRef = doc(db, 'users', user.uid);
+    const recoveryRef = doc(db, 'recovery', user.email || `${user.uid}@edumalawi.local`);
+
+    const formattedQuestions = questions.map(q => ({ 
+      question: q.question, 
+      answer: q.answer.toLowerCase().trim() 
+    }));
+
+    await updateDoc(userRef, { securityQuestions: formattedQuestions });
+    await setDoc(recoveryRef, {
+      uid: user.uid,
+      questions: formattedQuestions
+    });
+
+    this.currentUser.set({ ...user, securityQuestions: formattedQuestions });
+  }
 }
