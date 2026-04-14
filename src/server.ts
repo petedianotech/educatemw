@@ -149,6 +149,12 @@ app.use((req, res, next) => {
  */
 if (isMainModule(import.meta.url) || process.env['pm_id']) {
   const port = process.env['PORT'] || 4000;
+  
+  // Check for required environment variables
+  if (!process.env['PAYCHANGU_SECRET_KEY']) {
+    console.warn('WARNING: PAYCHANGU_SECRET_KEY is not set. Payments will fail.');
+  }
+
   app.listen(port, (error) => {
     if (error) {
       throw error;

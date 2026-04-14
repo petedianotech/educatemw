@@ -110,11 +110,11 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
               <!-- Cleo AI (Center, Prominent) -->
               <div class="relative -top-1">
                 <a routerLink="/chat" class="flex flex-col items-center justify-center gap-1 transition-all active:scale-90 group">
-                  <div class="relative flex items-center justify-center w-12 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/40 border-2 border-white/20 group-hover:scale-105 transition-transform overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-indigo-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div class="relative flex items-center justify-center w-12 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg shadow-blue-500/30 border-2 border-white/20 group-hover:scale-105 transition-transform overflow-hidden">
+                    <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <mat-icon class="!w-6 !h-6 !text-[24px] text-white relative z-10">auto_awesome</mat-icon>
                   </div>
-                  <span class="text-[10px] font-black tracking-wide text-indigo-300">Cleo AI</span>
+                  <span class="text-[10px] font-black tracking-wide text-blue-500">Cleo AI</span>
                 </a>
               </div>
 
@@ -225,8 +225,8 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
                 <span class="text-sm">Premium Students</span>
               </a>
 
-              <a routerLink="/chat" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
-                <div class="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white">
+              <a routerLink="/chat" (click)="closeMenu()" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <div class="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-white">
                   <mat-icon class="!w-3 !h-3 !text-[12px]">auto_awesome</mat-icon>
                 </div>
                 <span class="text-sm">Cleo AI Assistant</span>

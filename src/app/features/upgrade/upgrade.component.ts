@@ -132,9 +132,10 @@ export class UpgradeComponent {
     this.isProcessing.set(true);
     try {
       await this.paymentService.initializePayment(5000);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Payment Initialization Failed:', error);
-      alert('Failed to start payment. Please try again later.');
+      const msg = (error as Error)?.message || 'Failed to start payment.';
+      alert(`${msg} Please ensure you have a stable internet connection and try again. If the problem persists, use the manual payment method below.`);
     } finally {
       this.isProcessing.set(false);
     }

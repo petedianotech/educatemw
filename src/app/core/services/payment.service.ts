@@ -13,9 +13,24 @@ export class PaymentService {
     const user = this.authService.currentUser();
     if (!user) throw new Error('User not authenticated');
 
-    const isNative = isPlatformBrowser(this.platformId) && typeof window !== 'undefined' && (window as unknown as { Capacitor?: { isNativePlatform: () => boolean } }).Capacitor?.isNativePlatform();
-    const baseUrl = isNative ? PRODUCTION_API_URL : '';
-    const origin = isNative ? PRODUCTION_API_URL : (isPlatformBrowser(this.platformId) && typeof window !== 'undefined' ? window.location.origin : '');
+    const isNative = isPlatformBrowser(this.platformId) && typeof window !== 'undefined' && (window as { Capacitor?: { isNativePlatform: () => boolean } }).Capacitor?.isNativePlatform?.();
+    
+    let apiBase = '';
+    try {
+      // Check if PRODUCTION_API_URL is defined (it's a global const)
+      if (typeof PRODUCTION_API_URL !== 'undefined' && PRODUCTION_API_URL) {
+        apiBase = PRODUCTION_API_URL;
+      } else if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+        apiBase = window.location.origin;
+      }
+    } catch {
+      if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+        apiBase = window.location.origin;
+      }
+    }
+
+    const baseUrl = isNative ? apiBase : '';
+    const origin = isNative ? apiBase : (isPlatformBrowser(this.platformId) && typeof window !== 'undefined' ? window.location.origin : '');
 
     const response = await fetch(`${baseUrl}/api/paychangu/initialize`, {
       method: 'POST',

@@ -109,9 +109,6 @@ import { AuthService } from '../../core/services/auth.service';
             <a routerLink="/login" class="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all">
               Start Learning Free
             </a>
-            <a href="#features" class="w-full sm:w-auto px-10 py-5 bg-white text-slate-700 border-2 border-slate-100 rounded-2xl font-black text-lg hover:bg-slate-50 transition-all">
-              Explore Features
-            </a>
           </div>
 
           <!-- Social Proof -->

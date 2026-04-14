@@ -97,8 +97,8 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
             
             <!-- Cleo AI Tutor -->
             <a routerLink="/chat" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/30 relative z-10 group-hover:scale-105 transition-transform">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md shadow-blue-500/30 relative z-10 group-hover:scale-105 transition-transform">
                 <mat-icon class="!w-6 !h-6 !text-[24px]">auto_awesome</mat-icon>
                 @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 5) <= 0) {
                   <div class="absolute -top-1.5 -right-1.5 bg-slate-900 text-amber-400 p-1 rounded-lg border-2 border-white shadow-sm">
@@ -148,8 +148,9 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
               </div>
               <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Exam Dates</h3>
               <div class="mt-1 relative z-10">
-                @if (dataService.examDates().length > 0) {
-                  <p class="text-blue-600 text-[10px] font-black uppercase tracking-tighter">{{ dataService.examDates()[0].subject }} in {{ getExamDays(dataService.examDates()[0].date) }} Days</p>
+                @let nextExam = getNextExam();
+                @if (nextExam) {
+                  <p class="text-blue-600 text-[10px] font-black uppercase tracking-tighter">{{ nextExam.name }} in {{ getExamDays(nextExam.date!) }} Days</p>
                 } @else {
                   <p class="text-blue-600 text-[10px] font-black uppercase tracking-tighter">No Exams Scheduled</p>
                 }
@@ -226,6 +227,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  officialExams = [
+    { name: 'MSCE', date: new Date('2026-06-29T08:00:00') },
+    { name: 'JCE', date: new Date('2026-06-01T08:00:00') },
+    { name: 'PSLCE', date: new Date('2026-06-08T08:00:00') }
+  ];
+
+  getNextExam() {
+    const customExams = this.dataService.examDates().map(e => ({
+      name: e.subject,
+      date: this.toDate(e.date)
+    }));
+
+    const allExams = [...this.officialExams, ...customExams]
+      .filter(e => e.date && e.date.getTime() > Date.now())
+      .sort((a, b) => (a.date?.getTime() || 0) - (b.date?.getTime() || 0));
+
+    return allExams.length > 0 ? allExams[0] : null;
   }
 
   ngOnDestroy() {

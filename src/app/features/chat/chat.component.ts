@@ -5,33 +5,62 @@ import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
-import { NgOptimizedImage, AsyncPipe } from '@angular/common';
+import { NgOptimizedImage, AsyncPipe, DatePipe } from '@angular/common';
 import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [FormsModule, MatIconModule, RouterLink, NgOptimizedImage, MarkdownPipe, AsyncPipe],
+  imports: [FormsModule, MatIconModule, RouterLink, NgOptimizedImage, MarkdownPipe, AsyncPipe, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     :host {
       display: block;
       height: 100%;
     }
+    .no-highlight ::ng-deep * {
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      color: #1e293b !important; /* slate-800 */
+    }
+    .no-highlight ::ng-deep p {
+      margin-bottom: 1.25rem !important;
+      line-height: 1.75 !important;
+      font-size: 1.05rem !important;
+    }
+    .no-highlight ::ng-deep strong {
+      color: #0f172a !important; /* slate-900 */
+      font-weight: 800 !important;
+    }
+    .no-highlight ::ng-deep ul, .no-highlight ::ng-deep ol {
+      margin-bottom: 1.25rem !important;
+      padding-left: 1.5rem !important;
+    }
+    .no-highlight ::ng-deep li {
+      margin-bottom: 0.5rem !important;
+      line-height: 1.6 !important;
+    }
     .no-highlight ::ng-deep pre, 
     .no-highlight ::ng-deep code {
-      background: transparent !important;
-      padding: 0 !important;
-      border: none !important;
-      color: inherit !important;
-      font-family: inherit !important;
-      font-size: inherit !important;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+      font-size: 0.9em !important;
+      font-weight: 600 !important;
+      padding: 0.75rem !important;
+      margin: 1rem 0 !important;
+      background-color: #f8fafc !important; /* slate-50 */
+      border: 1px solid #f1f5f9 !important; /* slate-100 */
+      border-radius: 0.75rem !important;
+      display: block;
+      color: #334155 !important;
     }
     .no-highlight ::ng-deep blockquote {
-      border-left: none !important;
-      padding-left: 0 !important;
-      font-style: normal !important;
-      color: inherit !important;
+      border-left: 4px solid #e2e8f0 !important; /* slate-200 */
+      padding-left: 1.25rem !important;
+      margin: 1.5rem 0 !important;
+      color: #475569 !important; /* slate-600 */
+      font-style: italic;
     }
     textarea::-webkit-scrollbar {
       display: none;
@@ -50,7 +79,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
             <mat-icon class="text-[22px]">arrow_back</mat-icon>
           </a>
           <div class="relative">
-            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-500 to-sky-400 flex items-center justify-center text-white shadow-lg shadow-indigo-200 overflow-hidden animate-gradient-x">
+            <div class="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200 overflow-hidden">
               <mat-icon class="scale-110 animate-pulse">auto_awesome</mat-icon>
             </div>
             <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full shadow-sm"></div>
@@ -68,7 +97,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
         </div>
         <div class="flex items-center gap-3">
           @if (notificationService.permission() === 'default') {
-            <button (click)="notificationService.requestPermission()" class="w-10 h-10 flex items-center justify-center text-indigo-600 bg-indigo-50 rounded-2xl transition-all hover:bg-indigo-100" title="Enable Notifications">
+            <button (click)="notificationService.requestPermission()" class="w-10 h-10 flex items-center justify-center text-blue-600 bg-blue-50 rounded-2xl transition-all hover:bg-blue-100" title="Enable Notifications">
               <mat-icon class="text-[20px]">notifications_active</mat-icon>
             </button>
           }
@@ -111,49 +140,56 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
         }
 
         @for (msg of gemini.messages(); track msg.id) {
-          <div class="flex w-full animate-in fade-in slide-in-from-bottom-2 duration-300 gap-4 max-w-3xl mx-auto">
+          <div class="flex w-full animate-in fade-in slide-in-from-bottom-2 duration-300 gap-4 max-w-4xl mx-auto px-2">
             <!-- Icon/Avatar -->
             <div class="shrink-0 mt-1">
               @if (msg.role === 'model') {
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm">
-                  <mat-icon class="!w-4 !h-4 !text-[16px]">auto_awesome</mat-icon>
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-100">
+                  <mat-icon class="!w-5 !h-5 !text-[20px]">auto_awesome</mat-icon>
                 </div>
               } @else {
                 <img ngSrc="{{authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid}}" 
                      alt="User Avatar"
-                     width="32"
-                     height="32"
-                     class="rounded-lg bg-slate-200 border border-slate-100 object-cover" 
+                     width="40"
+                     height="40"
+                     class="rounded-xl bg-slate-200 border border-slate-100 object-cover shadow-sm" 
                      referrerpolicy="no-referrer">
               }
             </div>
 
             <!-- Content -->
             <div class="flex-1 min-w-0">
-              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                {{msg.role === 'model' ? 'Cleo AI' : 'You'}}
-              </p>
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="text-[11px] font-black text-slate-900 uppercase tracking-widest">
+                  {{msg.role === 'model' ? 'Cleo AI' : 'You'}}
+                </span>
+                <span class="text-[9px] font-bold text-slate-400">{{msg.timestamp | date:'shortTime'}}</span>
+              </div>
               
-              @if (msg.role === 'model') {
-                <div class="prose prose-sm max-w-none prose-slate leading-relaxed text-slate-800 font-medium no-highlight" [innerHTML]="msg.content | markdown | async"></div>
-              } @else {
-                <p class="whitespace-pre-wrap text-[15px] leading-relaxed font-medium text-slate-900">{{msg.content}}</p>
-              }
+              <div class="relative">
+                @if (msg.role === 'model') {
+                  <div class="prose prose-slate max-w-none leading-relaxed text-slate-800 no-highlight" [innerHTML]="msg.content | markdown | async"></div>
+                } @else {
+                  <div class="bg-white border border-slate-200/80 rounded-2xl rounded-tl-none p-4 shadow-sm">
+                    <p class="whitespace-pre-wrap text-[15px] leading-relaxed font-bold text-slate-900">{{msg.content}}</p>
+                  </div>
+                }
+              </div>
             </div>
           </div>
         }
 
         @if (gemini.isLoading()) {
-          <div class="flex w-full animate-in fade-in duration-300 gap-4 max-w-3xl mx-auto">
+          <div class="flex w-full animate-in fade-in duration-300 gap-4 max-w-4xl mx-auto px-2">
             <div class="shrink-0 mt-1">
-              <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm">
-                <mat-icon class="!w-4 !h-4 !text-[16px]">auto_awesome</mat-icon>
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-100">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">auto_awesome</mat-icon>
               </div>
             </div>
             <div class="flex items-center gap-1.5">
-              <div class="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce"></div>
-              <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-              <div class="w-1.5 h-1.5 bg-sky-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+              <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+              <div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+              <div class="w-2 h-2 bg-sky-300 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
             </div>
           </div>
         }
@@ -188,8 +224,8 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
             <button 
               (click)="sendMessage()"
               [disabled]="!inputText().trim() || gemini.isLoading()"
-              class="flex-shrink-0 w-14 h-14 flex items-center justify-center text-white bg-slate-900 rounded-full shadow-xl shadow-slate-200 hover:shadow-indigo-200 hover:-translate-y-1 active:scale-90 disabled:opacity-30 disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100 transition-all duration-300 relative group overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-blue-500 to-sky-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              class="flex-shrink-0 w-14 h-14 flex items-center justify-center text-white bg-slate-900 rounded-full shadow-xl shadow-slate-200 hover:shadow-blue-200 hover:-translate-y-1 active:scale-90 disabled:opacity-30 disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100 transition-all duration-300 relative group overflow-hidden">
+              <div class="absolute inset-0 bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <mat-icon class="relative z-10 scale-110">send</mat-icon>
             </button>
           </div>

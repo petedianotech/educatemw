@@ -45,7 +45,7 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'isGuest', 'aiCredits', 'streak', 'lastCreditReset', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount', 'createdAt', 'securityQuestions']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'isGuest', 'aiCredits', 'streak', 'coins', 'lastCreditReset', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount', 'createdAt', 'securityQuestions']) &&
              hasRequiredFields(['uid', 'email', 'role', 'isPro', 'createdAt']) &&
              data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
              data.email is string && data.email.size() > 0 && data.email.size() < 100 &&
@@ -57,6 +57,7 @@ service cloud.firestore {
              (!('isGuest' in data) || data.isGuest is bool) &&
              (!('aiCredits' in data) || data.aiCredits is number) &&
              (!('streak' in data) || data.streak is number) &&
+             (!('coins' in data) || data.coins is number) &&
              (!('lastCreditReset' in data) || data.lastCreditReset is string) &&
              (!('pwaInstalled' in data) || data.pwaInstalled is bool) &&
              (!('referralCode' in data) || data.referralCode is string) &&

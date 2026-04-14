@@ -12,6 +12,8 @@
         "role": { "type": "string", "enum": ["student", "admin"] },
         "isPro": { "type": "boolean", "description": "Whether the user has Pro access." },
         "aiCredits": { "type": "number", "description": "Remaining AI credits." },
+        "streak": { "type": "number", "description": "Current daily streak." },
+        "coins": { "type": "number", "description": "User's virtual currency." },
         "pwaInstalled": { "type": "boolean", "description": "Whether the user has installed the PWA." },
         "referralCode": { "type": "string", "description": "Unique code for referrals." },
         "referredBy": { "type": "string", "description": "UID of the user who referred this user." },
