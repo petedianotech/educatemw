@@ -473,12 +473,11 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
           }
 
           @if (activeTab() === 'students') {
-            <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-              <table class="w-full text-left border-collapse">
+            <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-x-auto">
+              <table class="w-full text-left border-collapse min-w-[600px]">
                 <thead>
                   <tr class="bg-slate-50 border-b border-slate-100">
                     <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Student</th>
-                    <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Role</th>
                     <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
                     <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Actions</th>
                   </tr>
@@ -494,9 +493,6 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
                             <p class="text-[10px] text-slate-400 font-bold">{{ student.email }}</p>
                           </div>
                         </div>
-                      </td>
-                      <td class="px-8 py-6">
-                        <span class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-full border border-slate-200 uppercase tracking-widest">{{ student.role }}</span>
                       </td>
                       <td class="px-8 py-6">
                         <span [class]="student.isPro ? 'bg-sky-50 text-sky-600 border-sky-100' : 'bg-slate-100 text-slate-400 border-slate-200'" class="px-3 py-1 text-[10px] font-black rounded-full border uppercase tracking-widest">
@@ -853,7 +849,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   async saveNote() {
-    if (!this.title().trim() || (!this.content().trim() && !this.driveUrl().trim() && !this.youtubeUrl().trim()) || this.isSubmitting()) return;
+    if (!this.title().trim() || this.isSubmitting()) return;
     this.isSubmitting.set(true);
     try {
       const noteData = {
