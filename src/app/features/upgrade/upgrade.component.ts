@@ -163,7 +163,7 @@ import { PaymentService } from '../../core/services/payment.service';
             <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-200/20 rounded-full -mr-12 -mt-12 blur-xl"></div>
             <h3 class="text-xl font-black text-indigo-900 mb-4 uppercase tracking-tight">Refer & Earn</h3>
             <p class="text-indigo-800 mb-6 font-medium">Invite 5 friends, get 25 Cleo AI Points FREE! Help your friends succeed too.</p>
-            <button class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">Invite Friends</button>
+            <button (click)="inviteFriends()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">Invite Friends</button>
           </div>
         </div>
       </div>
@@ -223,5 +223,43 @@ export class UpgradeComponent {
     } finally {
       this.isProcessing.set(false);
     }
+  }
+
+  inviteFriends() {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    
+    const referralCode = user.referralCode || user.uid.substring(0, 8).toUpperCase();
+    const shareUrl = `${window.location.origin}/login?ref=${referralCode}`;
+    const shareText = `Hey! Join me on Educate MW and get premium educational materials. Use my referral link: ${shareUrl}`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: 'Join Educate MW',
+        text: shareText,
+        url: shareUrl
+      }).catch(console.error);
+    } else {
+      // Fallback to clipboard
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareText).then(() => {
+          alert('Referral link copied to clipboard! Share it with your friends.');
+        }).catch(() => {
+          this.manualCopy(shareText);
+        });
+      } else {
+        this.manualCopy(shareText);
+      }
+    }
+  }
+
+  private manualCopy(text: string) {
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    alert('Referral link copied to clipboard!');
   }
 }
