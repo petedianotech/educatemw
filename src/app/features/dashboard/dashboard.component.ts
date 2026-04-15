@@ -1,10 +1,19 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { DataService } from '../../core/services/data.service';
 import { MatIconModule } from '@angular/material/icon';
 import { Timestamp } from 'firebase/firestore';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
+
+interface Notification {
+  id: string;
+  title: string;
+  content: string;
+  driveUrl?: string;
+  type?: string;
+  destination?: string;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -13,6 +22,15 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="h-full bg-slate-50 relative flex flex-col overflow-hidden">
+      <!-- Payment Success Message -->
+      @if (paymentSuccess()) {
+        <div class="fixed top-20 left-4 right-4 z-[60] animate-in slide-in-from-top-10 duration-500">
+          <div class="bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-emerald-500/50 backdrop-blur-md">
+            <mat-icon class="text-emerald-100">check_circle</mat-icon>
+            <p class="text-sm font-black tracking-tight">Payment successful! Your account has been upgraded to Pro.</p>
+          </div>
+        </div>
+      }
       
       <!-- Premium Header Background -->
       <div class="absolute top-0 left-0 right-0 h-48 bg-slate-950 rounded-b-[2.5rem] shadow-lg z-0 overflow-hidden">
@@ -55,35 +73,51 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
           </div>
         }
 
-        <!-- App Updates Section -->
-        @if (isLoading()) {
-          <div class="mb-6 shrink-0">
-            <app-skeleton className="w-full h-24 rounded-2xl"></app-skeleton>
-          </div>
-        } @else if (dataService.appUpdates().length > 0 && !updateDismissed()) {
-          <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-all hover:scale-[1.01] active:scale-95" 
-                 (click)="dismissUpdate()"
-                 (keydown.enter)="dismissUpdate()"
-                 tabindex="0"
-                 role="button"
-                 aria-label="Dismiss update">
-              <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 border border-indigo-100">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">campaign</mat-icon>
-              </div>
-              <div class="flex-1 min-w-0">
-                <h4 class="text-sm font-black text-slate-900 truncate">{{ dataService.appUpdates()[0].title }}</h4>
-                <p class="text-xs text-slate-500 truncate mt-0.5">{{ dataService.appUpdates()[0].content }}</p>
-                @if (dataService.appUpdates()[0].driveUrl) {
-                  <a [href]="dataService.appUpdates()[0].driveUrl" target="_blank" aria-label="Download update" class="inline-block mt-2 px-3 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-lg shadow-sm hover:bg-indigo-700 transition-all hover:scale-105">
-                    Download Update
-                  </a>
-                }
-              </div>
-              <mat-icon class="text-slate-300 !w-5 !h-5 !text-[20px]">close</mat-icon>
+      <!-- Announcements Section -->
+      @if (isLoading()) {
+        <div class="mb-6 shrink-0">
+          <app-skeleton className="w-full h-24 rounded-2xl"></app-skeleton>
+        </div>
+      } @else if (announcements().length > 0 && !isDismissed(announcements()[0].id)) {
+        <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-all hover:scale-[1.01] active:scale-95" 
+               (click)="viewNotification(announcements()[0])"
+               (keydown.enter)="viewNotification(announcements()[0])"
+               tabindex="0"
+               role="button"
+               aria-label="View announcement">
+            <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 border border-indigo-100">
+              <mat-icon class="!w-5 !h-5 !text-[20px]">campaign</mat-icon>
             </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-sm font-black text-slate-900 truncate">{{ announcements()[0].title }}</h4>
+              <p class="text-xs text-slate-500 truncate mt-0.5">{{ announcements()[0].content }}</p>
+            </div>
+            <mat-icon class="text-slate-300 !w-5 !h-5 !text-[20px]">chevron_right</mat-icon>
           </div>
-        }
+        </div>
+      }
+
+      <!-- App Updates Section (Fallback if no announcements) -->
+      @if (!isLoading() && announcements().length === 0 && dataService.appUpdates().length > 0 && !isDismissed(dataService.appUpdates()[0].id)) {
+        <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-all hover:scale-[1.01] active:scale-95" 
+               (click)="viewNotification(dataService.appUpdates()[0])"
+               (keydown.enter)="viewNotification(dataService.appUpdates()[0])"
+               tabindex="0"
+               role="button"
+               aria-label="View update">
+            <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 border border-indigo-100">
+              <mat-icon class="!w-5 !h-5 !text-[20px]">system_update</mat-icon>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-sm font-black text-slate-900 truncate">{{ dataService.appUpdates()[0].title }}</h4>
+              <p class="text-xs text-slate-500 truncate mt-0.5">{{ dataService.appUpdates()[0].content }}</p>
+            </div>
+            <mat-icon class="text-slate-300 !w-5 !h-5 !text-[20px]">chevron_right</mat-icon>
+          </div>
+        </div>
+      }
 
         <!-- Quick Actions Grid (Compact Sizing, 2 Columns) -->
         @if (isLoading()) {
@@ -198,6 +232,51 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
           </div>
         }
       </div>
+
+      <!-- Notification Detail Modal -->
+      @if (selectedNotification()) {
+        <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" 
+               (click)="selectedNotification.set(null)"
+               (keydown.escape)="selectedNotification.set(null)"
+               role="button"
+               tabindex="0"
+               aria-label="Close notification"></div>
+          <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-300">
+            <div class="p-8">
+              <div class="flex items-center justify-between mb-6">
+                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
+                  <mat-icon>{{ selectedNotification().type ? 'system_update' : 'campaign' }}</mat-icon>
+                </div>
+                <button (click)="selectedNotification.set(null)" class="text-slate-300 hover:text-slate-500 transition-colors">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+              
+              <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-4">{{ selectedNotification().title }}</h3>
+              <div class="max-h-60 overflow-y-auto custom-scrollbar mb-8">
+                <p class="text-slate-600 leading-relaxed font-medium">{{ selectedNotification().content }}</p>
+              </div>
+
+              @if (selectedNotification().driveUrl) {
+                <a [href]="selectedNotification().driveUrl" target="_blank" class="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 mb-4 hover:bg-indigo-700 transition-all">
+                  <mat-icon>open_in_new</mat-icon>
+                  View Attachment
+                </a>
+              }
+
+              <div class="flex flex-col gap-3">
+                <button (click)="selectedNotification.set(null)" class="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-black hover:bg-slate-200 transition-all">
+                  Close
+                </button>
+                <button (click)="dontShowAgain(selectedNotification().id)" class="w-full py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors">
+                  Don't show this again
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `
 })
@@ -208,10 +287,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
   
   updateDismissed = signal(false);
   isLoading = signal(true);
+  paymentSuccess = signal(false);
+  selectedNotification = signal<Notification | null>(null);
+  dismissedIds = signal<string[]>([]);
+
+  announcements = computed(() => {
+    return this.dataService.notes().filter(note => note.destination === 'announcements');
+  });
 
   ngOnInit() {
     this.dataService.subscribeToAppUpdates();
     this.dataService.subscribeToExamDates();
+    this.dataService.subscribeToNotes();
+    
+    // Load dismissed notifications
+    const saved = localStorage.getItem('dismissed_notifications');
+    if (saved) {
+      this.dismissedIds.set(JSON.parse(saved));
+    }
     
     // Simulate loading for demonstration
     setTimeout(() => this.isLoading.set(false), 1000);
@@ -219,12 +312,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Check for payment success
     this.route.queryParams.subscribe(params => {
       if (params['payment'] === 'success') {
-        alert('Payment successful! Your account has been upgraded to Pro.');
+        this.paymentSuccess.set(true);
         // Force refresh user state
         const user = this.authService.currentUser();
         if (user) {
           this.authService.currentUser.update(u => u ? { ...u, isPro: true } : null);
         }
+        // Clear message after 5 seconds
+        setTimeout(() => this.paymentSuccess.set(false), 5000);
       }
     });
   }
@@ -236,13 +331,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ];
 
   getNextExam() {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // Start of today
+
     const customExams = this.dataService.examDates().map(e => ({
       name: e.subject,
       date: this.toDate(e.date)
     }));
 
     const allExams = [...this.officialExams, ...customExams]
-      .filter(e => e.date && e.date.getTime() > Date.now())
+      .filter(e => e.date && e.date.getTime() >= now.getTime())
       .sort((a, b) => (a.date?.getTime() || 0) - (b.date?.getTime() || 0));
 
     return allExams.length > 0 ? allExams[0] : null;
@@ -251,10 +349,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.dataService.unsubscribeFromAppUpdates();
     this.dataService.unsubscribeFromExamDates();
+    this.dataService.unsubscribeFromNotes();
   }
 
   dismissUpdate() {
     this.updateDismissed.set(true);
+  }
+
+  viewNotification(notif: Notification) {
+    this.selectedNotification.set(notif);
+  }
+
+  isDismissed(id: string) {
+    return this.dismissedIds().includes(id);
+  }
+
+  dontShowAgain(id: string) {
+    const current = this.dismissedIds();
+    if (!current.includes(id)) {
+      const updated = [...current, id];
+      this.dismissedIds.set(updated);
+      localStorage.setItem('dismissed_notifications', JSON.stringify(updated));
+    }
+    this.selectedNotification.set(null);
   }
 
   getExamDays(date: Date | Timestamp | string): number {

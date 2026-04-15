@@ -101,14 +101,15 @@ service cloud.firestore {
     }
 
     function isValidQuizResult(data) {
-      return hasOnlyAllowedFields(['userId', 'quizId', 'quizTitle', 'score', 'total', 'completedAt']) &&
+      return hasOnlyAllowedFields(['userId', 'quizId', 'quizTitle', 'score', 'total', 'completedAt', 'isFirstAttempt']) &&
              hasRequiredFields(['userId', 'quizId', 'quizTitle', 'score', 'total', 'completedAt']) &&
              data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
              data.quizId is string && data.quizId.size() > 0 && data.quizId.size() < 100 &&
              data.quizTitle is string && data.quizTitle.size() > 0 && data.quizTitle.size() < 200 &&
              data.score is number && data.score >= 0 &&
              data.total is number && data.total > 0 &&
-             data.completedAt is timestamp;
+             data.completedAt is timestamp &&
+             (!('isFirstAttempt' in data) || data.isFirstAttempt is bool);
     }
 
     function isValidQuiz(data) {
@@ -125,7 +126,7 @@ service cloud.firestore {
     }
 
     function isValidNote(data) {
-      return hasOnlyAllowedFields(['title', 'content', 'category', 'isProOnly', 'createdAt', 'driveUrl', 'youtubeUrl']) &&
+      return hasOnlyAllowedFields(['title', 'content', 'category', 'destination', 'isProOnly', 'createdAt', 'driveUrl', 'youtubeUrl']) &&
              hasRequiredFields(['title', 'category', 'isProOnly', 'createdAt']) &&
              data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
              data.category is string && data.category.size() > 0 && data.category.size() < 100 &&
@@ -133,16 +134,18 @@ service cloud.firestore {
              data.createdAt is timestamp &&
              isValidOptionalString('content', 0, 50000) &&
              isValidOptionalString('driveUrl', 1, 1000) &&
-             isValidOptionalString('youtubeUrl', 1, 1000);
+             isValidOptionalString('youtubeUrl', 1, 1000) &&
+             (!('destination' in data) || data.destination in ['notes', 'past-papers', 'announcements', 'video-lessons']);
     }
 
     function isValidAppUpdate(data) {
-      return hasOnlyAllowedFields(['title', 'content', 'type', 'createdAt']) &&
+      return hasOnlyAllowedFields(['title', 'content', 'type', 'createdAt', 'driveUrl']) &&
              hasRequiredFields(['title', 'content', 'type', 'createdAt']) &&
              data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
              data.content is string && data.content.size() > 0 && data.content.size() < 5000 &&
              data.type in ['feature', 'maintenance', 'announcement'] &&
-             data.createdAt is timestamp;
+             data.createdAt is timestamp &&
+             isValidOptionalString('driveUrl', 1, 1000);
     }
 
     function isValidRevenueRecord(data) {

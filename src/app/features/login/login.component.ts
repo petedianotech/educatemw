@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
@@ -34,210 +34,293 @@ import { FormsModule } from '@angular/forms';
         <div class="mt-6 sm:mt-10 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
           <div class="bg-white/90 backdrop-blur-xl py-6 px-6 sm:py-8 shadow-2xl shadow-indigo-100 sm:rounded-[2.5rem] sm:px-10 border border-white/40">
             
-            <!-- Google Login First -->
-            <div class="mb-6 sm:mb-8">
-              <button (click)="loginWithGoogle()" type="button" 
-                      class="w-full py-3.5 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center gap-3 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-indigo-100 active:scale-[0.98] transition-all shadow-sm">
-                <svg class="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-                Continue with Google
-              </button>
-
-              <div class="mt-4 text-center">
-                <button (click)="toggleSignup()" type="button" 
-                        class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-100 active:scale-95 transition-all w-full justify-center sm:w-auto">
-                  <mat-icon class="text-sm">{{ isSignup() ? 'login' : 'person_add' }}</mat-icon>
-                  {{ isSignup() ? 'Already have an account? Sign in' : 'Need an account? Sign up' }}
-                </button>
-              </div>
-              
-              <div class="relative mt-8">
-                <div class="absolute inset-0 flex items-center">
-                  <div class="w-full border-t border-slate-100"></div>
+            @if (isAdminMode()) {
+              <div class="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div class="flex items-center gap-3 mb-2">
+                  <button (click)="isAdminMode.set(false)" class="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                    <mat-icon>arrow_back</mat-icon>
+                  </button>
+                  <h3 class="text-xl font-black text-slate-900">Admin Secure Access</h3>
                 </div>
-                <div class="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                  <span class="px-4 bg-white text-slate-400">
-                    Or use credentials
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Modern Segmented Control Tabs -->
-            <div class="flex p-1.5 bg-slate-100/80 rounded-2xl mb-4 sm:mb-6 border border-slate-200/50">
-              <button (click)="authMode.set('phone')" 
-                      [class]="authMode() === 'phone' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'" 
-                      class="flex-1 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300">
-                Phone
-              </button>
-              <button (click)="authMode.set('email')" 
-                      [class]="authMode() === 'email' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'" 
-                      class="flex-1 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300">
-                Email
-              </button>
-            </div>
-
-            <!-- Form -->
-            @if (view() === 'forgot-password') {
-              <div class="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                <h3 class="text-lg font-black text-slate-900">Reset Password</h3>
-                <p class="text-xs text-slate-500 font-medium">Choose how you want to recover your account.</p>
                 
-                <div class="grid grid-cols-2 gap-3">
-                  <button (click)="recoveryMethod.set('email')" 
-                          [class]="recoveryMethod() === 'email' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-50 text-slate-600 border border-slate-200'"
-                          class="p-4 rounded-2xl flex flex-col items-center gap-2 transition-all">
-                    <mat-icon>email</mat-icon>
-                    <span class="text-[10px] font-black uppercase tracking-widest">Email</span>
-                  </button>
-                  <button (click)="recoveryMethod.set('questions')" 
-                          [class]="recoveryMethod() === 'questions' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-50 text-slate-600 border border-slate-200'"
-                          class="p-4 rounded-2xl flex flex-col items-center gap-2 transition-all">
-                    <mat-icon>security</mat-icon>
-                    <span class="text-[10px] font-black uppercase tracking-widest">Questions</span>
+                <p class="text-xs text-slate-500 font-medium leading-relaxed">
+                  This area is restricted to authorized administrators only. Please enter your admin email and the secure team password.
+                </p>
+
+                <div class="space-y-4">
+                  <div>
+                    <label for="adminEmail" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Admin Email</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">admin_panel_settings</mat-icon>
+                      </div>
+                      <input type="email" id="adminEmail" [(ngModel)]="email" name="adminEmail" placeholder="admin@educatemw.com"
+                             class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="adminPass" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Team Password</label>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">vpn_key</mat-icon>
+                      </div>
+                      <input type="password" id="adminPass" [(ngModel)]="adminPassword" name="adminPass" placeholder="••••••••"
+                             class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
+                    </div>
+                  </div>
+
+                  @if (errorMsg()) {
+                    <div class="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 animate-in shake duration-500">
+                      <mat-icon class="text-rose-500 !w-5 !h-5 !text-[20px]">error_outline</mat-icon>
+                      <span class="text-rose-700 text-xs font-bold leading-tight">{{errorMsg()}}</span>
+                    </div>
+                  }
+
+                  @if (successMsg()) {
+                    <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-start gap-3 animate-in fade-in duration-500">
+                      <mat-icon class="text-emerald-500 !w-5 !h-5 !text-[20px]">mark_email_read</mat-icon>
+                      <span class="text-emerald-700 text-xs font-bold leading-tight">{{successMsg()}}</span>
+                    </div>
+                  }
+
+                  <button (click)="submitAdminLogin()" [disabled]="isLoading()" 
+                          class="w-full py-4 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                    <mat-icon>{{ isLoading() ? 'sync' : 'send' }}</mat-icon>
+                    {{ isLoading() ? 'Verifying...' : 'Send Magic Access Link' }}
                   </button>
                 </div>
-
-                @if (recoveryMethod() === 'email') {
-                  <div class="space-y-4 animate-in fade-in duration-300">
-                    <div>
-                      <label for="recoveryEmail" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
-                      <input type="email" id="recoveryEmail" [(ngModel)]="email" name="recoveryEmail" placeholder="you@example.com"
-                             class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
-                    </div>
-                    <button (click)="sendResetEmail()" [disabled]="isLoading()" class="btn-primary w-full py-4 shadow-lg shadow-indigo-100">
-                      {{ isLoading() ? 'Sending...' : 'Send Reset Link' }}
-                    </button>
-                  </div>
-                } @else if (recoveryMethod() === 'questions') {
-                  <div class="space-y-4 animate-in fade-in duration-300">
-                    <div>
-                      <label for="recoveryIdentifier" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Phone or Email</label>
-                      <input type="text" id="recoveryIdentifier" [(ngModel)]="recoveryIdentifier" name="recoveryIdentifier" placeholder="Enter your identifier"
-                             class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
-                    </div>
-                    
-                    @if (recoveryUser()) {
-                      <div class="space-y-4 animate-in slide-in-from-top-2 duration-300">
-                        @for (q of recoveryUser()?.questions; track $index) {
-                          <div>
-                            <label [for]="'recovery-ans-' + $index" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{{q.question}}</label>
-                            <input type="text" [id]="'recovery-ans-' + $index" [(ngModel)]="recoveryAnswers[$index]" [name]="'ans'+$index" placeholder="Your answer"
-                                   class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
-                          </div>
-                        }
-                        <button (click)="verifyQuestions()" [disabled]="isLoading()" class="btn-primary w-full py-4 shadow-lg shadow-indigo-100">
-                          Verify Answers
-                        </button>
-                      </div>
-                    } @else {
-                      <button (click)="findUserForRecovery()" [disabled]="isLoading()" class="btn-secondary w-full py-4">
-                        Find Account
-                      </button>
-                    }
-                  </div>
-                }
-
-                <button (click)="view.set('login')" class="w-full text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">
-                  Back to Login
-                </button>
               </div>
             } @else {
-              <form (ngSubmit)="submitForm()" class="space-y-4">
-                @if (isSignup()) {
-                  <div class="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <label for="username" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Username</label>
-                    <div class="relative">
-                      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">person</mat-icon>
-                      </div>
-                      <input type="text" id="username" [(ngModel)]="username" name="username" placeholder="Choose a username" required 
-                             enterkeyhint="next"
-                             class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
-                    </div>
-                  </div>
-                }
+              <!-- Google Login Demoted -->
+              <div class="mb-6 sm:mb-8">
+                <div class="mt-4 text-center">
+                  <button (click)="toggleSignup()" type="button" 
+                          class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-100 active:scale-95 transition-all w-full justify-center sm:w-auto">
+                    <mat-icon class="text-sm">{{ isSignup() ? 'login' : 'person_add' }}</mat-icon>
+                    {{ isSignup() ? 'Already have an account? Sign in' : 'Need an account? Sign up' }}
+                  </button>
+                </div>
+              </div>
 
-                @if (authMode() === 'phone') {
-                  <div class="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <label for="phone" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Phone Number</label>
-                    <div class="relative">
-                      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">phone</mat-icon>
-                      </div>
-                      <input type="tel" id="phone" [(ngModel)]="phone" name="phone" placeholder="e.g. 0991234567" required 
-                             enterkeyhint="next"
-                             class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
-                    </div>
-                  </div>
-                } @else {
-                  <div class="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <label for="email" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
-                    <div class="relative">
-                      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">email</mat-icon>
-                      </div>
-                      <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="you@example.com" required 
-                             enterkeyhint="next"
-                             class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
-                    </div>
-                  </div>
-                }
+              <!-- Modern Segmented Control Tabs -->
+              <div class="flex p-1.5 bg-slate-100/80 rounded-2xl mb-4 sm:mb-6 border border-slate-200/50">
+                <button (click)="authMode.set('username')" 
+                        [class]="authMode() === 'username' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'" 
+                        class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all duration-300">
+                  User
+                </button>
+                <button (click)="authMode.set('phone')" 
+                        [class]="authMode() === 'phone' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'" 
+                        class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all duration-300">
+                  Phone
+                </button>
+                <button (click)="authMode.set('email')" 
+                        [class]="authMode() === 'email' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'" 
+                        class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all duration-300">
+                  Email
+                </button>
+              </div>
 
-                <div class="animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div class="flex justify-between items-center mb-1.5 ml-1">
-                    <label for="password" id="password-label" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Password</label>
+              <!-- Form -->
+              @if (view() === 'forgot-password') {
+                <div class="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                  <h3 class="text-lg font-black text-slate-900">Reset Password</h3>
+                  <p class="text-xs text-slate-500 font-medium">Choose how you want to recover your account.</p>
+                  
+                  <div class="grid grid-cols-2 gap-3">
+                    <button (click)="recoveryMethod.set('email')" 
+                            [class]="recoveryMethod() === 'email' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-50 text-slate-600 border border-slate-200'"
+                            class="p-4 rounded-2xl flex flex-col items-center gap-2 transition-all">
+                      <mat-icon>email</mat-icon>
+                      <span class="text-[10px] font-black uppercase tracking-widest">Email</span>
+                    </button>
+                    <button (click)="recoveryMethod.set('questions')" 
+                            [class]="recoveryMethod() === 'questions' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-50 text-slate-600 border border-slate-200'"
+                            class="p-4 rounded-2xl flex flex-col items-center gap-2 transition-all">
+                      <mat-icon>security</mat-icon>
+                      <span class="text-[10px] font-black uppercase tracking-widest">Questions</span>
+                    </button>
+                  </div>
+
+                  @if (recoveryMethod() === 'email') {
+                    <div class="space-y-4 animate-in fade-in duration-300">
+                      <div>
+                        <label for="recoveryEmail" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
+                        <input type="email" id="recoveryEmail" [(ngModel)]="email" name="recoveryEmail" placeholder="you@example.com"
+                               class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
+                      </div>
+                      <button (click)="sendResetEmail()" [disabled]="isLoading()" class="btn-primary w-full py-4 shadow-lg shadow-indigo-100">
+                        {{ isLoading() ? 'Sending...' : 'Send Reset Link' }}
+                      </button>
+                    </div>
+                  } @else if (recoveryMethod() === 'questions') {
+                    <div class="space-y-4 animate-in fade-in duration-300">
+                      <div>
+                        <label for="recoveryIdentifier" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Phone or Email</label>
+                        <input type="text" id="recoveryIdentifier" [(ngModel)]="recoveryIdentifier" name="recoveryIdentifier" placeholder="Enter your identifier"
+                               class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
+                      </div>
+                      
+                      @if (recoveryUser()) {
+                        <div class="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                          @for (q of recoveryUser()?.questions; track $index) {
+                            <div>
+                              <label [for]="'recovery-ans-' + $index" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{{q.question}}</label>
+                              <input type="text" [id]="'recovery-ans-' + $index" [(ngModel)]="recoveryAnswers[$index]" [name]="'ans'+$index" placeholder="Your answer"
+                                     class="block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
+                            </div>
+                          }
+                          <button (click)="verifyQuestions()" [disabled]="isLoading()" class="btn-primary w-full py-4 shadow-lg shadow-indigo-100">
+                            Verify Answers
+                          </button>
+                        </div>
+                      } @else {
+                        <button (click)="findUserForRecovery()" [disabled]="isLoading()" class="btn-secondary w-full py-4">
+                          Find Account
+                        </button>
+                      }
+                    </div>
+                  }
+
+                  <button (click)="view.set('login')" class="w-full text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">
+                    Back to Login
+                  </button>
+                </div>
+              } @else {
+                <form (ngSubmit)="submitForm()" class="space-y-4">
+                  @if (isSignup()) {
+                    <div class="animate-in fade-in slide-in-from-top-2 duration-300">
+                      <label for="username" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Username</label>
+                      <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">person</mat-icon>
+                        </div>
+                        <input type="text" id="username" [(ngModel)]="username" name="username" placeholder="Choose a username" required 
+                               enterkeyhint="next"
+                               class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                      </div>
+                    </div>
+                  }
+
+                  @if (authMode() === 'username') {
+                    <div class="animate-in fade-in slide-in-from-top-2 duration-300">
+                      <label for="username-login" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Student Name</label>
+                      <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">person</mat-icon>
+                        </div>
+                        <input type="text" id="username-login" [(ngModel)]="username" name="username" placeholder="Enter student name" required 
+                               enterkeyhint="next"
+                               class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                      </div>
+                    </div>
+                  } @else if (authMode() === 'phone') {
+                    <div class="animate-in fade-in slide-in-from-top-2 duration-300">
+                      <label for="phone" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Phone Number</label>
+                      <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">phone</mat-icon>
+                        </div>
+                        <input type="tel" id="phone" [(ngModel)]="phone" name="phone" placeholder="e.g. 0991234567" required 
+                               enterkeyhint="next"
+                               class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="animate-in fade-in slide-in-from-top-2 duration-300">
+                      <label for="email" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
+                      <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">email</mat-icon>
+                        </div>
+                        <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="you@example.com" required 
+                               enterkeyhint="next"
+                               class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                      </div>
+                    </div>
+                  }
+
+                  <div class="animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div class="flex justify-between items-center mb-1.5 ml-1">
+                      <label for="password" id="password-label" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Password</label>
+                      @if (!isSignup()) {
+                        <button (click)="view.set('forgot-password')" type="button" class="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Forgot?</button>
+                      }
+                    </div>
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">lock</mat-icon>
+                      </div>
+                      <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="••••••••" required 
+                             aria-labelledby="password-label"
+                             enterkeyhint="done" (keyup.enter)="submitForm()"
+                             class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                    </div>
+                  </div>
+
+                  @if (errorMsg()) {
+                    <div class="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 animate-in shake duration-500">
+                      <mat-icon class="text-rose-500 !w-5 !h-5 !text-[20px]">error_outline</mat-icon>
+                      <span class="text-rose-700 text-xs font-bold leading-tight">{{errorMsg()}}</span>
+                    </div>
+                  }
+
+                  @if (successMsg()) {
+                    <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-start gap-3 animate-in fade-in duration-500">
+                      <mat-icon class="text-emerald-500 !w-5 !h-5 !text-[20px]">check_circle_outline</mat-icon>
+                      <span class="text-emerald-700 text-xs font-bold leading-tight">{{successMsg()}}</span>
+                    </div>
+                  }
+
+                  <div class="pt-2 sm:pt-4 space-y-3">
+                    <button type="submit" [disabled]="isLoading()" 
+                            class="btn-primary w-full py-3.5 sm:py-4 text-sm sm:text-[15px] shadow-xl shadow-indigo-200 active:scale-[0.98] transition-all">
+                      {{ isLoading() ? 'Processing...' : (isSignup() ? 'Create Free Account' : 'Sign In to Dashboard') }}
+                    </button>
+                    
                     @if (!isSignup()) {
-                      <button (click)="view.set('forgot-password')" type="button" class="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Forgot?</button>
+                      <button (click)="loginAsGuest()" type="button" [disabled]="isLoading()"
+                              class="w-full py-3.5 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <mat-icon class="text-sm">person_outline</mat-icon>
+                        Sign in as Guest
+                      </button>
+                      <p class="text-[9px] text-center text-slate-400 font-bold px-4">
+                        Guest accounts have 2 AI credits. Create an account for 5 credits per day!
+                      </p>
                     }
                   </div>
-                  <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">lock</mat-icon>
+
+                  <div class="relative py-4">
+                    <div class="absolute inset-0 flex items-center">
+                      <div class="w-full border-t border-slate-100"></div>
                     </div>
-                    <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="••••••••" required 
-                           aria-labelledby="password-label"
-                           enterkeyhint="done" (keyup.enter)="submitForm()"
-                           class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                    <div class="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
+                      <span class="px-4 bg-white text-slate-400">
+                        Alternative
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                @if (errorMsg()) {
-                  <div class="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 animate-in shake duration-500">
-                    <mat-icon class="text-rose-500 !w-5 !h-5 !text-[20px]">error_outline</mat-icon>
-                    <span class="text-rose-700 text-xs font-bold leading-tight">{{errorMsg()}}</span>
-                  </div>
-                }
-
-                @if (successMsg()) {
-                  <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-start gap-3 animate-in fade-in duration-500">
-                    <mat-icon class="text-emerald-500 !w-5 !h-5 !text-[20px]">check_circle_outline</mat-icon>
-                    <span class="text-emerald-700 text-xs font-bold leading-tight">{{successMsg()}}</span>
-                  </div>
-                }
-
-                <div class="pt-2 sm:pt-4 space-y-3">
-                  <button type="submit" [disabled]="isLoading()" 
-                          class="btn-primary w-full py-3.5 sm:py-4 text-sm sm:text-[15px] shadow-xl shadow-indigo-200 active:scale-[0.98] transition-all">
-                    {{ isLoading() ? 'Processing...' : (isSignup() ? 'Create Free Account' : 'Sign In to Dashboard') }}
+                  <button (click)="loginWithGoogle()" type="button" 
+                          class="w-full py-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-center gap-3 text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                    </svg>
+                    Sign in with Google
                   </button>
-                  
-                  @if (!isSignup()) {
-                    <button (click)="loginAsGuest()" type="button" [disabled]="isLoading()"
-                            class="w-full py-3.5 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                      <mat-icon class="text-sm">person_outline</mat-icon>
-                      Sign in as Guest
+
+                  <div class="pt-6 text-center">
+                    <button (click)="isAdminMode.set(true)" type="button" class="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors flex items-center justify-center gap-1 mx-auto">
+                      <mat-icon class="!w-4 !h-4 !text-[16px]">admin_panel_settings</mat-icon>
+                      Admin Access
                     </button>
-                    <p class="text-[9px] text-center text-slate-400 font-bold px-4">
-                      Guest accounts have 2 AI credits. Create an account for 5 credits per day!
-                    </p>
-                  }
-                </div>
-              </form>
+                  </div>
+                </form>
+              }
             }
           </div>
         </div>
@@ -245,19 +328,21 @@ import { FormsModule } from '@angular/forms';
     </div>
   `
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   authService = inject(AuthService);
   router = inject(Router);
   
-  authMode = signal<'phone' | 'email'>('phone');
+  authMode = signal<'username' | 'phone' | 'email'>('username');
   isSignup = signal(false);
   isLoading = signal(false);
   view = signal<'login' | 'forgot-password' | 'security-setup'>('login');
+  isAdminMode = signal(false);
   
   username = '';
   email = '';
   phone = '';
   password = '';
+  adminPassword = '';
   errorMsg = signal('');
   successMsg = signal('');
 
@@ -267,11 +352,63 @@ export class LoginComponent {
   recoveryUser = signal<{ questions: { question: string; answer: string }[] } | null>(null);
   recoveryAnswers: string[] = [];
 
+  ngOnInit() {
+    this.checkMagicLink();
+  }
+
+  async checkMagicLink() {
+    const url = window.location.href;
+    if (url.includes('apiKey') && url.includes('oobCode')) {
+      this.isLoading.set(true);
+      try {
+        const success = await this.authService.completeMagicLinkSignIn(url);
+        if (success) {
+          this.router.navigate(['/admin']);
+        }
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+        this.errorMsg.set(err.message || 'Failed to verify magic link');
+      } finally {
+        this.isLoading.set(false);
+      }
+    }
+  }
+
+  async submitAdminLogin() {
+    this.errorMsg.set('');
+    this.successMsg.set('');
+    
+    const adminEmails = ['mscepreparation@gmail.com', 'petedianotech@gmail.com'];
+    if (!adminEmails.includes(this.email.toLowerCase())) {
+      this.errorMsg.set('This email is not authorized for admin access.');
+      return;
+    }
+
+    const expectedPassword = (typeof ADMIN_TEAM_PASSWORD !== 'undefined' && ADMIN_TEAM_PASSWORD) ? ADMIN_TEAM_PASSWORD : 'team3admins.mw';
+    if (this.adminPassword !== expectedPassword) {
+      this.errorMsg.set('Incorrect team password.');
+      return;
+    }
+
+    this.isLoading.set(true);
+    try {
+      await this.authService.sendAdminMagicLink(this.email);
+      this.successMsg.set('Magic access link sent! Please check your email inbox.');
+      this.adminPassword = '';
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      this.errorMsg.set(err.message || 'Failed to send magic link');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
   toggleSignup() {
     this.isSignup.update(v => !v);
     this.errorMsg.set('');
     this.successMsg.set('');
     this.view.set('login');
+    this.isAdminMode.set(false);
   }
 
   async submitForm() {
@@ -302,7 +439,14 @@ export class LoginComponent {
 
     this.isLoading.set(true);
     try {
-      if (this.authMode() === 'phone') {
+      if (this.authMode() === 'username') {
+        if (!this.username.trim()) {
+          this.errorMsg.set('Student name is required');
+          this.isLoading.set(false);
+          return;
+        }
+        await this.authService.loginWithUsername(this.username, this.password);
+      } else if (this.authMode() === 'phone') {
         if (!this.phone.trim()) {
           this.errorMsg.set('Phone number is required');
           this.isLoading.set(false);
@@ -336,7 +480,9 @@ export class LoginComponent {
     this.errorMsg.set('');
     
     try {
-      if (this.authMode() === 'phone') {
+      if (this.authMode() === 'username') {
+        await this.authService.signupWithUsername(this.username, this.password);
+      } else if (this.authMode() === 'phone') {
         await this.authService.signupWithPhone(this.phone, this.password, this.username);
       } else {
         await this.authService.signupWithEmail(this.email, this.password, this.username);

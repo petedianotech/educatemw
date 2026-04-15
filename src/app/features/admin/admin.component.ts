@@ -238,44 +238,54 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
                 <div class="space-y-6">
                   <div>
                     <label for="note-title" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Title</label>
-                    <input id="note-title" type="text" [(ngModel)]="title" placeholder="e.g. 2023 MSCE Biology Paper 1" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                    <input id="note-title" type="text" [ngModel]="title()" (ngModelChange)="title.set($event)" placeholder="e.g. 2023 MSCE Biology Paper 1" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
                   </div>
 
-                  <div class="grid grid-cols-2 gap-6">
-                    <div>
-                      <label for="note-category" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Category</label>
-                      <select id="note-category" [(ngModel)]="category" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none">
-                        <option value="Mathematics">Mathematics</option>
-                        <option value="Science">Science</option>
-                        <option value="Biology">Biology</option>
-                        <option value="English">English</option>
-                        <option value="History">History</option>
-                        <option value="Past Paper">Past Paper</option>
-                        <option value="Announcement">Announcement</option>
-                        <option value="Video">Video</option>
-                      </select>
+                    <div class="grid grid-cols-2 gap-6">
+                      <div>
+                        <label for="note-category" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Category</label>
+                        <select id="note-category" [ngModel]="category()" (ngModelChange)="category.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none">
+                          <option value="Mathematics">Mathematics</option>
+                          <option value="Science">Science</option>
+                          <option value="Biology">Biology</option>
+                          <option value="English">English</option>
+                          <option value="History">History</option>
+                          <option value="Past Paper">Past Paper</option>
+                          <option value="Announcement">Announcement</option>
+                          <option value="Video">Video</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label for="note-destination" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Destination</label>
+                        <select id="note-destination" [ngModel]="destination()" (ngModelChange)="destination.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none">
+                          <option value="notes">Notes Section</option>
+                          <option value="past-papers">Past Papers Section</option>
+                          <option value="announcements">Announcements Section</option>
+                          <option value="video-lessons">Video Lessons Section</option>
+                        </select>
+                      </div>
                     </div>
+
                     <div class="flex items-end">
                       <label class="flex items-center gap-3 cursor-pointer w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-colors">
-                        <input type="checkbox" [(ngModel)]="isProOnly" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                        <input type="checkbox" [ngModel]="isProOnly()" (ngModelChange)="isProOnly.set($event)" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                         <span class="text-sm font-black text-slate-700 uppercase tracking-tight">Pro Only</span>
                       </label>
                     </div>
-                  </div>
 
                   @if (category() === 'Video') {
                     <div>
                       <label for="youtube-url" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">YouTube URL</label>
-                      <input id="youtube-url" type="text" [(ngModel)]="youtubeUrl" placeholder="https://youtube.com/watch?v=..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                      <input id="youtube-url" type="text" [ngModel]="youtubeUrl()" (ngModelChange)="youtubeUrl.set($event)" placeholder="https://youtube.com/watch?v=..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
                     </div>
                   } @else {
                     <div>
                       <label for="drive-url" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Google Drive URL (Optional)</label>
-                      <input id="drive-url" type="text" [(ngModel)]="driveUrl" placeholder="https://drive.google.com/..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                      <input id="drive-url" type="text" [ngModel]="driveUrl()" (ngModelChange)="driveUrl.set($event)" placeholder="https://drive.google.com/..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
                     </div>
                     <div>
                       <label for="note-content" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Content (Markdown)</label>
-                      <textarea id="note-content" [(ngModel)]="content" rows="8" placeholder="Write your content here..." class="w-full p-6 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-mono text-sm text-slate-800 resize-none"></textarea>
+                      <textarea id="note-content" [ngModel]="content()" (ngModelChange)="content.set($event)" rows="8" placeholder="Write your content here..." class="w-full p-6 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-mono text-sm text-slate-800 resize-none"></textarea>
                     </div>
                   }
 
@@ -382,12 +392,12 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
                   <div class="space-y-6">
                     <div>
                       <label for="quiz-title" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Title</label>
-                      <input id="quiz-title" type="text" [(ngModel)]="quizTitle" placeholder="Quiz Title" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                      <input id="quiz-title" type="text" [ngModel]="quizTitle()" (ngModelChange)="quizTitle.set($event)" placeholder="Quiz Title" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                       <div>
                         <label for="quiz-category" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Category</label>
-                        <select id="quiz-category" [(ngModel)]="quizCategory" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none">
+                        <select id="quiz-category" [ngModel]="quizCategory()" (ngModelChange)="quizCategory.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none">
                           <option value="Mathematics">Mathematics</option>
                           <option value="Science">Science</option>
                           <option value="Biology">Biology</option>
@@ -397,7 +407,7 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
                       </div>
                       <div>
                         <label for="quiz-time" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Time (m)</label>
-                        <input id="quiz-time" type="number" [(ngModel)]="quizTimeLimit" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                        <input id="quiz-time" type="number" [ngModel]="quizTimeLimit()" (ngModelChange)="quizTimeLimit.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
                       </div>
                     </div>
                     <button (click)="addQuestion()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all uppercase tracking-widest flex items-center justify-center gap-2">
@@ -471,9 +481,16 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
                       </td>
                       <td class="px-8 py-6">
                         @if (student.role !== 'admin') {
-                          <button (click)="toggleProStatus(student.uid, !student.isPro)" class="text-[10px] font-black text-indigo-600 hover:text-indigo-700 uppercase tracking-widest underline decoration-2 underline-offset-4">
-                            Toggle Pro
-                          </button>
+                          <div class="flex items-center gap-3">
+                            <button (click)="toggleProStatus(student.uid, !student.isPro)" 
+                                    [class]="student.isPro ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'"
+                                    class="px-4 py-2 text-[10px] font-black rounded-xl border uppercase tracking-widest hover:scale-105 transition-transform">
+                              {{ student.isPro ? 'Remove Pro' : 'Make Pro' }}
+                            </button>
+                            <button (click)="toggleProStatus(student.uid, !student.isPro)" class="text-[10px] font-black text-indigo-600 hover:text-indigo-700 uppercase tracking-widest underline decoration-2 underline-offset-4">
+                              Toggle
+                            </button>
+                          </div>
                         }
                       </td>
                     </tr>
@@ -538,11 +555,11 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
                   <div class="space-y-6">
                     <div>
                       <label for="update-title" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Title</label>
-                      <input id="update-title" type="text" [(ngModel)]="updateTitle" placeholder="Update Title" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                      <input id="update-title" type="text" [ngModel]="updateTitle()" (ngModelChange)="updateTitle.set($event)" placeholder="Update Title" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
                     </div>
                     <div>
                       <label for="update-type" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Type</label>
-                      <select id="update-type" [(ngModel)]="updateType" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none">
+                      <select id="update-type" [ngModel]="updateType()" (ngModelChange)="updateType.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none">
                         <option value="feature">New Feature</option>
                         <option value="announcement">Announcement</option>
                         <option value="maintenance">Maintenance</option>
@@ -550,11 +567,11 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
                     </div>
                     <div>
                       <label for="update-content" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Content</label>
-                      <textarea id="update-content" [(ngModel)]="updateContent" rows="4" placeholder="Update details..." class="w-full p-6 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 resize-none"></textarea>
+                      <textarea id="update-content" [ngModel]="updateContent()" (ngModelChange)="updateContent.set($event)" rows="4" placeholder="Update details..." class="w-full p-6 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 resize-none"></textarea>
                     </div>
                     <div>
                       <label for="update-drive-url" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Drive URL (Optional)</label>
-                      <input id="update-drive-url" type="text" [(ngModel)]="updateDriveUrl" placeholder="https://drive.google.com/..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                      <input id="update-drive-url" type="text" [ngModel]="updateDriveUrl()" (ngModelChange)="updateDriveUrl.set($event)" placeholder="https://drive.google.com/..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
                     </div>
                     <button (click)="postUpdate()" [disabled]="isSubmitting()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 uppercase tracking-widest disabled:opacity-50">
                       {{ isSubmitting() ? 'Publishing...' : 'Publish Update' }}
@@ -603,6 +620,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   
   title = signal('');
   category = signal('Mathematics');
+  destination = signal<'notes' | 'past-papers' | 'announcements' | 'video-lessons'>('notes');
   content = signal('');
   driveUrl = signal('');
   youtubeUrl = signal('');
@@ -785,6 +803,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   editNote(note: Note) {
     this.title.set(note.title);
     this.category.set(note.category);
+    this.destination.set(note.destination || 'notes');
     this.content.set(note.content || '');
     this.driveUrl.set(note.driveUrl || '');
     this.youtubeUrl.set(note.youtubeUrl || '');
@@ -796,6 +815,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   cancelEdit() {
     this.title.set('');
     this.category.set('Mathematics');
+    this.destination.set('notes');
     this.content.set('');
     this.driveUrl.set('');
     this.youtubeUrl.set('');
@@ -817,6 +837,7 @@ export class AdminComponent implements OnInit, OnDestroy {
       const noteData = {
         title: this.title(),
         category: this.category(),
+        destination: this.destination(),
         content: this.content(),
         driveUrl: this.driveUrl() || undefined,
         youtubeUrl: this.youtubeUrl() || undefined,

@@ -22,10 +22,10 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
           <!-- Logo with Catching Animation -->
           <div class="relative mb-12 group">
             <!-- Outer Glow -->
-            <div class="absolute inset-0 bg-indigo-500/40 rounded-[2.5rem] blur-2xl animate-pulse group-hover:blur-3xl transition-all duration-700"></div>
+            <div class="absolute inset-0 bg-indigo-500/40 rounded-2xl blur-2xl animate-pulse group-hover:blur-3xl transition-all duration-700"></div>
             
             <!-- Main Logo Box -->
-            <div class="w-24 h-24 bg-gradient-to-tr from-indigo-600 via-blue-500 to-sky-400 rounded-[2.5rem] flex items-center justify-center text-white shadow-[0_20px_50px_rgba(79,70,229,0.4)] relative z-10 animate-in zoom-in duration-1000 cubic-bezier(0.34, 1.56, 0.64, 1)">
+            <div class="w-24 h-24 bg-gradient-to-tr from-indigo-600 via-blue-500 to-sky-400 rounded-2xl flex items-center justify-center text-white shadow-[0_20px_50px_rgba(79,70,229,0.4)] relative z-10 animate-in zoom-in duration-1000 cubic-bezier(0.34, 1.56, 0.64, 1)">
               <mat-icon class="!w-12 !h-12 !text-[48px] animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">school</mat-icon>
             </div>
             

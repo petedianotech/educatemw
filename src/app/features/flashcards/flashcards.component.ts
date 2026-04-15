@@ -49,14 +49,15 @@ import { FormsModule } from '@angular/forms';
             @if (dataService.flashcards().length > 0) {
               <div class="flex flex-col items-center gap-12 py-8">
                 <!-- Card Container -->
-                <div class="w-full max-w-xl h-96 [perspective:1000px] cursor-pointer" 
+                <div class="w-full max-w-xl h-96 [perspective:1000px] cursor-pointer group" 
                      (click)="isFlipped.set(!isFlipped())"
                      (keydown.enter)="isFlipped.set(!isFlipped())"
                      tabindex="0"
                      role="button"
                      aria-label="Flip flashcard">
-                  <div class="relative h-full w-full rounded-[3rem] shadow-2xl transition-all duration-700 [transform-style:preserve-3d]"
-                       [class.[transform:rotateY(180deg)]]="isFlipped()">
+                  <div class="relative h-full w-full rounded-[3rem] shadow-2xl transition-all duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(10deg)]"
+                       [class.[transform:rotateY(180deg)]]="isFlipped()"
+                       [class.group-hover:[transform:rotateY(190deg)]]="isFlipped()">
                     
                     <!-- Front -->
                     <div class="absolute inset-0 h-full w-full rounded-[3rem] bg-white p-12 flex flex-col items-center justify-center text-center [backface-visibility:hidden] border-4 border-slate-50">

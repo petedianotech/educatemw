@@ -224,8 +224,8 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
             <button 
               (click)="sendMessage()"
               [disabled]="!inputText().trim() || gemini.isLoading()"
-              class="flex-shrink-0 w-14 h-14 flex items-center justify-center text-white bg-slate-900 rounded-full shadow-xl shadow-slate-200 hover:shadow-blue-200 hover:-translate-y-1 active:scale-90 disabled:opacity-30 disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100 transition-all duration-300 relative group overflow-hidden">
-              <div class="absolute inset-0 bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              class="flex-shrink-0 w-14 h-14 flex items-center justify-center text-white bg-blue-600 rounded-full shadow-xl shadow-blue-200 hover:shadow-blue-300 hover:-translate-y-1 active:scale-90 disabled:opacity-30 disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100 transition-all duration-300 relative group overflow-hidden">
+              <div class="absolute inset-0 bg-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <mat-icon class="relative z-10 scale-110">send</mat-icon>
             </button>
           </div>

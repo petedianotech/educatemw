@@ -110,17 +110,6 @@ import { AuthService } from '../../core/services/auth.service';
               Start Learning Free
             </a>
           </div>
-
-          <!-- Social Proof -->
-          <div class="mt-20 pt-10 border-t border-slate-100 flex flex-col items-center animate-in fade-in duration-1000 delay-500">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Trusted by students from</p>
-            <div class="flex flex-wrap justify-center gap-8 md:gap-16 opacity-40 grayscale">
-              <span class="text-xl font-black tracking-tighter">BANDAWE</span>
-              <span class="text-xl font-black tracking-tighter">KAMUZU ACADEMY</span>
-              <span class="text-xl font-black tracking-tighter">MARIST</span>
-              <span class="text-xl font-black tracking-tighter">LOYOLA</span>
-            </div>
-          </div>
         </div>
       </section>
 

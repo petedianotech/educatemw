@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { DataService, Note } from '../../core/services/data.service';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
@@ -136,6 +136,12 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
   
   activeVideo = signal<Note | null>(null);
 
+  videoNotes = computed(() => {
+    return this.dataService.notes().filter(note => 
+      note.youtubeUrl && (note.destination === 'video-lessons' || !(note.destination))
+    );
+  });
+
   ngOnInit() {
     this.dataService.subscribeToNotes();
     // Auto-select first video when data loads
@@ -149,10 +155,6 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.dataService.unsubscribeFromNotes();
-  }
-
-  videoNotes() {
-    return this.dataService.notes().filter(note => note.youtubeUrl);
   }
 
   getSafeUrl(url: string): SafeResourceUrl {

@@ -31,6 +31,7 @@ export interface Note {
   title: string;
   content?: string;
   category: string;
+  destination?: 'notes' | 'past-papers' | 'announcements' | 'video-lessons';
   isProOnly: boolean;
   createdAt: Date | Timestamp;
   driveUrl?: string;
@@ -154,6 +155,7 @@ export class DataService {
     const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(limitCount));
     this.usersUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedUsers = snapshot.docs.map(doc => ({
+        uid: doc.id,
         ...doc.data()
       } as UserProfile));
       this.users.set(loadedUsers);
@@ -168,6 +170,7 @@ export class DataService {
     const q = query(collection(db, 'users'), where('isPro', '==', true), orderBy('createdAt', 'desc'), limit(limitCount));
     this.usersUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedUsers = snapshot.docs.map(doc => ({
+        uid: doc.id,
         ...doc.data()
       } as UserProfile));
       this.users.set(loadedUsers);

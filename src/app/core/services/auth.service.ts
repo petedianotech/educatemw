@@ -1,7 +1,20 @@
 import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { auth, storage } from '../../../firebase';
-import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User as FirebaseUser, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously, sendPasswordResetEmail } from 'firebase/auth';
+import { 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signOut, 
+  onAuthStateChanged, 
+  User as FirebaseUser, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signInAnonymously, 
+  sendPasswordResetEmail,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink
+} from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, handleFirestoreError, OperationType } from '../../../firebase';
@@ -100,6 +113,28 @@ export class AuthService {
     }
   }
 
+  async signupWithUsername(username: string, password: string, securityQuestions?: SecurityQuestion[]) {
+    try {
+      const emailAlias = `${username.toLowerCase().replace(/[^a-z0-9]/g, '')}@edumalawi.local`;
+      const result = await createUserWithEmailAndPassword(auth, emailAlias, password);
+      await this.createNewUserProfile(result.user, username, securityQuestions);
+    } catch (error) {
+      console.error('Signup failed', error);
+      throw error;
+    }
+  }
+
+  async loginWithUsername(username: string, password: string) {
+    try {
+      const emailAlias = `${username.toLowerCase().replace(/[^a-z0-9]/g, '')}@edumalawi.local`;
+      const result = await signInWithEmailAndPassword(auth, emailAlias, password);
+      await this.loadUserProfile(result.user);
+    } catch (error) {
+      console.error('Login failed', error);
+      throw error;
+    }
+  }
+
   async signupWithPhone(phone: string, password: string, username: string, securityQuestions?: SecurityQuestion[]) {
     try {
       const emailAlias = `${phone.replace(/[^0-9+]/g, '')}@edumalawi.local`;
@@ -125,6 +160,59 @@ export class AuthService {
   async logout() {
     await signOut(auth);
     this.currentUser.set(null);
+  }
+
+  async sendAdminMagicLink(email: string) {
+    const actionCodeSettings = {
+      // Use the current origin for the redirect URL
+      url: window.location.origin + '/login',
+      handleCodeInApp: true,
+    };
+    try {
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      if (isPlatformBrowser(this.platformId)) {
+        window.localStorage.setItem('emailForSignIn', email);
+      }
+    } catch (error) {
+      console.error('Magic link failed', error);
+      throw error;
+    }
+  }
+
+  async completeMagicLinkSignIn(url: string) {
+    if (isSignInWithEmailLink(auth, url)) {
+      let email = isPlatformBrowser(this.platformId) ? window.localStorage.getItem('emailForSignIn') : null;
+      
+      if (!email) {
+        email = window.prompt('Please provide your email for confirmation');
+      }
+      
+      if (email) {
+        try {
+          const result = await signInWithEmailLink(auth, email, url);
+          if (isPlatformBrowser(this.platformId)) {
+            window.localStorage.removeItem('emailForSignIn');
+          }
+          await this.loadUserProfile(result.user);
+          
+          // Force admin role for these specific emails
+          const adminEmails = ['mscepreparation@gmail.com', 'petedianotech@gmail.com'];
+          if (adminEmails.includes(email.toLowerCase())) {
+            const userRef = doc(db, 'users', result.user.uid);
+            await updateDoc(userRef, { role: 'admin' });
+            const user = this.currentUser();
+            if (user) {
+              this.currentUser.set({ ...user, role: 'admin' });
+            }
+          }
+          return true;
+        } catch (error) {
+          console.error('Magic link sign in failed', error);
+          throw error;
+        }
+      }
+    }
+    return false;
   }
 
   private async createNewUserProfile(user: FirebaseUser, username: string, securityQuestions?: SecurityQuestion[]) {
