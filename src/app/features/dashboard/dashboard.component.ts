@@ -9,7 +9,7 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
 interface Notification {
   id: string;
   title: string;
-  content: string;
+  content?: string;
   driveUrl?: string;
   type?: string;
   destination?: string;
@@ -246,20 +246,20 @@ interface Notification {
             <div class="p-8">
               <div class="flex items-center justify-between mb-6">
                 <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
-                  <mat-icon>{{ selectedNotification().type ? 'system_update' : 'campaign' }}</mat-icon>
+                  <mat-icon>{{ selectedNotification()?.type ? 'system_update' : 'campaign' }}</mat-icon>
                 </div>
                 <button (click)="selectedNotification.set(null)" class="text-slate-300 hover:text-slate-500 transition-colors">
                   <mat-icon>close</mat-icon>
                 </button>
               </div>
               
-              <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-4">{{ selectedNotification().title }}</h3>
+              <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-4">{{ selectedNotification()?.title }}</h3>
               <div class="max-h-60 overflow-y-auto custom-scrollbar mb-8">
-                <p class="text-slate-600 leading-relaxed font-medium">{{ selectedNotification().content }}</p>
+                <p class="text-slate-600 leading-relaxed font-medium">{{ selectedNotification()?.content }}</p>
               </div>
 
-              @if (selectedNotification().driveUrl) {
-                <a [href]="selectedNotification().driveUrl" target="_blank" class="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 mb-4 hover:bg-indigo-700 transition-all">
+              @if (selectedNotification()?.driveUrl) {
+                <a [href]="selectedNotification()?.driveUrl" target="_blank" class="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 mb-4 hover:bg-indigo-700 transition-all">
                   <mat-icon>open_in_new</mat-icon>
                   View Attachment
                 </a>
@@ -269,7 +269,7 @@ interface Notification {
                 <button (click)="selectedNotification.set(null)" class="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-black hover:bg-slate-200 transition-all">
                   Close
                 </button>
-                <button (click)="dontShowAgain(selectedNotification().id)" class="w-full py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors">
+                <button (click)="dontShowAgain(selectedNotification()?.id || '')" class="w-full py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors">
                   Don't show this again
                 </button>
               </div>
