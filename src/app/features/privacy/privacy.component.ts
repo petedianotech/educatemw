@@ -8,14 +8,15 @@ import { RouterLink } from '@angular/router';
   imports: [MatIconModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-3xl mx-auto bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 p-8 md:p-12 border border-slate-100">
-        <div class="flex items-center gap-4 mb-8">
-          <div class="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
-            <mat-icon>security</mat-icon>
+    <div class="h-screen bg-slate-50 overflow-y-auto">
+      <div class="max-w-3xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 p-8 md:p-12 border border-slate-100">
+          <div class="flex items-center gap-4 mb-8">
+            <div class="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+              <mat-icon>security</mat-icon>
+            </div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Privacy Policy</h1>
           </div>
-          <h1 class="text-3xl font-black text-slate-900 tracking-tight">Privacy Policy</h1>
-        </div>
 
         <div class="prose prose-slate max-w-none space-y-6 text-slate-600 font-medium leading-relaxed">
           <section>

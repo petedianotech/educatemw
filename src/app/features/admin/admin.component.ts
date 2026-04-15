@@ -1,15 +1,17 @@
-import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, OnDestroy, PLATFORM_ID, NO_ERRORS_SCHEMA } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DataService, Quiz, QuizQuestion, Note } from '../../core/services/data.service';
 import { Timestamp } from 'firebase/firestore';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/common';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
   imports: [FormsModule, MatIconModule, DatePipe, DecimalPipe, CommonModule, RouterLink, NgOptimizedImage],
+  schemas: [NO_ERRORS_SCHEMA],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex h-screen bg-slate-50 overflow-hidden">
@@ -214,6 +216,22 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
                 </div>
               </div>
 
+              <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                <h3 class="text-lg font-black text-slate-900 mb-6 uppercase tracking-tight">Users & Revenue Trend</h3>
+                <div class="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart [data]="chartData()">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="users" stroke="#8884d8" />
+                      <Line type="monotone" dataKey="revenue" stroke="#82ca9d" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              
               <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
                 <h3 class="text-lg font-black text-slate-900 mb-6 uppercase tracking-tight">User Distribution</h3>
                 <div class="flex items-end gap-6 h-48">
@@ -635,6 +653,11 @@ export class AdminComponent implements OnInit, OnDestroy {
   
   isSidebarOpen = signal(false);
   activeTab = signal<'overview' | 'upload' | 'manage' | 'students' | 'quizzes' | 'revenue' | 'updates' | 'exams'>('overview');
+  chartData = signal([
+    { name: 'Jan', users: 100, revenue: 5000 },
+    { name: 'Feb', users: 200, revenue: 15000 },
+    { name: 'Mar', users: 400, revenue: 30000 }
+  ]);
   
   title = signal('');
   category = signal('Mathematics');
