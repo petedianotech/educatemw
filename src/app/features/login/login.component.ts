@@ -193,10 +193,13 @@ import { FormsModule } from '@angular/forms';
                       <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">lock</mat-icon>
                       </div>
-                      <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="••••••••" required 
+                      <input [type]="showPassword() ? 'text' : 'password'" id="password" [(ngModel)]="password" name="password" placeholder="••••••••" required 
                              aria-labelledby="password-label"
                              enterkeyhint="done" (keyup.enter)="submitForm()"
-                             class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                             class="block w-full pl-11 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all sm:text-sm font-bold">
+                      <button type="button" (click)="showPassword.set(!showPassword())" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-indigo-600 transition-colors">
+                        <mat-icon class="!w-5 !h-5 !text-[20px]">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                      </button>
                     </div>
                   </div>
 
@@ -249,6 +252,7 @@ export class LoginComponent implements OnInit {
   isSignup = signal(false);
   isLoading = signal(false);
   view = signal<'login' | 'forgot-password' | 'security-setup'>('login');
+  showPassword = signal(false);
   
   username = '';
   email = '';
@@ -398,7 +402,7 @@ export class LoginComponent implements OnInit {
     this.isLoading.set(true);
     try {
       await this.authService.sendPasswordReset(this.email);
-      this.successMsg.set('Password reset link sent to your email!');
+      this.successMsg.set('Password reset link sent! If you don\'t see it in your inbox, please check your spam folder.');
       setTimeout(() => this.view.set('login'), 3000);
     } catch (error: unknown) {
       const err = error as { message?: string };

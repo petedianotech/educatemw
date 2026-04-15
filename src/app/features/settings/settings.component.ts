@@ -304,7 +304,7 @@ export class SettingsComponent {
     this.isUpdating.set(true);
     try {
       await this.authService.sendAdminMagicLink(user.email);
-      this.adminSuccessMsg.set('Magic access link sent! Please check your email inbox.');
+      this.adminSuccessMsg.set('Magic access link sent! If you don\'t see it in your inbox, please check your spam folder.');
       this.adminPassword.set('');
     } catch (error: unknown) {
       const err = error as { message?: string };

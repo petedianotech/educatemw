@@ -244,32 +244,50 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
                     <div class="grid grid-cols-2 gap-6">
                       <div>
                         <label for="note-category" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Category</label>
-                        <select id="note-category" [ngModel]="category()" (ngModelChange)="category.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none">
-                          <option value="Mathematics">Mathematics</option>
-                          <option value="Science">Science</option>
-                          <option value="Biology">Biology</option>
-                          <option value="English">English</option>
-                          <option value="History">History</option>
-                          <option value="Past Paper">Past Paper</option>
-                          <option value="Announcement">Announcement</option>
-                          <option value="Video">Video</option>
-                        </select>
+                        <div class="relative">
+                          <select id="note-category" [ngModel]="category()" (ngModelChange)="category.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none pr-12">
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Science">Science</option>
+                            <option value="Biology">Biology</option>
+                            <option value="English">English</option>
+                            <option value="History">History</option>
+                            <option value="Past Paper">Past Paper</option>
+                            <option value="Announcement">Announcement</option>
+                            <option value="Video">Video</option>
+                          </select>
+                          <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+                            <mat-icon>expand_more</mat-icon>
+                          </div>
+                        </div>
                       </div>
                       <div>
                         <label for="note-destination" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Destination</label>
-                        <select id="note-destination" [ngModel]="destination()" (ngModelChange)="destination.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none">
-                          <option value="notes">Notes Section</option>
-                          <option value="past-papers">Past Papers Section</option>
-                          <option value="announcements">Announcements Section</option>
-                          <option value="video-lessons">Video Lessons Section</option>
-                        </select>
+                        <div class="relative">
+                          <select id="note-destination" [ngModel]="destination()" (ngModelChange)="destination.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none pr-12">
+                            <option value="notes">Notes Section</option>
+                            <option value="past-papers">Past Papers Section</option>
+                            <option value="announcements">Announcements Section</option>
+                            <option value="video-lessons">Video Lessons Section</option>
+                          </select>
+                          <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+                            <mat-icon>expand_more</mat-icon>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
                     <div class="flex items-end">
-                      <label class="flex items-center gap-3 cursor-pointer w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-colors">
-                        <input type="checkbox" [ngModel]="isProOnly()" (ngModelChange)="isProOnly.set($event)" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                        <span class="text-sm font-black text-slate-700 uppercase tracking-tight">Pro Only</span>
+                      <label class="flex items-center gap-3 cursor-pointer w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-colors"
+                             [class.bg-indigo-50]="isProOnly()" [class.border-indigo-200]="isProOnly()">
+                        <div class="relative flex items-center justify-center w-6 h-6 rounded border-2 transition-colors"
+                             [class.border-indigo-600]="isProOnly()" [class.bg-indigo-600]="isProOnly()"
+                             [class.border-slate-300]="!isProOnly()" [class.bg-white]="!isProOnly()">
+                          <input type="checkbox" [ngModel]="isProOnly()" (ngModelChange)="isProOnly.set($event)" class="opacity-0 absolute inset-0 cursor-pointer w-full h-full">
+                          @if (isProOnly()) {
+                            <mat-icon class="text-white !w-4 !h-4 !text-[16px]">check</mat-icon>
+                          }
+                        </div>
+                        <span class="text-sm font-black uppercase tracking-tight" [class.text-indigo-700]="isProOnly()" [class.text-slate-700]="!isProOnly()">Pro Only Material</span>
                       </label>
                     </div>
 
@@ -483,12 +501,10 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
                         @if (student.role !== 'admin') {
                           <div class="flex items-center gap-3">
                             <button (click)="toggleProStatus(student.uid, !student.isPro)" 
-                                    [class]="student.isPro ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'"
-                                    class="px-4 py-2 text-[10px] font-black rounded-xl border uppercase tracking-widest hover:scale-105 transition-transform">
+                                    [class]="student.isPro ? 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100'"
+                                    class="px-4 py-2 text-[10px] font-black rounded-xl border uppercase tracking-widest transition-colors flex items-center gap-1">
+                              <mat-icon class="!w-3 !h-3 !text-[12px]">{{ student.isPro ? 'remove_circle_outline' : 'add_circle_outline' }}</mat-icon>
                               {{ student.isPro ? 'Remove Pro' : 'Make Pro' }}
-                            </button>
-                            <button (click)="toggleProStatus(student.uid, !student.isPro)" class="text-[10px] font-black text-indigo-600 hover:text-indigo-700 uppercase tracking-widest underline decoration-2 underline-offset-4">
-                              Toggle
                             </button>
                           </div>
                         }

@@ -48,7 +48,7 @@ service cloud.firestore {
       return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'isGuest', 'aiCredits', 'streak', 'coins', 'lastCreditReset', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount', 'createdAt', 'securityQuestions']) &&
              hasRequiredFields(['uid', 'email', 'role', 'isPro', 'createdAt']) &&
              data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
-             data.email is string && data.email.size() > 0 && data.email.size() < 100 &&
+             data.email is string && data.email.size() >= 0 && data.email.size() < 100 &&
              data.role in ['student', 'admin'] &&
              data.isPro is bool &&
              data.createdAt is timestamp &&
