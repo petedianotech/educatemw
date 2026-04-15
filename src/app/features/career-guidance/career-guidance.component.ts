@@ -155,7 +155,7 @@ export class CareerGuidanceComponent {
   careers: CareerPath[] = [
     { 
       title: 'Medicine & Surgery (MBBS)', 
-      institution: 'KUHeS (formerly UNIMA CoM)', 
+      institution: 'Kamuzu University of Health Sciences (KUHeS)', 
       pointsRange: '6 - 12 points', 
       requirements: 'Distinctions in English, Mathematics, Biology, and Physical Science.',
       icon: 'medical_services',
@@ -163,7 +163,7 @@ export class CareerGuidanceComponent {
     },
     { 
       title: 'Engineering (Civil, Mech, Elec)', 
-      institution: 'MUBAS (formerly Poly)', 
+      institution: 'Malawi University of Business and Applied Sciences (MUBAS)', 
       pointsRange: '6 - 15 points', 
       requirements: 'Strong credits/distinctions in Mathematics and Physical Science. Credit in English.',
       icon: 'engineering',
@@ -171,15 +171,15 @@ export class CareerGuidanceComponent {
     },
     { 
       title: 'Agriculture & Natural Resources', 
-      institution: 'LUANAR (Bunda Campus)', 
+      institution: 'Lilongwe University of Agriculture and Natural Resources (LUANAR)', 
       pointsRange: '10 - 20 points', 
-      requirements: 'Credits in English, Mathematics, Biology, and Agriculture/Physical Science.',
+      requirements: 'Credits in English, Mathematics, Biology, and Agriculture or Physical Science.',
       icon: 'agriculture',
       color: 'bg-emerald-50 text-emerald-600 border-emerald-200'
     },
     { 
       title: 'Education (Teaching)', 
-      institution: 'MZUNI / UNIMA', 
+      institution: 'Mzuzu University (MZUNI) / University of Malawi (UNIMA)', 
       pointsRange: '15 - 24 points', 
       requirements: 'Credits in English and the specific subjects you intend to teach.',
       icon: 'school',
@@ -187,7 +187,7 @@ export class CareerGuidanceComponent {
     },
     { 
       title: 'Computer Science / IT', 
-      institution: 'UNIMA / MUBAS / MZUNI', 
+      institution: 'University of Malawi (UNIMA) / MUBAS / Mzuzu University (MZUNI)', 
       pointsRange: '9 - 16 points', 
       requirements: 'Strong credits in Mathematics and Physical Science. Credit in English.',
       icon: 'computer',
@@ -195,11 +195,19 @@ export class CareerGuidanceComponent {
     },
     { 
       title: 'Business & Economics', 
-      institution: 'MUBAS / UNIMA', 
+      institution: 'University of Malawi (UNIMA) / MUBAS', 
       pointsRange: '10 - 18 points', 
       requirements: 'Strong credit in Mathematics and English.',
       icon: 'trending_up',
       color: 'bg-emerald-50 text-emerald-600 border-emerald-200'
+    },
+    {
+      title: 'Law (LLB)',
+      institution: 'University of Malawi (UNIMA - Chancellor College)',
+      pointsRange: '6 - 10 points',
+      requirements: 'Distinctions in English, History, and Social & Life Skills. High overall points.',
+      icon: 'gavel',
+      color: 'bg-indigo-50 text-indigo-600 border-indigo-200'
     }
   ];
 

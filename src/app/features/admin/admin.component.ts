@@ -329,8 +329,15 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
                     @if (editingNoteId()) {
                       <button (click)="cancelEdit()" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black hover:bg-slate-200 transition-all uppercase tracking-widest">Cancel</button>
                     }
-                    <button (click)="saveNote()" [disabled]="isSubmitting()" class="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 uppercase tracking-widest disabled:opacity-50">
-                      {{ isSubmitting() ? 'Saving...' : (editingNoteId() ? 'Update Material' : 'Publish Material') }}
+                    <button (click)="saveNote()" 
+                            [disabled]="isSubmitting()"
+                            class="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 uppercase tracking-widest active:scale-95 disabled:opacity-70 flex items-center justify-center gap-2">
+                      @if (isSubmitting()) {
+                        <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Uploading...</span>
+                      } @else {
+                        {{ editingNoteId() ? 'Update Material' : 'Publish Material' }}
+                      }
                     </button>
                   </div>
                 </div>
@@ -872,8 +879,12 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   async saveNote() {
-    if (!this.title().trim() || this.isSubmitting()) return;
-    this.isSubmitting.set(true);
+    console.log('saveNote clicked', { title: this.title() });
+    if (!this.title().trim()) {
+      console.warn('Title is empty');
+      return;
+    }
+    
     try {
       const noteData = {
         title: this.title(),
@@ -884,6 +895,7 @@ export class AdminComponent implements OnInit, OnDestroy {
         youtubeUrl: this.youtubeUrl() || undefined,
         isProOnly: this.isProOnly()
       };
+      console.log('Saving noteData:', noteData);
       if (this.editingNoteId()) {
         await this.dataService.updateNote(this.editingNoteId()!, noteData);
         this.cancelEdit();
@@ -895,10 +907,9 @@ export class AdminComponent implements OnInit, OnDestroy {
         this.youtubeUrl.set('');
         this.isProOnly.set(false);
       }
+      console.log('Save successful');
     } catch (error) {
-      console.error(error);
-    } finally {
-      this.isSubmitting.set(false);
+      console.error('Save failed:', error);
     }
   }
 }

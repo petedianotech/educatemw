@@ -96,7 +96,7 @@ import { RouterLink } from '@angular/router';
         </div>
 
         <!-- Leaderboard List -->
-        <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+        <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-y-auto max-h-[400px]">
           <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
             <h2 class="text-sm font-black text-slate-500 uppercase tracking-widest">Global Ranking</h2>
             <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">Top 100</span>
