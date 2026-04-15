@@ -34,65 +34,6 @@ import { FormsModule } from '@angular/forms';
         <div class="mt-6 sm:mt-10 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
           <div class="bg-white/90 backdrop-blur-xl py-6 px-6 sm:py-8 shadow-2xl shadow-indigo-100 sm:rounded-[2.5rem] sm:px-10 border border-white/40">
             
-            @if (isAdminMode()) {
-              <div class="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                <div class="flex items-center gap-3 mb-2">
-                  <button (click)="isAdminMode.set(false)" class="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                    <mat-icon>arrow_back</mat-icon>
-                  </button>
-                  <h3 class="text-xl font-black text-slate-900">Admin Secure Access</h3>
-                </div>
-                
-                <p class="text-xs text-slate-500 font-medium leading-relaxed">
-                  This area is restricted to authorized administrators only. Please enter your admin email and the secure team password.
-                </p>
-
-                <div class="space-y-4">
-                  <div>
-                    <label for="adminEmail" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Admin Email</label>
-                    <div class="relative">
-                      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">admin_panel_settings</mat-icon>
-                      </div>
-                      <input type="email" id="adminEmail" [(ngModel)]="email" name="adminEmail" placeholder="admin@educatemw.com"
-                             class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
-                    </div>
-                  </div>
-
-                  <div>
-                    <label for="adminPass" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Team Password</label>
-                    <div class="relative">
-                      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <mat-icon class="text-slate-400 !w-5 !h-5 !text-[20px]">vpn_key</mat-icon>
-                      </div>
-                      <input type="password" id="adminPass" [(ngModel)]="adminPassword" name="adminPass" placeholder="••••••••"
-                             class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold outline-none focus:border-indigo-500">
-                    </div>
-                  </div>
-
-                  @if (errorMsg()) {
-                    <div class="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 animate-in shake duration-500">
-                      <mat-icon class="text-rose-500 !w-5 !h-5 !text-[20px]">error_outline</mat-icon>
-                      <span class="text-rose-700 text-xs font-bold leading-tight">{{errorMsg()}}</span>
-                    </div>
-                  }
-
-                  @if (successMsg()) {
-                    <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-start gap-3 animate-in fade-in duration-500">
-                      <mat-icon class="text-emerald-500 !w-5 !h-5 !text-[20px]">mark_email_read</mat-icon>
-                      <span class="text-emerald-700 text-xs font-bold leading-tight">{{successMsg()}}</span>
-                    </div>
-                  }
-
-                  <button (click)="submitAdminLogin()" [disabled]="isLoading()" 
-                          class="w-full py-4 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                    <mat-icon>{{ isLoading() ? 'sync' : 'send' }}</mat-icon>
-                    {{ isLoading() ? 'Verifying...' : 'Send Magic Access Link' }}
-                  </button>
-                </div>
-              </div>
-            } @else {
-              <!-- Google Login Demoted -->
               <div class="mb-6 sm:mb-8">
                 <div class="mt-4 text-center">
                   <button (click)="toggleSignup()" type="button" 
@@ -108,7 +49,7 @@ import { FormsModule } from '@angular/forms';
                 <button (click)="authMode.set('username')" 
                         [class]="authMode() === 'username' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'" 
                         class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all duration-300">
-                  User
+                  Username
                 </button>
                 <button (click)="authMode.set('phone')" 
                         [class]="authMode() === 'phone' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'" 
@@ -291,37 +232,9 @@ import { FormsModule } from '@angular/forms';
                     }
                   </div>
 
-                  <div class="relative py-4">
-                    <div class="absolute inset-0 flex items-center">
-                      <div class="w-full border-t border-slate-100"></div>
-                    </div>
-                    <div class="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                      <span class="px-4 bg-white text-slate-400">
-                        Alternative
-                      </span>
-                    </div>
-                  </div>
-
-                  <button (click)="loginWithGoogle()" type="button" 
-                          class="w-full py-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-center gap-3 text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-[0.98] transition-all">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
-                    Sign in with Google
-                  </button>
-
-                  <div class="pt-6 text-center">
-                    <button (click)="isAdminMode.set(true)" type="button" class="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors flex items-center justify-center gap-1 mx-auto">
-                      <mat-icon class="!w-4 !h-4 !text-[16px]">admin_panel_settings</mat-icon>
-                      Admin Access
-                    </button>
-                  </div>
                 </form>
               }
-            }
+            
           </div>
         </div>
       </div>
@@ -336,13 +249,11 @@ export class LoginComponent implements OnInit {
   isSignup = signal(false);
   isLoading = signal(false);
   view = signal<'login' | 'forgot-password' | 'security-setup'>('login');
-  isAdminMode = signal(false);
   
   username = '';
   email = '';
   phone = '';
   password = '';
-  adminPassword = '';
   errorMsg = signal('');
   successMsg = signal('');
 
@@ -374,41 +285,11 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  async submitAdminLogin() {
-    this.errorMsg.set('');
-    this.successMsg.set('');
-    
-    const adminEmails = ['mscepreparation@gmail.com', 'petedianotech@gmail.com'];
-    if (!adminEmails.includes(this.email.toLowerCase())) {
-      this.errorMsg.set('This email is not authorized for admin access.');
-      return;
-    }
-
-    const expectedPassword = (typeof ADMIN_TEAM_PASSWORD !== 'undefined' && ADMIN_TEAM_PASSWORD) ? ADMIN_TEAM_PASSWORD : 'team3admins.mw';
-    if (this.adminPassword !== expectedPassword) {
-      this.errorMsg.set('Incorrect team password.');
-      return;
-    }
-
-    this.isLoading.set(true);
-    try {
-      await this.authService.sendAdminMagicLink(this.email);
-      this.successMsg.set('Magic access link sent! Please check your email inbox.');
-      this.adminPassword = '';
-    } catch (error: unknown) {
-      const err = error as { message?: string };
-      this.errorMsg.set(err.message || 'Failed to send magic link');
-    } finally {
-      this.isLoading.set(false);
-    }
-  }
-
   toggleSignup() {
     this.isSignup.update(v => !v);
     this.errorMsg.set('');
     this.successMsg.set('');
     this.view.set('login');
-    this.isAdminMode.set(false);
   }
 
   async submitForm() {
@@ -562,16 +443,6 @@ export class LoginComponent implements OnInit {
       this.successMsg.set('Identity verified! Please contact support at support@educatemw.com to reset your password (manual reset for non-email accounts).');
     } else {
       this.errorMsg.set('Incorrect answers. Please try again.');
-    }
-  }
-
-  async loginWithGoogle() {
-    try {
-      await this.authService.loginWithGoogle();
-      this.router.navigate(['/dashboard']);
-    } catch (error) {
-      console.error('Login error', error);
-      this.errorMsg.set('Failed to login with Google.');
     }
   }
 }

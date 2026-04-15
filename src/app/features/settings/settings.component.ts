@@ -189,6 +189,38 @@ import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/comm
               <mat-icon>admin_panel_settings</mat-icon>
               <span>Admin Dashboard</span>
             </button>
+          } @else if (isPotentialAdmin()) {
+            <div class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden p-5 space-y-4">
+              <h3 class="font-black text-slate-900 text-sm flex items-center gap-2">
+                <mat-icon class="text-indigo-600 text-sm">admin_panel_settings</mat-icon>
+                Admin Secure Access
+              </h3>
+              <p class="text-[10px] text-slate-500 font-medium leading-tight px-1">
+                Enter the secure team password to receive an admin access link via email.
+              </p>
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <label for="adminPass" class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Team Password</label>
+                <input type="password" id="adminPass" [(ngModel)]="adminPassword" placeholder="••••••••" 
+                       class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all outline-none text-sm text-slate-700 shadow-sm">
+              </div>
+              @if (adminErrorMsg()) {
+                <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl flex items-start gap-2">
+                  <mat-icon class="text-rose-500 !w-4 !h-4 !text-[16px]">error_outline</mat-icon>
+                  <span class="text-rose-700 text-[10px] font-bold leading-tight">{{adminErrorMsg()}}</span>
+                </div>
+              }
+              @if (adminSuccessMsg()) {
+                <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-2">
+                  <mat-icon class="text-emerald-500 !w-4 !h-4 !text-[16px]">mark_email_read</mat-icon>
+                  <span class="text-emerald-700 text-[10px] font-bold leading-tight">{{adminSuccessMsg()}}</span>
+                </div>
+              }
+              <button (click)="submitAdminLogin()" [disabled]="isUpdating() || !adminPassword()" 
+                      class="w-full py-4 bg-slate-900 text-white rounded-xl font-black shadow-lg shadow-slate-200 hover:bg-slate-800 disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2">
+                <mat-icon class="text-sm">send</mat-icon>
+                Send Magic Access Link
+              </button>
+            </div>
           }
           <button (click)="logout()" class="w-full p-5 bg-white rounded-2xl flex items-center gap-4 text-rose-500 shadow-sm border border-slate-100 font-black hover:bg-rose-50 transition-all">
             <mat-icon>logout</mat-icon>
@@ -228,6 +260,10 @@ export class SettingsComponent {
   ans1 = signal('');
   ans2 = signal('');
 
+  adminPassword = signal('');
+  adminErrorMsg = signal('');
+  adminSuccessMsg = signal('');
+
   constructor() {
     const user = this.authService.currentUser();
     if (user) {
@@ -242,7 +278,40 @@ export class SettingsComponent {
   isAdmin(): boolean {
     const user = this.authService.currentUser();
     if (!user) return false;
-    return user.email === 'petedianotech@gmail.com' || user.email === 'mscepreparation@gmail.com' || user.role === 'admin';
+    return user.role === 'admin';
+  }
+
+  isPotentialAdmin(): boolean {
+    const user = this.authService.currentUser();
+    if (!user) return false;
+    const adminEmails = ['mscepreparation@gmail.com', 'petedianotech@gmail.com'];
+    return adminEmails.includes(user.email?.toLowerCase() || '') && user.role !== 'admin';
+  }
+
+  async submitAdminLogin() {
+    this.adminErrorMsg.set('');
+    this.adminSuccessMsg.set('');
+    
+    const user = this.authService.currentUser();
+    if (!user || !user.email) return;
+
+    const expectedPassword = (typeof ADMIN_TEAM_PASSWORD !== 'undefined' && ADMIN_TEAM_PASSWORD) ? ADMIN_TEAM_PASSWORD : 'team3admins.mw';
+    if (this.adminPassword() !== expectedPassword) {
+      this.adminErrorMsg.set('Incorrect team password.');
+      return;
+    }
+
+    this.isUpdating.set(true);
+    try {
+      await this.authService.sendAdminMagicLink(user.email);
+      this.adminSuccessMsg.set('Magic access link sent! Please check your email inbox.');
+      this.adminPassword.set('');
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      this.adminErrorMsg.set(err.message || 'Failed to send magic link');
+    } finally {
+      this.isUpdating.set(false);
+    }
   }
 
   async updateUsername() {
