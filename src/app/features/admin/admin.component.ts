@@ -324,16 +324,17 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
             <div class="space-y-4">
               @for (note of dataService.notes(); track note.id) {
                 <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center justify-between group hover:border-indigo-200 transition-all">
-                  <div class="flex items-center gap-6">
+                  <div class="flex items-center gap-6 flex-1">
                     <div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
                       <mat-icon>{{ note.category === 'Video' ? 'play_circle' : 'description' }}</mat-icon>
                     </div>
-                    <div>
+                    <div class="flex-1">
                       <div class="flex items-center gap-2 mb-1">
                         <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{{ note.category }}</span>
                         @if (note.isProOnly) {
                           <span class="px-2 py-0.5 bg-amber-50 text-amber-600 text-[8px] font-black rounded-full border border-amber-100 uppercase tracking-widest">PRO</span>
                         }
+                        <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-black rounded-full border border-slate-200 uppercase tracking-widest">{{ note.destination }}</span>
                       </div>
                       <h4 class="text-lg font-black text-slate-900 tracking-tight">{{ note.title }}</h4>
                       <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">{{ toDate(note.createdAt) | date:'mediumDate' }}</p>
@@ -347,6 +348,11 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
                       <mat-icon>delete</mat-icon>
                     </button>
                   </div>
+                </div>
+              } @empty {
+                <div class="text-center py-20 bg-white rounded-[3rem] border border-slate-200 border-dashed">
+                  <mat-icon class="text-slate-200 !w-16 !h-16 !text-[64px] mb-4">folder_off</mat-icon>
+                  <p class="text-slate-400 font-black uppercase tracking-widest">No materials in library</p>
                 </div>
               }
             </div>
