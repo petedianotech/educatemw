@@ -202,13 +202,13 @@ export class NoteDetailComponent implements OnInit {
   }
 
   getSafeVideoUrl(url: string): SafeResourceUrl {
-    // Simple conversion for youtube embed
-    let videoId = '';
-    if (url.includes('v=')) {
-      videoId = url.split('v=')[1].split('&')[0];
-    } else if (url.includes('be/')) {
-      videoId = url.split('be/')[1].split('?')[0];
-    }
+    if (!url) return this.sanitizer.bypassSecurityTrustResourceUrl('');
+    
+    // Improved extraction logic to match VideoLessonsComponent
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?v=)|(\?v=)|(&v=)|(shorts\/)|(live\/))([^#&?]*).*/;
+    const match = url.match(regExp);
+    const videoId = (match && match[11] && match[11].length === 11) ? match[11] : '';
+    
     return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${videoId}`);
   }
 }

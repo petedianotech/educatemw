@@ -16,7 +16,7 @@ service cloud.firestore {
       return isAuthenticated() && 
         (
           (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
-          ((request.auth.token.email == "petedianotech@gmail.com" || request.auth.token.email == "mscepreparation@gmail.com") && request.auth.token.email_verified == true)
+          (request.auth.token.email == "petedianotech@gmail.com" || request.auth.token.email == "mscepreparation@gmail.com")
         );
     }
     
@@ -309,6 +309,16 @@ service cloud.firestore {
       allow create: if isAuthenticated() && isValidFlashcard(request.resource.data);
       allow update: if isAuthenticated() && isValidFlashcard(request.resource.data);
       allow delete: if isAuthenticated() && (isAdmin() || (exists(/databases/$(database)/documents/flashcardSets/$(resource.data.setId)) && get(/databases/$(database)/documents/flashcardSets/$(resource.data.setId)).data.authorId == request.auth.uid));
+    }
+
+    match /config/appSettings {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /videoLessons/{videoId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

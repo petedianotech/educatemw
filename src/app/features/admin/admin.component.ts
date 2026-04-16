@@ -99,6 +99,16 @@ interface ChartData {
               <span>Exam Dates</span>
             </button>
 
+            <button (click)="activeTab.set('videos'); isSidebarOpen.set(false)" 
+                    [class.bg-gradient-to-r]="activeTab() === 'videos'"
+                    [class.from-violet-400]="activeTab() === 'videos'"
+                    [class.to-purple-600]="activeTab() === 'videos'"
+                    [class.text-white]="activeTab() === 'videos'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all font-bold text-sm">
+              <mat-icon>videocam</mat-icon>
+              <span>Videos</span>
+            </button>
+
             <div class="pt-4 pb-2 px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Users & Stats</div>
 
             <button (click)="activeTab.set('students'); isSidebarOpen.set(false)" 
@@ -440,9 +450,19 @@ interface ChartData {
                     </div>
 
                   @if (category() === 'Video') {
+                    <div class="bg-indigo-50 p-6 rounded-3xl border border-indigo-100 mb-6">
+                      <div class="flex items-center gap-3 mb-2">
+                        <mat-icon class="text-indigo-600">info</mat-icon>
+                        <h4 class="text-sm font-black text-slate-900 uppercase tracking-tight">Support for Videos</h4>
+                      </div>
+                      <p class="text-xs text-slate-600 font-medium leading-relaxed">
+                        To publish a video lesson, set the <span class="font-black text-indigo-600">Publish Destination</span> to <span class="font-black">Video Lessons Section</span>. Paste any YouTube link below (including shorts or live).
+                      </p>
+                    </div>
+
                     <div>
                       <label for="youtube-url" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">YouTube URL</label>
-                      <input id="youtube-url" type="text" [ngModel]="youtubeUrl()" (ngModelChange)="youtubeUrl.set($event)" placeholder="https://youtube.com/watch?v=..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                      <input id="youtube-url" type="text" [ngModel]="youtubeUrl()" (ngModelChange)="youtubeUrl.set($event)" placeholder="e.g. https://youtu.be/xxx or https://youtube.com/watch?v=xxx" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
                     </div>
                   } @else {
                     <div>
@@ -772,6 +792,20 @@ interface ChartData {
           }
 
           @if (activeTab() === 'students') {
+            <div class="mb-6 bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm flex items-center gap-4">
+              <mat-icon class="text-slate-400">search</mat-icon>
+              <input type="text" 
+                     [ngModel]="studentSearchQuery()" 
+                     (ngModelChange)="studentSearchQuery.set($event)"
+                     placeholder="Search students by name, email or UID..." 
+                     class="flex-1 bg-transparent border-none outline-none font-bold text-slate-900 placeholder:text-slate-300">
+              @if (studentSearchQuery()) {
+                <button (click)="studentSearchQuery.set('')" class="text-slate-400 hover:text-slate-600">
+                  <mat-icon class="!w-5 !h-5 !text-[20px]">close</mat-icon>
+                </button>
+              }
+            </div>
+
             <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-x-auto">
               <table class="w-full text-left border-collapse min-w-[600px]">
                 <thead>
@@ -782,7 +816,7 @@ interface ChartData {
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
-                  @for (student of dataService.users(); track student.uid) {
+                  @for (student of filteredStudents(); track student.uid) {
                     <tr class="hover:bg-slate-50/50 transition-colors">
                       <td class="px-8 py-6">
                         <div class="flex items-center gap-4">
@@ -814,6 +848,34 @@ interface ChartData {
                   }
                 </tbody>
               </table>
+            </div>
+          }
+
+          @if (activeTab() === 'videos') {
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <!-- Upload Form -->
+              <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-6">
+                <h3 class="text-xl font-black text-slate-900">Add Video Lesson</h3>
+                <input [(ngModel)]="videoTitle" placeholder="Video Title" class="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 font-bold">
+                <input [(ngModel)]="videoDescription" placeholder="Description" class="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 font-bold">
+                <input [(ngModel)]="videoUrl" placeholder="YouTube URL" class="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 font-bold">
+                <button (click)="saveVideo()" [disabled]="isSubmitting()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg hover:bg-indigo-700 transition-all">Publish Video</button>
+              </div>
+              
+              <!-- Video List -->
+              <div class="space-y-6">
+                @for (video of dataService.videoLessons(); track video.id) {
+                  <div class="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                      <h4 class="font-black text-slate-900">{{ video.title }}</h4>
+                      <p class="text-[10px] text-slate-400 font-bold uppercase">{{ video.category }}</p>
+                    </div>
+                    <button (click)="deleteVideo(video.id)" class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                }
+              </div>
             </div>
           }
 
@@ -867,24 +929,30 @@ interface ChartData {
           @if (activeTab() === 'updates') {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div class="lg:col-span-1 space-y-8">
-                <!-- App Download Offer Info -->
+                <!-- App Download Info -->
                 <div class="bg-gradient-to-br from-indigo-900 to-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
                   <div class="absolute right-0 top-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
                   <h3 class="text-xl font-black mb-4 flex items-center gap-2">
-                    <mat-icon class="text-amber-400">downloading</mat-icon>
-                    App Reward Offer
+                    <mat-icon class="text-indigo-400">install_mobile</mat-icon>
+                    PWA Installation
                   </h3>
                   <p class="text-slate-300 text-sm font-medium leading-relaxed mb-6">
-                    Users see a floating banner to download the app/APK from Codemagic.
+                    Use the button below to control whether students see the APK download reward banner. When activated, users will see the offer and can claim rewards upon downloading.
                   </p>
+                  
+                  <div class="mb-6">
+                    <button (click)="toggleAppOffer()" 
+                            [class]="dataService.appSettings().isAppOfferActive ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600'"
+                            class="w-full py-4 text-white rounded-2xl font-black shadow-xl transition-all uppercase tracking-widest active:scale-95 flex items-center justify-center gap-2">
+                      <mat-icon>{{ dataService.appSettings().isAppOfferActive ? 'pause_circle_outline' : 'play_circle_outline' }}</mat-icon>
+                      {{ dataService.appSettings().isAppOfferActive ? 'Pause App Offer' : 'Activate App Offer' }}
+                    </button>
+                  </div>
+
                   <div class="space-y-3">
-                    <div class="flex items-center gap-3 bg-white/10 p-3 rounded-2xl border border-white/10">
-                      <mat-icon class="text-amber-400">monetization_on</mat-icon>
-                      <span class="text-xs font-bold">50 Coins Reward</span>
-                    </div>
-                    <div class="flex items-center gap-3 bg-white/10 p-3 rounded-2xl border border-white/10">
-                      <mat-icon class="text-sky-400">auto_awesome</mat-icon>
-                      <span class="text-xs font-bold">20 AI Credits Reward</span>
+                    <div class="flex items-center gap-3 bg-white/10 p-3 rounded-2xl border border-white/10 opacity-50">
+                      <mat-icon class="text-slate-400">block</mat-icon>
+                      <span class="text-xs font-bold text-slate-400 line-through">Rewards Paused</span>
                     </div>
                   </div>
                 </div>
@@ -1144,12 +1212,31 @@ export class AdminComponent implements OnInit, OnDestroy {
   examSubject = signal('');
   examDate = signal('');
 
+  studentSearchQuery = signal('');
+
   quizFilter = signal<'all' | 'AI' | 'Teacher'>('all');
+  
+  videoTitle = signal('');
+  videoDescription = signal('');
+  videoUrl = signal('');
+  videoCategory = signal('Mathematics');
 
   filteredAdminQuizzes = computed(() => {
     const list = this.dataService.quizzes();
     if (this.quizFilter() === 'all') return list;
     return list.filter(q => q.source === this.quizFilter());
+  });
+
+  filteredStudents = computed(() => {
+    const users = this.dataService.users();
+    const baseFiltered = users.filter(u => u.role !== 'admin' && !u.isGuest);
+    const query = this.studentSearchQuery().toLowerCase().trim();
+    if (!query) return baseFiltered;
+    return baseFiltered.filter(u => 
+      u.displayName?.toLowerCase().includes(query) || 
+      u.email?.toLowerCase().includes(query) ||
+      u.uid.toLowerCase().includes(query)
+    );
   });
 
   totalStudents = computed(() => this.dataService.totalUserCount() || this.dataService.users().length);
@@ -1167,6 +1254,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.dataService.subscribeToSettings();
     this.dataService.subscribeToUsers(1000);
     this.dataService.fetchTotalCounts();
     this.dataService.subscribeToNotes();
@@ -1174,15 +1262,18 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.dataService.subscribeToRevenue();
     this.dataService.subscribeToAppUpdates();
     this.dataService.subscribeToExamDates();
+    this.dataService.subscribeToVideoLessons();
   }
 
   ngOnDestroy() {
+    this.dataService.unsubscribeFromSettings();
     this.dataService.unsubscribeFromUsers();
     this.dataService.unsubscribeFromNotes();
     this.dataService.unsubscribeFromQuizzes();
     this.dataService.unsubscribeFromRevenue();
     this.dataService.unsubscribeFromAppUpdates();
     this.dataService.unsubscribeFromExamDates();
+    this.dataService.unsubscribeFromVideoLessons();
   }
 
   private platformId = inject(PLATFORM_ID);
@@ -1197,6 +1288,12 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   async toggleProStatus(userId: string, isPro: boolean) {
     await this.dataService.updateUserProStatus(userId, isPro);
+  }
+
+  async toggleAppOffer() {
+    const currentState = this.dataService.appSettings().isAppOfferActive;
+    await this.dataService.updateSetting('isAppOfferActive', !currentState);
+    this.showNotification(`App Offer ${!currentState ? 'Activated' : 'Paused'}`);
   }
 
   async postUpdate() {
@@ -1255,14 +1352,36 @@ export class AdminComponent implements OnInit, OnDestroy {
     }
   }
 
-  async deleteExamDate(id: string) {
-    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
-      if (window.confirm('Delete this exam date?')) {
-        await this.dataService.deleteExamDate(id);
-        this.showNotification('Exam date deleted');
-      }
-    } else {
-      await this.dataService.deleteExamDate(id);
+  async saveVideo() {
+    if (!this.videoTitle().trim() || !this.videoUrl().trim() || this.isSubmitting()) return;
+    this.isSubmitting.set(true);
+    try {
+      await this.dataService.createVideoLesson({
+        title: this.videoTitle(),
+        description: this.videoDescription(),
+        youtubeUrl: this.videoUrl(),
+        category: this.videoCategory()
+      });
+      this.videoTitle.set('');
+      this.videoDescription.set('');
+      this.videoUrl.set('');
+      this.showNotification('Video lesson published successfully!');
+    } catch (error) {
+      console.error(error);
+      this.showNotification('Failed to publish video.', 'error');
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
+
+  async deleteVideo(videoId: string) {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined' && !window.confirm('Delete this video?')) return;
+    try {
+      await this.dataService.deleteVideoLesson(videoId);
+      this.showNotification('Video deleted');
+    } catch (error) {
+      console.error(error);
+      this.showNotification('Failed to delete video.', 'error');
     }
   }
 
@@ -1290,7 +1409,7 @@ export class AdminComponent implements OnInit, OnDestroy {
         isProOnly: this.quizIsProOnly(),
         questions: this.quizQuestions(),
         authorId: 'admin',
-        source: 'Teacher'
+        source: 'Teacher' as 'AI' | 'Teacher'
       };
       if (this.editingQuizId()) {
         await this.dataService.updateQuiz(this.editingQuizId()!, quizData);

@@ -128,6 +128,19 @@ export interface Flashcard {
   createdAt: Date | Timestamp;
 }
 
+export interface VideoLesson {
+  id: string;
+  title: string;
+  description: string;
+  youtubeUrl: string;
+  category: string;
+  createdAt: Date | Timestamp;
+}
+
+export interface AppSettings {
+  isAppOfferActive: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DataService {
   posts = signal<Post[]>([]);
@@ -141,6 +154,8 @@ export class DataService {
   flashcardSets = signal<FlashcardSet[]>([]);
   flashcards = signal<Flashcard[]>([]);
   messages = signal<ChatMessage[]>([]);
+  videoLessons = signal<VideoLesson[]>([]);
+  appSettings = signal<AppSettings>({ isAppOfferActive: false });
   
   totalUserCount = signal(0);
   totalProCount = signal(0);
@@ -157,6 +172,89 @@ export class DataService {
   private flashcardSetsUnsubscribe: (() => void) | null = null;
   private flashcardsUnsubscribe: (() => void) | null = null;
   private messagesUnsubscribe: (() => void) | null = null;
+  private videoLessonsUnsubscribe: (() => void) | null = null;
+  private settingsUnsubscribe: (() => void) | null = null;
+
+  // --- Video Lessons ---
+  subscribeToVideoLessons(limitCount = 20) {
+    if (this.videoLessonsUnsubscribe) this.unsubscribeFromVideoLessons();
+    const q = query(collection(db, 'videoLessons'), orderBy('createdAt', 'desc'), limit(limitCount));
+    this.videoLessonsUnsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedVideos = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as VideoLesson));
+      this.videoLessons.set(loadedVideos);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'videoLessons');
+    });
+  }
+
+  unsubscribeFromVideoLessons() {
+    if (this.videoLessonsUnsubscribe) {
+      this.videoLessonsUnsubscribe();
+      this.videoLessonsUnsubscribe = null;
+    }
+  }
+
+  async createVideoLesson(video: Omit<VideoLesson, 'id' | 'createdAt'>) {
+    try {
+      await addDoc(collection(db, 'videoLessons'), {
+        ...video,
+        createdAt: serverTimestamp()
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'videoLessons');
+    }
+  }
+
+  async deleteVideoLesson(videoId: string) {
+    try {
+      await deleteDoc(doc(db, 'videoLessons', videoId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `videoLessons/${videoId}`);
+    }
+  }
+
+  // --- Settings ---
+  subscribeToSettings() {
+    if (this.settingsUnsubscribe) this.unsubscribeFromSettings();
+    const docRef = doc(db, 'config', 'appSettings');
+    this.settingsUnsubscribe = onSnapshot(docRef, (snapshot) => {
+      if (snapshot.exists()) {
+        this.appSettings.set(snapshot.data() as AppSettings);
+      } else {
+        // Initialize if not exists
+        this.updateSetting('isAppOfferActive', false);
+      }
+    }, (error) => {
+      // Don't log missing doc as error for public users
+      if (!error.message.includes('permission-denied')) {
+        handleFirestoreError(error, OperationType.GET, 'config/appSettings');
+      }
+    });
+  }
+
+  unsubscribeFromSettings() {
+    if (this.settingsUnsubscribe) {
+      this.settingsUnsubscribe();
+      this.settingsUnsubscribe = null;
+    }
+  }
+
+  async updateSetting(key: keyof AppSettings, value: string | number | boolean) {
+    try {
+      const docRef = doc(db, 'config', 'appSettings');
+      await updateDoc(docRef, { [key]: value }).catch(async () => {
+        // If update fails because doc doesn't exist, use setDoc instead via updateDoc with merge? 
+        // No, simple setDoc for first time.
+        const { setDoc } = await import('firebase/firestore');
+        await setDoc(docRef, { [key]: value }, { merge: true });
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `config/appSettings`);
+    }
+  }
 
   // --- Users ---
   subscribeToUsers(limitCount = 50) {

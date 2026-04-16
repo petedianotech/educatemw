@@ -3,6 +3,7 @@ import {isPlatformBrowser, NgOptimizedImage} from '@angular/common';
 import {RouterOutlet, RouterLink, RouterLinkActive, Router} from '@angular/router';
 import {AuthService} from './core/services/auth.service';
 import {LoadingService} from './core/services/loading.service';
+import {DataService} from './core/services/data.service';
 import {MatIconModule} from '@angular/material/icon';
 import { ErrorToastComponent } from './shared/components/error-toast/error-toast.component';
 
@@ -90,7 +91,7 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
             }
 
             <!-- Floating Download Reward Banner -->
-            @if (authService.currentUser() && !authService.currentUser()?.hasClaimedAppInstallReward && !isBannerDismissed() && router.url === '/dashboard') {
+            @if (dataService.appSettings().isAppOfferActive && authService.currentUser() && !authService.currentUser()?.hasClaimedAppInstallReward && !isBannerDismissed() && router.url === '/dashboard') {
               <div class="fixed bottom-24 left-4 right-4 z-40 animate-in slide-in-from-bottom-10 duration-700">
                 <div class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-800 rounded-[2rem] p-5 shadow-2xl border border-white/20 relative overflow-hidden group">
                   <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
@@ -325,20 +326,15 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
                   </div>
                   <div class="flex-1">
                     <h4 class="text-lg font-black text-slate-900 leading-tight">Install Educate MW</h4>
-                    <p class="text-sm text-slate-500 font-medium mt-1">Get 10 FREE AI Credits instantly when you install our app!</p>
+                    <p class="text-sm text-slate-500 font-medium mt-1">Install our app for a faster and easier access to learning materials!</p>
                   </div>
                   <button (click)="showInstallPopup.set(false)" class="text-slate-300 hover:text-slate-500 transition-colors">
                     <mat-icon class="text-[20px]">close</mat-icon>
                   </button>
                 </div>
                 
-                <div class="flex items-center gap-2 bg-indigo-50 px-3 py-2 rounded-xl border border-indigo-100 relative z-10">
-                  <mat-icon class="text-indigo-600 text-sm">stars</mat-icon>
-                  <span class="text-[11px] font-black text-indigo-700 uppercase tracking-wider">+10 AI Credits Reward</span>
-                </div>
-                
                 <button (click)="installPwa()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] transition-all relative z-10">
-                  Install & Claim Reward
+                  Install Now
                 </button>
               </div>
             </div>
@@ -354,6 +350,7 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
 export class App implements OnInit {
   authService = inject(AuthService);
   loadingService = inject(LoadingService);
+  dataService = inject(DataService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
   isMobileMenuOpen = signal(false);
@@ -380,13 +377,15 @@ export class App implements OnInit {
         console.log('INSTALL: Success');
         this.deferredPrompt.set(null);
         this.showInstallPopup.set(false);
-        this.authService.claimPwaReward();
+        // Reward disabled by user request
+        // this.authService.claimPwaReward();
       });
     }
   }
 
   ngOnInit() {
     this.loadingService.simulateLoading();
+    this.dataService.subscribeToSettings();
   }
 
   toggleMenu() {

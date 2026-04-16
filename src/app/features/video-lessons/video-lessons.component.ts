@@ -168,8 +168,12 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
   }
 
   private extractVideoId(url: string): string {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    if (!url) return '';
+    // Handle various youtube URL formats including shared, shorts, live and standard URLs
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?v=)|(\?v=)|(&v=)|(shorts\/)|(live\/))([^#&?]*).*/;
     const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : '';
+    // The video ID is typically in the 11th capture group with this refined regex
+    const id = (match && match[11]) ? match[11] : '';
+    return id.length === 11 ? id : '';
   }
 }
