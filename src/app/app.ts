@@ -88,6 +88,35 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
                 </div>
               </div>
             }
+
+            <!-- Floating Download Reward Banner -->
+            @if (authService.currentUser() && !authService.currentUser()?.hasClaimedAppInstallReward && !isBannerDismissed() && router.url === '/dashboard') {
+              <div class="fixed bottom-24 left-4 right-4 z-40 animate-in slide-in-from-bottom-10 duration-700">
+                <div class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-800 rounded-[2rem] p-5 shadow-2xl border border-white/20 relative overflow-hidden group">
+                  <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                  
+                  <button (click)="isBannerDismissed.set(true)" class="absolute top-3 right-3 text-white/60 hover:text-white transition-colors z-10 p-1">
+                    <mat-icon class="!w-4 !h-4 !text-[16px]">close</mat-icon>
+                  </button>
+                  
+                  <div class="flex items-center gap-4 relative z-10">
+                    <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shrink-0 shadow-inner">
+                      <mat-icon class="!w-7 !h-7 !text-[28px]">download_for_offline</mat-icon>
+                    </div>
+                    <div class="flex-1">
+                      <h4 class="text-base font-black text-white leading-tight">Get Our Android App!</h4>
+                      <div class="flex items-center gap-2 mt-1">
+                        <span class="bg-amber-400 text-amber-950 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm">+50 Coins</span>
+                        <span class="bg-sky-400 text-sky-950 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm">+20 AI Credits</span>
+                      </div>
+                    </div>
+                    <button (click)="downloadAndReward()" class="bg-white text-indigo-700 px-5 py-3 rounded-2xl font-black text-xs shadow-xl active:scale-95 transition-all hover:scale-105 hover:bg-slate-50">
+                      Download
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
             <router-outlet></router-outlet>
           </main>
 
@@ -174,6 +203,9 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
                        height="48" 
                        class="rounded-2xl bg-slate-800 border-2 border-white/10 cursor-pointer hover:brightness-110 transition-all" 
                        (click)="sideFileInput.click()"
+                       (keydown.enter)="sideFileInput.click()"
+                       tabindex="0"
+                       role="button"
                        referrerpolicy="no-referrer">
                   <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-indigo-600 text-white rounded-md flex items-center justify-center shadow-lg border border-white/20 pointer-events-none">
                     <mat-icon class="!w-3 !h-3 !text-[12px]">camera_alt</mat-icon>
@@ -197,22 +229,22 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
             
             <!-- Navigation Items -->
             <nav class="flex-1 px-4 space-y-1 overflow-y-auto pb-10 custom-scrollbar">
-              <a routerLink="/dashboard" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+              <a routerLink="/dashboard" (click)="closeMenu()" (keydown.enter)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
                 <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">home</mat-icon>
                 <span class="text-sm">Dashboard</span>
               </a>
               
-              <a routerLink="/video-lessons" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+              <a routerLink="/video-lessons" (click)="closeMenu()" (keydown.enter)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
                 <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">play_circle_outline</mat-icon>
                 <span class="text-sm">Video Lessons</span>
               </a>
 
-              <a routerLink="/notes" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+              <a routerLink="/notes" (click)="closeMenu()" (keydown.enter)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
                 <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">menu_book</mat-icon>
                 <span class="text-sm">Past Papers</span>
               </a>
 
-              <a routerLink="/quizzes" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+              <a routerLink="/quizzes" (click)="closeMenu()" (keydown.enter)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
                 <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">help_outline</mat-icon>
                 <span class="text-sm">Quizzes</span>
               </a>
@@ -326,6 +358,7 @@ export class App implements OnInit {
   platformId = inject(PLATFORM_ID);
   isMobileMenuOpen = signal(false);
   isControlsHidden = signal(false);
+  isBannerDismissed = signal(false);
   deferredPrompt = signal<BeforeInstallPromptEvent | null>(null);
   showInstallPopup = signal(false);
 
@@ -384,6 +417,18 @@ export class App implements OnInit {
       this.showInstallPopup.set(false);
     }
     this.deferredPrompt.set(null);
+  }
+
+  async downloadAndReward() {
+    // Explanation: We use window.open to trigger the direct download from Codemagic.
+    // In a production app, this would be a direct link to the APK file hosted on a CDN or cloud storage.
+    // Navigating to a file URL with an APK extension triggers the browser's download mechanism.
+    const downloadUrl = 'https://codemagic.io/app/placeholder/download'; 
+    window.open(downloadUrl, '_blank');
+    
+    // Reward the user immediately
+    await this.authService.claimAppInstallReward();
+    this.isBannerDismissed.set(true);
   }
 
   async onSideFileSelected(event: Event) {

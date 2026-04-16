@@ -45,7 +45,7 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'isGuest', 'aiCredits', 'streak', 'coins', 'lastCreditReset', 'lastLoginDate', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount', 'createdAt', 'securityQuestions']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'isGuest', 'aiCredits', 'streak', 'coins', 'lastCreditReset', 'lastLoginDate', 'pwaInstalled', 'hasClaimedAppInstallReward', 'referralCode', 'referredBy', 'referralsCount', 'createdAt', 'securityQuestions']) &&
              hasRequiredFields(['uid', 'email', 'role', 'isPro', 'createdAt']) &&
              data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
              data.email is string && data.email.size() >= 0 && data.email.size() < 100 &&
@@ -61,6 +61,7 @@ service cloud.firestore {
              (!('lastCreditReset' in data) || data.lastCreditReset is string) &&
              isValidOptionalString('lastLoginDate', 1, 100) &&
              (!('pwaInstalled' in data) || data.pwaInstalled is bool) &&
+             (!('hasClaimedAppInstallReward' in data) || data.hasClaimedAppInstallReward is bool) &&
              (!('referralCode' in data) || data.referralCode is string) &&
              (!('referredBy' in data) || data.referredBy is string) &&
              (!('referralsCount' in data) || data.referralsCount is number) &&
@@ -114,20 +115,21 @@ service cloud.firestore {
     }
 
     function isValidQuiz(data) {
-      return hasOnlyAllowedFields(['title', 'description', 'category', 'authorId', 'timeLimit', 'isProOnly', 'questions', 'createdAt']) &&
-             hasRequiredFields(['title', 'category', 'authorId', 'timeLimit', 'isProOnly', 'questions', 'createdAt']) &&
+      return hasOnlyAllowedFields(['title', 'description', 'category', 'authorId', 'timeLimit', 'isProOnly', 'questions', 'createdAt', 'source']) &&
+             hasRequiredFields(['title', 'category', 'authorId', 'timeLimit', 'isProOnly', 'questions', 'createdAt', 'source']) &&
              data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
              data.category is string && data.category.size() > 0 && data.category.size() < 100 &&
              data.authorId is string && data.authorId.size() > 0 && data.authorId.size() < 100 &&
              data.timeLimit is number && data.timeLimit > 0 &&
              data.isProOnly is bool &&
+             data.source in ['AI', 'Teacher'] &&
              data.questions is list && data.questions.size() > 0 && data.questions.size() <= 100 &&
              data.createdAt is timestamp &&
              isValidOptionalString('description', 0, 1000);
     }
 
     function isValidNote(data) {
-      return hasOnlyAllowedFields(['title', 'content', 'category', 'destination', 'isProOnly', 'createdAt', 'driveUrl', 'youtubeUrl']) &&
+      return hasOnlyAllowedFields(['title', 'content', 'category', 'destination', 'isProOnly', 'createdAt', 'driveUrl', 'youtubeUrl', 'level', 'form', 'seoTitle', 'seoDescription', 'slug']) &&
              hasRequiredFields(['title', 'category', 'isProOnly', 'createdAt']) &&
              data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
              data.category is string && data.category.size() > 0 && data.category.size() < 100 &&
@@ -136,6 +138,11 @@ service cloud.firestore {
              isValidOptionalString('content', 0, 50000) &&
              isValidOptionalString('driveUrl', 1, 1000) &&
              isValidOptionalString('youtubeUrl', 1, 1000) &&
+             isValidOptionalString('level', 1, 50) &&
+             isValidOptionalString('form', 1, 50) &&
+             isValidOptionalString('seoTitle', 1, 200) &&
+             isValidOptionalString('seoDescription', 1, 1000) &&
+             isValidOptionalString('slug', 1, 200) &&
              (!('destination' in data) || data.destination in ['notes', 'past-papers', 'announcements', 'video-lessons']);
     }
 

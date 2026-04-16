@@ -730,14 +730,25 @@ interface ChartData {
 
               <!-- Quiz List -->
               <div class="lg:col-span-2 space-y-4">
-                @for (quiz of dataService.quizzes(); track quiz.id) {
+                <div class="flex items-center gap-3 mb-4 sticky top-0 bg-white/90 backdrop-blur-sm z-10 py-2">
+                  <button (click)="quizFilter.set('all')" [class]="quizFilter() === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">All</button>
+                  <button (click)="quizFilter.set('Teacher')" [class]="quizFilter() === 'Teacher' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Teacher</button>
+                  <button (click)="quizFilter.set('AI')" [class]="quizFilter() === 'AI' ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">AI</button>
+                </div>
+
+                @for (quiz of filteredAdminQuizzes(); track quiz.id) {
                   <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center justify-between">
                     <div class="flex items-center gap-6">
                       <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 border border-indigo-100">
                         <mat-icon>quiz</mat-icon>
                       </div>
                       <div>
-                        <h4 class="text-lg font-black text-slate-900 tracking-tight">{{ quiz.title }}</h4>
+                        <div class="flex items-center gap-2 mb-1">
+                          <h4 class="text-lg font-black text-slate-900 tracking-tight">{{ quiz.title }}</h4>
+                          @if (quiz.source) {
+                            <span [class]="quiz.source === 'AI' ? 'bg-slate-900 text-white' : 'bg-indigo-100 text-indigo-700'" class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest">{{ quiz.source }}</span>
+                          }
+                        </div>
                         <div class="flex items-center gap-2 mt-1">
                           <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ quiz.category }} • {{ quiz.questions.length }} Questions</p>
                           @if (quiz.isProOnly) {
@@ -855,7 +866,29 @@ interface ChartData {
 
           @if (activeTab() === 'updates') {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div class="lg:col-span-1">
+              <div class="lg:col-span-1 space-y-8">
+                <!-- App Download Offer Info -->
+                <div class="bg-gradient-to-br from-indigo-900 to-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
+                  <div class="absolute right-0 top-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
+                  <h3 class="text-xl font-black mb-4 flex items-center gap-2">
+                    <mat-icon class="text-amber-400">downloading</mat-icon>
+                    App Reward Offer
+                  </h3>
+                  <p class="text-slate-300 text-sm font-medium leading-relaxed mb-6">
+                    Users see a floating banner to download the app/APK from Codemagic.
+                  </p>
+                  <div class="space-y-3">
+                    <div class="flex items-center gap-3 bg-white/10 p-3 rounded-2xl border border-white/10">
+                      <mat-icon class="text-amber-400">monetization_on</mat-icon>
+                      <span class="text-xs font-bold">50 Coins Reward</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-white/10 p-3 rounded-2xl border border-white/10">
+                      <mat-icon class="text-sky-400">auto_awesome</mat-icon>
+                      <span class="text-xs font-bold">20 AI Credits Reward</span>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm sticky top-8">
                   <h3 class="text-xl font-black text-slate-900 mb-8">Post App Update</h3>
                   <div class="space-y-6">
@@ -1111,10 +1144,18 @@ export class AdminComponent implements OnInit, OnDestroy {
   examSubject = signal('');
   examDate = signal('');
 
-  totalStudents = computed(() => this.dataService.users().length);
-  proSubscribers = computed(() => this.dataService.users().filter(u => u.isPro).length);
+  quizFilter = signal<'all' | 'AI' | 'Teacher'>('all');
+
+  filteredAdminQuizzes = computed(() => {
+    const list = this.dataService.quizzes();
+    if (this.quizFilter() === 'all') return list;
+    return list.filter(q => q.source === this.quizFilter());
+  });
+
+  totalStudents = computed(() => this.dataService.totalUserCount() || this.dataService.users().length);
+  proSubscribers = computed(() => this.dataService.totalProCount() || this.dataService.users().filter(u => u.isPro).length);
   totalMaterials = computed(() => this.dataService.notes().length);
-  totalQuizzes = computed(() => this.dataService.quizzes().length);
+  totalQuizzes = computed(() => this.dataService.totalQuizCount() || this.dataService.quizzes().length);
   revenueRecords = computed(() => this.dataService.revenueRecords());
   totalRevenue = computed(() => this.revenueRecords().reduce((acc, curr) => acc + curr.amount, 0));
 
@@ -1126,7 +1167,8 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.dataService.subscribeToUsers();
+    this.dataService.subscribeToUsers(1000);
+    this.dataService.fetchTotalCounts();
     this.dataService.subscribeToNotes();
     this.dataService.subscribeToQuizzes();
     this.dataService.subscribeToRevenue();
@@ -1247,7 +1289,8 @@ export class AdminComponent implements OnInit, OnDestroy {
         timeLimit: this.quizTimeLimit(),
         isProOnly: this.quizIsProOnly(),
         questions: this.quizQuestions(),
-        authorId: 'admin'
+        authorId: 'admin',
+        source: 'Teacher'
       };
       if (this.editingQuizId()) {
         await this.dataService.updateQuiz(this.editingQuizId()!, quizData);

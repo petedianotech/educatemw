@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { db } from '../../../firebase';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc, where, arrayUnion, arrayRemove, increment, limit, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc, where, arrayUnion, arrayRemove, increment, limit, getDocs, getCountFromServer } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../../../firebase';
 import { UserProfile } from './auth.service';
 
@@ -60,6 +60,7 @@ export interface Quiz {
   isProOnly: boolean;
   questions: QuizQuestion[];
   createdAt: Date | Timestamp;
+  source: 'AI' | 'Teacher';
 }
 
 export interface QuizResult {
@@ -141,6 +142,10 @@ export class DataService {
   flashcards = signal<Flashcard[]>([]);
   messages = signal<ChatMessage[]>([]);
   
+  totalUserCount = signal(0);
+  totalProCount = signal(0);
+  totalQuizCount = signal(0);
+  
   private postsUnsubscribe: (() => void) | null = null;
   private notesUnsubscribe: (() => void) | null = null;
   private usersUnsubscribe: (() => void) | null = null;
@@ -155,7 +160,7 @@ export class DataService {
 
   // --- Users ---
   subscribeToUsers(limitCount = 50) {
-    if (this.usersUnsubscribe) return;
+    if (this.usersUnsubscribe) this.unsubscribeFromUsers();
     
     const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(limitCount));
     this.usersUnsubscribe = onSnapshot(q, (snapshot) => {
@@ -164,13 +169,14 @@ export class DataService {
         ...doc.data()
       } as UserProfile));
       this.users.set(loadedUsers);
+      this.fetchTotalCounts(); // Refresh real counts on change
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'users');
     });
   }
 
   subscribeToPremiumUsers(limitCount = 20) {
-    if (this.usersUnsubscribe) return;
+    if (this.usersUnsubscribe) this.unsubscribeFromUsers();
     
     const q = query(collection(db, 'users'), where('isPro', '==', true), orderBy('createdAt', 'desc'), limit(limitCount));
     this.usersUnsubscribe = onSnapshot(q, (snapshot) => {
@@ -179,6 +185,7 @@ export class DataService {
         ...doc.data()
       } as UserProfile));
       this.users.set(loadedUsers);
+      this.fetchTotalCounts();
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'users');
     });
@@ -287,7 +294,7 @@ export class DataService {
 
   // --- Notes & Past Papers ---
   subscribeToNotes(category?: string, limitCount = 50) {
-    if (this.notesUnsubscribe) return;
+    if (this.notesUnsubscribe) this.unsubscribeFromNotes();
     
     let q = query(collection(db, 'notes'), orderBy('createdAt', 'desc'), limit(limitCount));
     if (category) {
@@ -354,7 +361,7 @@ export class DataService {
 
   // --- Quizzes ---
   subscribeToQuizzes(limitCount = 20) {
-    if (this.quizzesUnsubscribe) return;
+    if (this.quizzesUnsubscribe) this.unsubscribeFromQuizzes();
     const q = query(collection(db, 'quizzes'), orderBy('createdAt', 'desc'), limit(limitCount));
     this.quizzesUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedQuizzes = snapshot.docs.map(doc => ({
@@ -362,6 +369,7 @@ export class DataService {
         ...doc.data()
       } as Quiz));
       this.quizzes.set(loadedQuizzes);
+      this.fetchTotalCounts();
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'quizzes');
     });
@@ -464,7 +472,7 @@ export class DataService {
 
   // --- App Updates ---
   subscribeToAppUpdates(limitCount = 5) {
-    if (this.appUpdatesUnsubscribe) return;
+    if (this.appUpdatesUnsubscribe) this.unsubscribeFromAppUpdates();
     const q = query(collection(db, 'appUpdates'), orderBy('createdAt', 'desc'), limit(limitCount));
     this.appUpdatesUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedUpdates = snapshot.docs.map(doc => ({
@@ -505,7 +513,7 @@ export class DataService {
 
   // --- Revenue ---
   subscribeToRevenue() {
-    if (this.revenueUnsubscribe) return;
+    if (this.revenueUnsubscribe) this.unsubscribeFromRevenue();
     const q = query(collection(db, 'revenue'), orderBy('createdAt', 'desc'));
     this.revenueUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedRevenue = snapshot.docs.map(doc => ({
@@ -538,7 +546,7 @@ export class DataService {
 
   // --- Exam Dates ---
   subscribeToExamDates() {
-    if (this.examDatesUnsubscribe) return;
+    if (this.examDatesUnsubscribe) this.unsubscribeFromExamDates();
     const q = query(collection(db, 'examDates'), orderBy('date', 'asc'));
     this.examDatesUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedDates = snapshot.docs.map(doc => ({
@@ -579,7 +587,7 @@ export class DataService {
 
   // --- Flashcards ---
   subscribeToFlashcardSets() {
-    if (this.flashcardSetsUnsubscribe) return;
+    if (this.flashcardSetsUnsubscribe) this.unsubscribeFromFlashcardSets();
     const q = query(collection(db, 'flashcardSets'), orderBy('createdAt', 'desc'));
     this.flashcardSetsUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedSets = snapshot.docs.map(doc => ({
@@ -641,6 +649,24 @@ export class DataService {
     }
   }
 
+  async fetchTotalCounts() {
+    try {
+      const usersCol = collection(db, 'users');
+      const usersSnapshot = await getCountFromServer(usersCol);
+      this.totalUserCount.set(usersSnapshot.data().count);
+
+      const proQuery = query(collection(db, 'users'), where('isPro', '==', true));
+      const proSnapshot = await getCountFromServer(proQuery);
+      this.totalProCount.set(proSnapshot.data().count);
+
+      const quizCol = collection(db, 'quizzes');
+      const quizSnapshot = await getCountFromServer(quizCol);
+      this.totalQuizCount.set(quizSnapshot.data().count);
+    } catch (error) {
+      console.error('Error fetching total counts:', error);
+    }
+  }
+
   async createFlashcard(card: Omit<Flashcard, 'id' | 'createdAt'>) {
     try {
       await addDoc(collection(db, 'flashcards'), {
@@ -662,7 +688,7 @@ export class DataService {
 
   // --- Community Chat ---
   subscribeToMessages(limitCount = 50) {
-    if (this.messagesUnsubscribe) return;
+    if (this.messagesUnsubscribe) this.unsubscribeFromMessages();
     
     const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'), limit(limitCount));
     this.messagesUnsubscribe = onSnapshot(q, (snapshot) => {

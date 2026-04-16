@@ -93,8 +93,31 @@ import { RouterLink } from '@angular/router';
           
           <!-- Quiz List View -->
           @if (view() === 'list') {
+            <div class="max-w-2xl mx-auto mb-6 flex items-center justify-between gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              <div class="flex items-center gap-2">
+                <button 
+                  (click)="filter.set('all')"
+                  [class]="filter() === 'all' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
+                  class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                  All
+                </button>
+                <button 
+                  (click)="filter.set('Teacher')"
+                  [class]="filter() === 'Teacher' ? 'bg-indigo-600 text-white shadow-md border-indigo-600' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
+                  class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                  Teacher
+                </button>
+                <button 
+                  (click)="filter.set('AI')"
+                  [class]="filter() === 'AI' ? 'bg-slate-900 text-white shadow-md border-slate-900' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
+                  class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                  AI
+                </button>
+              </div>
+            </div>
+
             <div class="flex flex-col gap-4 max-w-2xl mx-auto">
-              @for (quiz of dataService.quizzes(); track quiz.id) {
+              @for (quiz of filteredQuizzes(); track quiz.id) {
                 <div class="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200/80 flex items-center gap-4 active:scale-[0.98] transition-all relative overflow-hidden group">
                   <div class="absolute inset-0 bg-gradient-to-br from-transparent to-emerald-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   
@@ -109,6 +132,12 @@ import { RouterLink } from '@angular/router';
                       <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
                         {{quiz.category}}
                       </span>
+                      @if (quiz.source) {
+                        <span [class]="quiz.source === 'AI' ? 'bg-slate-900 text-white' : 'bg-indigo-100 text-indigo-700 border-indigo-200'" 
+                              class="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border">
+                          {{quiz.source}}
+                        </span>
+                      }
                       @if (quiz.isProOnly) {
                         <span class="text-[10px] font-black text-white uppercase tracking-widest bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-0.5 rounded-md shadow-sm flex items-center gap-0.5">
                           <mat-icon class="!w-3 !h-3 !text-[12px]">workspace_premium</mat-icon> PRO
@@ -189,7 +218,15 @@ import { RouterLink } from '@angular/router';
                     <mat-icon class="text-[18px]">close</mat-icon>
                   </button>
                   <div>
-                    <h3 class="font-bold text-slate-900 truncate max-w-[200px]">{{activeQuiz()?.title}}</h3>
+                    <div class="flex items-center gap-2">
+                      <h3 class="font-bold text-slate-900 truncate max-w-[200px]">{{activeQuiz()?.title}}</h3>
+                      @if (activeQuiz()?.source) {
+                        <span [class]="activeQuiz()?.source === 'AI' ? 'bg-slate-900 text-white' : 'bg-indigo-100 text-indigo-700 border-indigo-200'" 
+                              class="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border">
+                          {{activeQuiz()?.source}}
+                        </span>
+                      }
+                    </div>
                     <p class="text-[10px] font-bold text-indigo-600 uppercase">Question {{currentQuestionIndex() + 1}} of {{activeQuiz()?.questions?.length}}</p>
                   </div>
                 </div>
@@ -319,6 +356,19 @@ import { RouterLink } from '@angular/router';
               <p class="text-slate-500 font-medium mb-8">Great job finishing the assessment.</p>
               
               <div class="card-modern p-8 mb-8">
+                @if (isRewarding()) {
+                  <div class="flex flex-col items-center py-4 animate-pulse">
+                    <div class="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p class="text-indigo-600 font-bold">Please wait to reward user...</p>
+                  </div>
+                } @else {
+                  <div class="text-emerald-600 font-black text-xl mb-4 flex items-center justify-center gap-2 animate-in slide-in-from-top-4 duration-500">
+                    <mat-icon>monetization_on</mat-icon>
+                    Your coins have been updated!
+                  </div>
+                  <p class="text-slate-500 text-sm mb-6">You now have <b>{{authService.currentUser()?.coins}}</b> coins. View your rank on the <a routerLink="/leaderboard" class="text-indigo-600 hover:underline">leaderboard</a>.</p>
+                }
+
                 <div class="text-5xl font-black text-indigo-600 mb-2">
                   {{lastResult()?.score}} / {{lastResult()?.total}}
                 </div>
@@ -381,6 +431,15 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   showAiGenerator = signal(false);
   quizTopic = signal('');
   isGenerating = signal(false);
+  isRewarding = signal(false);
+  
+  filter = signal<'all' | 'AI' | 'Teacher'>('all');
+
+  filteredQuizzes = computed(() => {
+    const list = this.dataService.quizzes();
+    if (this.filter() === 'all') return list;
+    return list.filter(q => q.source === this.filter());
+  });
 
   userResults = computed(() => {
     const userId = this.authService.currentUser()?.uid;
@@ -501,11 +560,18 @@ export class QuizzesComponent implements OnInit, OnDestroy {
 
     await this.dataService.saveQuizResult(result);
 
+    // Reward message handling
+    this.isRewarding.set(true);
+    // Simulate a brief wait for "rewarding"
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
     // Award 1 coin per correct answer
     const newCoins = (user.coins || 0) + score;
     await this.dataService.updateUserProfile(user.uid, { coins: newCoins });
     this.authService.currentUser.set({ ...user, coins: newCoins });
     
+    this.isRewarding.set(false);
+
     // We don't get the ID back immediately from saveQuizResult, so we'll just set a local lastResult
     this.lastResult.set({
       ...result,
@@ -531,7 +597,8 @@ export class QuizzesComponent implements OnInit, OnDestroy {
         authorId: user?.uid || 'system',
         timeLimit: generatedQuiz.timeLimit,
         isProOnly: generatedQuiz.isProOnly,
-        questions: generatedQuiz.questions
+        questions: generatedQuiz.questions,
+        source: 'AI'
       });
       
       this.showAiGenerator.set(false);

@@ -40,6 +40,7 @@ export interface UserProfile {
   lastCreditReset?: string; // ISO date string
   lastLoginDate?: string; // ISO date string
   pwaInstalled?: boolean;
+  hasClaimedAppInstallReward?: boolean;
   referralCode?: string;
   referredBy?: string;
   referralsCount?: number;
@@ -440,6 +441,34 @@ export class AuthService {
       aiCredits: newCredits,
       pwaInstalled: true 
     });
+  }
+
+  async claimAppInstallReward() {
+    const user = this.currentUser();
+    if (!user || user.hasClaimedAppInstallReward) return;
+
+    const currentCoins = user.coins || 0;
+    const currentCredits = user.aiCredits || 0;
+    
+    const newCoins = currentCoins + 50;
+    const newCredits = currentCredits + 20;
+
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, { 
+      coins: newCoins,
+      aiCredits: newCredits,
+      hasClaimedAppInstallReward: true
+    });
+    
+    this.currentUser.set({ 
+      ...user, 
+      coins: newCoins,
+      aiCredits: newCredits,
+      hasClaimedAppInstallReward: true 
+    });
+    
+    this.rewardMessage.set('Congratulations! You received 50 coins and 20 AI credits for installing our app! 🚀');
+    setTimeout(() => this.rewardMessage.set(null), 5000);
   }
 
   async saveSecurityQuestions(questions: SecurityQuestion[]) {
