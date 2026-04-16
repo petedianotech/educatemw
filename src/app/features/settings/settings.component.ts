@@ -263,13 +263,6 @@ import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/comm
             <a routerLink="/terms" class="text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Terms</a>
             <a routerLink="/privacy" class="text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Privacy</a>
           </div>
-          
-          <div class="flex flex-col items-center gap-1">
-            <p class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">
-              Display Version: <span class="text-indigo-400">1.0.0</span> (13/04/2026)
-            </p>
-            <div class="h-[1px] w-8 bg-slate-200"></div>
-          </div>
         </div>
 
       </div>

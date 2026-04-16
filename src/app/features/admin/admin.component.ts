@@ -7,6 +7,16 @@ import { Timestamp } from 'firebase/firestore';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/common';
 
+interface ChartData {
+  name: string;
+  month: number;
+  year: number;
+  users: number;
+  pro: number;
+  revenue: number;
+  revenue_scaled: number;
+}
+
 @Component({
   selector: 'app-admin',
   standalone: true,
@@ -217,18 +227,56 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
               </div>
 
               <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                <h3 class="text-lg font-black text-slate-900 mb-6 uppercase tracking-tight">Users & Revenue Trend</h3>
-                <div class="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart [data]="chartData()">
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="users" stroke="#8884d8" />
-                      <Line type="monotone" dataKey="revenue" stroke="#82ca9d" />
-                    </LineChart>
-                  </ResponsiveContainer>
+                <h3 class="text-lg font-black text-slate-900 mb-2 uppercase tracking-tight">Growth & Revenue Trend</h3>
+                <div class="flex items-center gap-4 mb-6">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Students</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pro Members</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenue (k)</span>
+                  </div>
+                </div>
+                <div class="h-64 relative">
+                  @let data = chartData();
+                  @let max = getMaxValue(data);
+                  <svg class="w-full h-full overflow-visible" viewBox="0 0 400 200" preserveAspectRatio="none">
+                    <!-- Grid Lines -->
+                    <line x1="0" y1="0" x2="400" y2="0" stroke="#f1f5f9" stroke-width="1" />
+                    <line x1="0" y1="50" x2="400" y2="50" stroke="#f1f5f9" stroke-width="1" />
+                    <line x1="0" y1="100" x2="400" y2="100" stroke="#f1f5f9" stroke-width="1" />
+                    <line x1="0" y1="150" x2="400" y2="150" stroke="#f1f5f9" stroke-width="1" />
+                    <line x1="0" y1="200" x2="400" y2="200" stroke="#f1f5f9" stroke-width="1" />
+
+                    <!-- Lines -->
+                    <path [attr.d]="getLinePath(data, 'users', 200, 400, max)" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                    <path [attr.d]="getLinePath(data, 'pro', 200, 400, max)" fill="none" stroke="#f43f5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                    <path [attr.d]="getLinePath(data, 'revenue_scaled', 200, 400, max)" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                    
+                    <!-- Area Fills (Optional but looks nice) -->
+                    <path [attr.d]="getLinePath(data, 'users', 200, 400, max) + ' L 400,200 L 0,200 Z'" fill="url(#grad-blue)" opacity="0.1" />
+                  </svg>
+                  
+                  <!-- X-Axis Labels -->
+                  <div class="flex justify-between mt-4">
+                    @for (m of data; track m.name) {
+                      <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ m.name }}</span>
+                    }
+                  </div>
+
+                  <svg width="0" height="0" class="absolute">
+                    <defs>
+                      <linearGradient id="grad-blue" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
                 </div>
               </div>
               
@@ -712,10 +760,15 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
                 @for (update of dataService.appUpdates(); track update.id) {
                   <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
                     <div class="flex items-center justify-between mb-4">
-                      <span [class]="update.type === 'feature' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-blue-50 text-blue-600 border-blue-100'" class="px-3 py-1 text-[10px] font-black rounded-full border uppercase tracking-widest">
-                        {{ update.type }}
-                      </span>
-                      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ toDate(update.createdAt) | date:'mediumDate' }}</span>
+                      <div class="flex items-center gap-3">
+                        <span [class]="update.type === 'feature' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-blue-50 text-blue-600 border-blue-100'" class="px-3 py-1 text-[10px] font-black rounded-full border uppercase tracking-widest">
+                          {{ update.type }}
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ toDate(update.createdAt) | date:'mediumDate' }}</span>
+                      </div>
+                      <button (click)="deleteAppUpdate(update.id)" class="w-8 h-8 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100 flex items-center justify-center transition-all">
+                        <mat-icon class="!w-4 !h-4 !text-[16px]">delete</mat-icon>
+                      </button>
                     </div>
                     <h4 class="text-lg font-black text-slate-900 tracking-tight mb-2">{{ update.title }}</h4>
                     <p class="text-sm text-slate-600 leading-relaxed">{{ update.content }}</p>
@@ -733,6 +786,17 @@ import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowse
 
         </div>
       </main>
+
+      <!-- Notification Toast -->
+      @if (notification(); as n) {
+        <div class="fixed bottom-8 right-8 z-50 animate-in slide-in-from-bottom-4 duration-300">
+          <div [class]="n.type === 'success' ? 'bg-emerald-600' : 'bg-rose-600'" 
+               class="px-6 py-4 rounded-2xl text-white font-black shadow-2xl flex items-center gap-3">
+            <mat-icon>{{ n.type === 'success' ? 'check_circle' : 'error' }}</mat-icon>
+            <span class="text-sm uppercase tracking-widest">{{ n.message }}</span>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -746,11 +810,76 @@ export class AdminComponent implements OnInit, OnDestroy {
   
   isSidebarOpen = signal(false);
   activeTab = signal<'overview' | 'upload' | 'manage' | 'students' | 'quizzes' | 'revenue' | 'updates' | 'exams'>('overview');
-  chartData = signal([
-    { name: 'Jan', users: 100, revenue: 5000 },
-    { name: 'Feb', users: 200, revenue: 15000 },
-    { name: 'Mar', users: 400, revenue: 30000 }
-  ]);
+  chartData = computed(() => {
+    const users = this.dataService.users();
+    const revenue = this.dataService.revenueRecords();
+    
+    // Get last 6 months
+    const months = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({
+        name: d.toLocaleString('default', { month: 'short' }),
+        month: d.getMonth(),
+        year: d.getFullYear(),
+        users: 0,
+        pro: 0,
+        revenue: 0
+      });
+    }
+
+    users.forEach(u => {
+      const d = this.toDate(u.createdAt);
+      if (d) {
+        const m = months.find(month => month.month === d.getMonth() && month.year === d.getFullYear());
+        if (m) {
+          m.users++;
+          if (u.isPro) m.pro++;
+        }
+      }
+    });
+
+    revenue.forEach(r => {
+      const d = this.toDate(r.createdAt);
+      if (d) {
+        const m = months.find(month => month.month === d.getMonth() && month.year === d.getFullYear());
+        if (m) m.revenue += r.amount;
+      }
+    });
+
+    // Cumulative users
+    let cumulativeUsers = 0;
+    let cumulativePro = 0;
+    return months.map(m => {
+      cumulativeUsers += m.users;
+      cumulativePro += m.pro;
+      return {
+        ...m,
+        users: cumulativeUsers,
+        pro: cumulativePro,
+        revenue: m.revenue,
+        revenue_scaled: m.revenue / 1000 // Scale for the graph
+      };
+    });
+  });
+
+  // SVG Chart Helpers
+  getLinePath(data: ChartData[], key: keyof ChartData, height: number, width: number, maxVal: number): string {
+    if (data.length <= 1) return '';
+    const points = data.map((d, i) => {
+      const x = (i / (data.length - 1)) * width;
+      const y = height - ((d[key] as number) / (maxVal || 1)) * height;
+      return `${x},${y}`;
+    });
+    return `M ${points.join(' L ')}`;
+  }
+
+  getMaxValue(data: ChartData[]): number {
+    if (data.length === 0) return 10;
+    const vals = data.flatMap(d => [d.users, d.pro, d.revenue_scaled]);
+    return Math.max(...vals, 10);
+  }
   
   title = signal('');
   category = signal('Mathematics');
@@ -769,6 +898,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   seoDescription = signal('');
   slug = signal('');
   isGeneratingSEO = signal(false);
+  notification = signal<{ message: string, type: 'success' | 'error' } | null>(null);
 
   // Quiz State
   quizTitle = signal('');
@@ -844,23 +974,33 @@ export class AdminComponent implements OnInit, OnDestroy {
         content: this.updateContent(),
         type: this.updateType()
       };
-      if (this.updateDriveUrl().trim()) {
-        updateData.driveUrl = this.updateDriveUrl().trim();
+      
+      const url = this.updateDriveUrl().trim();
+      if (url) {
+        updateData.driveUrl = url;
       }
+      
       await this.dataService.createAppUpdate(updateData as Omit<AppUpdate, 'id' | 'createdAt'>);
       this.updateTitle.set('');
       this.updateContent.set('');
       this.updateDriveUrl.set('');
-      if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
-        alert('Update published successfully!');
-      }
+      this.showNotification('Update published successfully!');
     } catch (error) {
       console.error(error);
-      if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
-        alert('Failed to publish update. Please try again.');
-      }
+      this.showNotification('Failed to publish update. Please try again.', 'error');
     } finally {
       this.isSubmitting.set(false);
+    }
+  }
+
+  async deleteAppUpdate(id: string) {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined' && !window.confirm('Delete this update?')) return;
+    try {
+      await this.dataService.deleteAppUpdate(id);
+      this.showNotification('Update deleted successfully!');
+    } catch (error) {
+      console.error(error);
+      this.showNotification('Failed to delete update.', 'error');
     }
   }
 
@@ -882,7 +1022,12 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   async deleteExamDate(id: string) {
-    if (confirm('Delete this exam date?')) {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+      if (window.confirm('Delete this exam date?')) {
+        await this.dataService.deleteExamDate(id);
+        this.showNotification('Exam date deleted');
+      }
+    } else {
       await this.dataService.deleteExamDate(id);
     }
   }
@@ -936,7 +1081,12 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   async deleteQuiz(quizId: string) {
-    if (confirm('Delete this quiz?')) {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+      if (window.confirm('Delete this quiz?')) {
+        await this.dataService.deleteQuiz(quizId);
+        this.showNotification('Quiz deleted');
+      }
+    } else {
       await this.dataService.deleteQuiz(quizId);
     }
   }
@@ -1017,15 +1167,25 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   async deleteNote(noteId: string) {
-    if (confirm('Delete this material?')) {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+      const confirmed = window.confirm('Are you sure you want to delete this material? This action cannot be undone.');
+      if (confirmed) {
+        try {
+          await this.dataService.deleteNote(noteId);
+        } catch (error) {
+          console.error('Delete failed:', error);
+        }
+      }
+    } else {
+      // Fallback for non-browser environments if needed, but usually delete is user-triggered
       await this.dataService.deleteNote(noteId);
     }
   }
 
   async saveNote() {
     if (!this.title().trim() || this.isSubmitting()) {
-      if (!this.title().trim() && isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
-        alert('Title is required');
+      if (!this.title().trim()) {
+        this.showNotification('Title is required', 'error');
       }
       return;
     }
@@ -1051,9 +1211,7 @@ export class AdminComponent implements OnInit, OnDestroy {
       if (this.editingNoteId()) {
         await this.dataService.updateNote(this.editingNoteId()!, noteData);
         this.cancelEdit();
-        if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
-          alert('Material updated successfully!');
-        }
+        this.showNotification('Material updated successfully!');
       } else {
         await this.dataService.createNote(noteData as Omit<Note, 'id' | 'createdAt'>);
         this.title.set('');
@@ -1064,15 +1222,11 @@ export class AdminComponent implements OnInit, OnDestroy {
         this.seoTitle.set('');
         this.seoDescription.set('');
         this.slug.set('');
-        if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
-          alert('Material published successfully!');
-        }
+        this.showNotification('Material published successfully!');
       }
     } catch (error) {
       console.error('Save failed:', error);
-      if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
-        alert('Failed to publish material. Please try again.');
-      }
+      this.showNotification('Failed to publish material. Please try again.', 'error');
     } finally {
       this.isSubmitting.set(false);
     }

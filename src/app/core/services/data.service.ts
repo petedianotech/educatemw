@@ -495,6 +495,14 @@ export class DataService {
     }
   }
 
+  async deleteAppUpdate(updateId: string) {
+    try {
+      await deleteDoc(doc(db, 'appUpdates', updateId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `appUpdates/${updateId}`);
+    }
+  }
+
   // --- Revenue ---
   subscribeToRevenue() {
     if (this.revenueUnsubscribe) return;

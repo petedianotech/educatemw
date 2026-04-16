@@ -104,69 +104,66 @@ import { FormsModule } from '@angular/forms';
       <div class="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar">
         <div class="max-w-7xl mx-auto">
           
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div class="flex flex-col gap-4">
             @for (note of paginatedNotes(); track note.id) {
-              <div class="bg-white rounded-[2.5rem] p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col hover:shadow-2xl hover:shadow-indigo-200/40 transition-all duration-500 group relative overflow-hidden">
+              <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center gap-6 hover:shadow-xl hover:shadow-indigo-200/30 transition-all duration-300 group relative overflow-hidden">
                 
                 <!-- Pro Badge -->
                 @if (note.isProOnly) {
-                  <div class="absolute top-6 right-6 z-20">
-                    <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-3 py-1 rounded-full shadow-lg shadow-amber-200 flex items-center gap-1 animate-pulse">
-                      <mat-icon class="!w-3 !h-3 !text-[12px]">workspace_premium</mat-icon>
-                      <span class="text-[9px] font-black uppercase tracking-widest">PRO</span>
+                  <div class="absolute top-4 right-4 z-20">
+                    <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-2.5 py-1 rounded-full shadow-lg shadow-amber-100 flex items-center gap-1">
+                      <mat-icon class="!w-3 !h-3 !text-[10px]">workspace_premium</mat-icon>
+                      <span class="text-[8px] font-black uppercase tracking-widest">PRO</span>
                     </div>
                   </div>
                 }
 
-                <!-- Category & Date -->
-                <div class="flex items-center justify-between mb-6">
-                  <span class="px-4 py-1.5 bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest rounded-full">
-                    {{note.category}}
-                  </span>
-                  <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                    {{getNoteDate(note.createdAt) | date:'MMM d, yyyy'}}
-                  </span>
+                <!-- Icon -->
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-indigo-100 group-hover:scale-105 transition-transform duration-500">
+                  <mat-icon class="!w-8 !h-8 !text-[32px]">description</mat-icon>
                 </div>
 
-                <!-- Icon & Title -->
-                <div class="flex items-start gap-4 mb-4">
-                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform duration-500">
-                    <mat-icon class="!w-7 !h-7 !text-[28px]">description</mat-icon>
+                <!-- Content -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-3 mb-2">
+                    <span class="px-3 py-1 bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest rounded-full">
+                      {{note.category}}
+                    </span>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                      {{getNoteDate(note.createdAt) | date:'MMM d, yyyy'}}
+                    </span>
                   </div>
-                  <div class="min-w-0">
-                    <h3 class="font-black text-lg text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors line-clamp-2">{{note.title}}</h3>
-                    <div class="flex flex-wrap gap-2 mt-2">
-                      @if (note.level) {
-                        <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{{note.level}}</span>
-                      }
-                      @if (note.form) {
-                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">• {{note.form}}</span>
-                      }
-                    </div>
+                  
+                  <h3 class="font-black text-lg text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors truncate mb-1">{{note.title}}</h3>
+                  
+                  <div class="flex flex-wrap gap-2 mb-2">
+                    @if (note.level) {
+                      <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{{note.level}}</span>
+                    }
+                    @if (note.form) {
+                      <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">• {{note.form}}</span>
+                    }
                   </div>
+
+                  <p class="text-slate-500 text-xs font-medium line-clamp-1 leading-relaxed">
+                    {{note.content || 'Comprehensive study material for ' + note.category + '. Master your exams with our curated resources.'}}
+                  </p>
                 </div>
 
-                <p class="text-slate-500 text-sm font-medium line-clamp-3 mb-8 flex-1 leading-relaxed">
-                  {{note.content || 'Comprehensive study material for ' + note.category + '. Master your exams with our curated resources.'}}
-                </p>
-
-                <!-- Footer Action -->
-                <div class="pt-6 border-t border-slate-50 mt-auto">
+                <!-- Action Button -->
+                <div class="shrink-0 w-full md:w-auto">
                   @if (note.isProOnly && !authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
-                    <a routerLink="/upgrade" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                      <mat-icon class="text-sm">bolt</mat-icon>
-                      Upgrade to Unlock
+                    <a routerLink="/upgrade" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-100 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                      <mat-icon class="!w-4 !h-4 !text-[16px]">bolt</mat-icon>
+                      Unlock
                     </a>
                   } @else {
-                    <a [routerLink]="['/books', note.slug || note.id]" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 flex items-center justify-center gap-2 hover:bg-indigo-600 transition-all">
-                      <mat-icon class="text-sm">visibility</mat-icon>
-                      View Resource
+                    <a [routerLink]="['/books', note.slug || note.id]" class="px-6 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-slate-200 flex items-center justify-center gap-2 hover:bg-indigo-600 transition-all">
+                      <mat-icon class="!w-4 !h-4 !text-[16px]">visibility</mat-icon>
+                      View
                     </a>
                   }
                 </div>
-
-                <!-- Decorative background -->
-                <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-indigo-50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-150 -z-10"></div>
               </div>
             } @empty {
               <div class="col-span-full text-center py-32 bg-white rounded-[3rem] border-2 border-slate-100 border-dashed">
