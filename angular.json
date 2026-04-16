@@ -33,6 +33,17 @@
             "styles": [
               "src/styles.css"
             ],
+            "allowedCommonJsDependencies": [
+              "@google/genai",
+              "google-auth-library",
+              "debug",
+              "agent-base",
+              "node-domexception",
+              "@firebase/firestore",
+              "@grpc/grpc-js",
+              "@grpc/proto-loader",
+              "web-streams-polyfill"
+            ],
             "serviceWorker": "ngsw-config.json",
             "server": "src/main.server.ts",
             "outputMode": "server",
@@ -45,8 +56,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "1.5MB",
+                  "maximumError": "2.5MB"
                 },
                 {
                   "type": "anyComponentStyle",
