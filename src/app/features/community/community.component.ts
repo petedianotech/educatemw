@@ -103,8 +103,7 @@ import { RouterLink } from '@angular/router';
                    [class.rounded-tr-none]="msg.authorId === authService.currentUser()?.uid">
                 
                 @if (msg.content.startsWith('🎵 Audio Note: ')) {
-                  <audio controls class="w-full mt-2 h-10">
-                    <source [src]="msg.content.replace('🎵 Audio Note: ', '')" type="audio/webm">
+                  <audio controls class="w-full mt-2 h-10" [src]="msg.content.replace('🎵 Audio Note: ', '')">
                     Your browser does not support the audio element.
                   </audio>
                 } @else {
@@ -221,6 +220,9 @@ export class CommunityComponent implements OnInit, OnDestroy {
     this.isSubmitting.set(true);
     try {
       await this.dataService.sendMessage(user.uid, user.displayName || 'Student', user.photoURL || '', '🎵 Audio Note: ' + audioUrl);
+    } catch (error) {
+      console.error('Error sending audio note:', error);
+      alert('Failed to send audio note. Please try again.');
     } finally {
       this.isSubmitting.set(false);
     }

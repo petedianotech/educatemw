@@ -282,6 +282,7 @@ export class AuthService {
     // Only add referredBy if it has a valid value
     if (referredBy) {
       newUser.referredBy = referredBy;
+      newUser.aiCredits = (newUser.aiCredits || 0) + 10;
     }
 
     console.log('Creating new user profile:', newUser);

@@ -125,6 +125,9 @@ export class VoiceRecorderComponent implements OnDestroy {
       const url = await this.voiceService.uploadVoiceNote(user.uid, blob);
       this.uploaded.emit(url);
       this.cancel();
+    } catch (error) {
+      console.error('Error uploading voice note:', error);
+      alert('Failed to upload voice note. Please try again.');
     } finally {
       this.isUploading.set(false);
     }

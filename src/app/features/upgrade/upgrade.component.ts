@@ -71,7 +71,7 @@ import { PaymentService } from '../../core/services/payment.service';
 
             <button (click)="startPayment()" [disabled]="isProcessing()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl hover:bg-indigo-700 flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 transition-all active:scale-95 disabled:opacity-50 mb-0">
               @if (isProcessing()) { <mat-icon class="animate-spin">sync</mat-icon> } @else { <mat-icon>bolt</mat-icon> }
-              {{ isProcessing() ? 'Initializing...' : 'Pay with M-Dublin/Card' }}
+              {{ isProcessing() ? 'Initializing...' : 'Pay with PayChangu/Card' }}
             </button>
           </div>
 
