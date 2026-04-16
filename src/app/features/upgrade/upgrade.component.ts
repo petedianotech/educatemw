@@ -118,9 +118,9 @@ import { PaymentService } from '../../core/services/payment.service';
 
                 <div class="mt-6 pt-4 border-t border-slate-200">
                   <p class="text-[10px] font-bold text-slate-500 mb-2">If manual verification fails from teachers, contact our developer for assistance:</p>
-                  <a href="https://wa.me/265987066051?text=Hello%20Developer,%20I%20need%20assistance%20with%20my%20manual%20payment%20verification%20for%20Educate%20MW." target="_blank" class="flex items-center gap-2 text-xs font-black text-slate-700 hover:text-emerald-600 transition-colors">
+                  <a href="https://wa.me/265987066051?text=Hello%20Peter%20Damiano,%20I%20need%20assistance%20with%20my%20manual%20payment%20verification%20for%20Educate%20MW." target="_blank" class="flex items-center gap-2 text-xs font-black text-slate-700 hover:text-emerald-600 transition-colors">
                     <mat-icon class="!w-4 !h-4 !text-[16px] text-emerald-500">support_agent</mat-icon>
-                    Developer Support (0987 066 051)
+                    Peter Damiano (Developer) - 0987 066 051
                   </a>
                 </div>
               </div>

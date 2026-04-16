@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, PLATFORM_ID } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { DataService, FlashcardSet } from '../../core/services/data.service';
 import { FlashcardService } from '../../core/services/flashcard.service';
 import { AuthService } from '../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-flashcards',
@@ -15,12 +16,17 @@ import { FormsModule } from '@angular/forms';
     <div class="flex flex-col h-full bg-slate-50">
       <!-- Header -->
       <header class="px-6 py-6 border-b border-slate-200 bg-white/90 backdrop-blur-md z-10 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">
-            <mat-icon class="text-indigo-600 scale-110">style</mat-icon>
-            AI Flashcards
-          </h2>
-          <p class="text-sm text-slate-500 font-bold uppercase tracking-widest mt-1">Master your MSCE subjects with AI</p>
+        <div class="flex items-center gap-4">
+          <button (click)="goBack()" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:scale-90 transition-all">
+            <mat-icon class="text-[22px]">arrow_back</mat-icon>
+          </button>
+          <div>
+            <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+              <mat-icon class="text-indigo-600 scale-110">style</mat-icon>
+              AI Flashcards
+            </h2>
+            <p class="text-sm text-slate-500 font-bold uppercase tracking-widest mt-1">Master your MSCE subjects with AI</p>
+          </div>
         </div>
         
         <button (click)="showGenerateModal.set(true)" 
@@ -36,9 +42,9 @@ import { FormsModule } from '@angular/forms';
           @if (selectedSet()) {
             <!-- Flashcard View -->
             <div class="mb-8 flex items-center justify-between">
-              <button (click)="selectedSet.set(null)" class="flex items-center gap-2 text-slate-500 font-bold hover:text-indigo-600 transition-colors">
+              <button (click)="selectedSet.set(null)" class="flex items-center gap-2 px-5 py-2.5 bg-white rounded-2xl shadow-sm border border-slate-200 text-slate-700 font-black hover:bg-indigo-50 hover:text-indigo-600 transition-all active:scale-95">
                 <mat-icon>arrow_back</mat-icon>
-                Back to Sets
+                Back
               </button>
               <div class="text-right">
                 <h3 class="text-xl font-black text-slate-900">{{selectedSet()?.title}}</h3>
@@ -243,6 +249,8 @@ export class FlashcardsComponent {
   dataService = inject(DataService);
   flashcardService = inject(FlashcardService);
   authService = inject(AuthService);
+  platformId = inject(PLATFORM_ID);
+  router = inject(Router);
 
   selectedSet = signal<FlashcardSet | null>(null);
   currentIndex = signal(0);
@@ -293,6 +301,12 @@ export class FlashcardsComponent {
     event.stopPropagation();
     if (confirm('Are you sure you want to delete this flashcard set?')) {
       await this.dataService.deleteFlashcardSet(set.id);
+    }
+  }
+
+  goBack() {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+      window.history.back();
     }
   }
 

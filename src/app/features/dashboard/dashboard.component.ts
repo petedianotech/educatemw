@@ -43,12 +43,17 @@ interface Notification {
       <div class="relative z-10 pt-safe pb-32 px-5 flex flex-col h-full overflow-y-auto custom-scrollbar">
         <!-- Top Bar -->
         <div class="pt-4 pb-8 flex items-center justify-between shrink-0">
-          <div class="pl-14">
-            <h1 class="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              <mat-icon class="text-indigo-400">school</mat-icon>
-              Educate MW
-            </h1>
-            <p class="text-xs font-medium text-indigo-200 mt-1">Welcome back, {{authService.currentUser()?.displayName?.split(' ')?.[0] || 'Student'}}</p>
+          <div class="flex items-center gap-3">
+            <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-sm hover:bg-white/20 transition-all active:scale-95">
+              <mat-icon class="!w-6 !h-6 !text-[24px]">arrow_back</mat-icon>
+            </a>
+            <div>
+              <h1 class="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <mat-icon class="text-indigo-400">school</mat-icon>
+                Educate MW
+              </h1>
+              <p class="text-xs font-medium text-indigo-200 mt-1">Welcome back, {{authService.currentUser()?.displayName?.split(' ')?.[0] || 'Student'}}</p>
+            </div>
           </div>
           <button aria-label="Notifications" class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-sm hover:bg-white/20 transition-all hover:scale-105 active:scale-95">
             <mat-icon class="!w-6 !h-6 !text-[24px]">notifications_none</mat-icon>
@@ -209,6 +214,16 @@ interface Notification {
               </div>
               <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Career Guidance</h3>
               <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">MSCE points calculator</p>
+            </a>
+
+            <!-- Flashcards -->
+            <a routerLink="/flashcards" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-500/30 relative z-10 group-hover:scale-105 transition-transform">
+                <mat-icon class="!w-6 !h-6 !text-[24px]">style</mat-icon>
+              </div>
+              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Flashcards</h3>
+              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Master subjects</p>
             </a>
           </div>
         }

@@ -45,7 +45,7 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'isGuest', 'aiCredits', 'streak', 'coins', 'lastCreditReset', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount', 'createdAt', 'securityQuestions']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'isGuest', 'aiCredits', 'streak', 'coins', 'lastCreditReset', 'lastLoginDate', 'pwaInstalled', 'referralCode', 'referredBy', 'referralsCount', 'createdAt', 'securityQuestions']) &&
              hasRequiredFields(['uid', 'email', 'role', 'isPro', 'createdAt']) &&
              data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
              data.email is string && data.email.size() >= 0 && data.email.size() < 100 &&
@@ -59,6 +59,7 @@ service cloud.firestore {
              (!('streak' in data) || data.streak is number) &&
              (!('coins' in data) || data.coins is number) &&
              (!('lastCreditReset' in data) || data.lastCreditReset is string) &&
+             isValidOptionalString('lastLoginDate', 1, 100) &&
              (!('pwaInstalled' in data) || data.pwaInstalled is bool) &&
              (!('referralCode' in data) || data.referralCode is string) &&
              (!('referredBy' in data) || data.referredBy is string) &&
@@ -287,16 +288,13 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    match /flashcardSets {
-      allow list: if isAuthenticated();
-      match /{setId} {
-        allow get: if isAuthenticated();
-        allow create: if isAuthenticated() && isValidFlashcardSet(request.resource.data) && 
-                      (request.resource.data.authorId == request.auth.uid || isAdmin());
-        allow update: if isAuthenticated() && isValidFlashcardSet(request.resource.data) &&
-                      (resource.data.authorId == request.auth.uid || isAdmin());
-        allow delete: if isAuthenticated() && (resource.data.authorId == request.auth.uid || isAdmin());
-      }
+    match /flashcardSets/{setId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidFlashcardSet(request.resource.data) && 
+                    (request.resource.data.authorId == request.auth.uid || isAdmin());
+      allow update: if isAuthenticated() && isValidFlashcardSet(request.resource.data) &&
+                    (resource.data.authorId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() && (resource.data.authorId == request.auth.uid || isAdmin());
     }
 
     match /flashcards/{cardId} {

@@ -237,6 +237,11 @@ import { RouterLink } from '@angular/router';
                         {{option}}
                       </button>
                     }
+                    @if (isAnswered() && !isCorrect()) {
+                      <div class="mt-4 p-4 bg-rose-50 border border-rose-100 rounded-xl text-rose-700 text-sm font-bold">
+                        Correct Answer: {{activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer}}
+                      </div>
+                    }
                   } @else {
                     <div class="grid grid-cols-2 gap-4">
                       <button 
@@ -266,6 +271,11 @@ import { RouterLink } from '@angular/router';
                         False
                       </button>
                     </div>
+                    @if (isAnswered() && !isCorrect()) {
+                      <div class="mt-4 p-4 bg-rose-50 border border-rose-100 rounded-xl text-rose-700 text-sm font-bold">
+                        Correct Answer: {{activeQuiz()?.questions?.[currentQuestionIndex()]?.correctAnswer}}
+                      </div>
+                    }
                   }
                 </div>
               </div>
@@ -491,13 +501,10 @@ export class QuizzesComponent implements OnInit, OnDestroy {
 
     await this.dataService.saveQuizResult(result);
 
-    // Award points if first attempt and all correct
-    if (isFirstAttempt && score === quiz.questions.length) {
-      const newCoins = (user.coins || 0) + 5;
-      const newStreak = (user.streak || 0) + 1;
-      await this.dataService.updateUserProfile(user.uid, { coins: newCoins, streak: newStreak });
-      this.authService.currentUser.set({ ...user, coins: newCoins, streak: newStreak });
-    }
+    // Award 1 coin per correct answer
+    const newCoins = (user.coins || 0) + score;
+    await this.dataService.updateUserProfile(user.uid, { coins: newCoins });
+    this.authService.currentUser.set({ ...user, coins: newCoins });
     
     // We don't get the ID back immediately from saveQuizResult, so we'll just set a local lastResult
     this.lastResult.set({

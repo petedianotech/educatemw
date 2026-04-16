@@ -13,7 +13,9 @@ import {
   sendPasswordResetEmail,
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
-  signInWithEmailLink
+  signInWithEmailLink,
+  setPersistence,
+  browserLocalPersistence
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -36,6 +38,7 @@ export interface UserProfile {
   streak?: number;
   coins?: number;
   lastCreditReset?: string; // ISO date string
+  lastLoginDate?: string; // ISO date string
   pwaInstalled?: boolean;
   referralCode?: string;
   referredBy?: string;
@@ -52,6 +55,7 @@ export class AuthService {
   private platformId = inject(PLATFORM_ID);
 
   constructor() {
+    setPersistence(auth, browserLocalPersistence).catch(console.error);
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         await this.loadUserProfile(user);
@@ -267,6 +271,7 @@ export class AuthService {
       streak: 0,
       coins: 0,
       lastCreditReset: new Date().toISOString(),
+      lastLoginDate: new Date().toISOString(),
       referralCode: user.uid.substring(0, 8).toUpperCase(),
       referralsCount: 0,
       createdAt: new Date(),
@@ -330,6 +335,28 @@ export class AuthService {
           
           this.rewardMessage.set('Your daily credits has been rewarded successfully! 🎁');
           setTimeout(() => this.rewardMessage.set(null), 5000);
+        }
+
+        // Streak Logic
+        const lastLogin = profile.lastLoginDate ? new Date(profile.lastLoginDate) : new Date(0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const lastLoginDate = new Date(lastLogin);
+        lastLoginDate.setHours(0, 0, 0, 0);
+
+        const diffTime = Math.abs(today.getTime() - lastLoginDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 1) {
+          // Logged in yesterday, increment streak
+          profile.streak = (profile.streak || 0) + 1;
+          await updateDoc(userRef, { streak: profile.streak, lastLoginDate: now.toISOString() });
+        } else if (diffDays > 1) {
+          // Logged in more than a day ago, reset streak
+          profile.streak = 1;
+          await updateDoc(userRef, { streak: profile.streak, lastLoginDate: now.toISOString() });
+        } else if (diffDays === 0) {
+          // Logged in today, do nothing
         }
 
         this.currentUser.set(profile);

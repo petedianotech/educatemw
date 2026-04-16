@@ -127,6 +127,15 @@ import { FormsModule } from '@angular/forms';
                   <button (click)="view.set('login')" class="w-full text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">
                     Back to Login
                   </button>
+                  
+                  <div class="pt-4 border-t border-slate-100 mt-4">
+                    <p class="text-[10px] text-center text-slate-400 font-bold mb-3">Still stuck? We can help:</p>
+                    <a href="https://wa.me/265987066051?text=Hello,%20I%20am%20having%20trouble%20resetting%20my%20password.%20My%20name%20is:" target="_blank" 
+                       class="w-full py-3 bg-emerald-500 text-white rounded-2xl font-black text-xs flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200">
+                      <mat-icon class="!w-4 !h-4 !text-[16px]">chat</mat-icon>
+                      Contact Support on WhatsApp
+                    </a>
+                  </div>
                 </div>
               } @else {
                 <form (ngSubmit)="submitForm()" class="space-y-4">
