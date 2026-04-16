@@ -310,16 +310,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
     setTimeout(() => this.isLoading.set(false), 1000);
     
     // Check for payment success
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe(async params => {
       if (params['payment'] === 'success') {
         this.paymentSuccess.set(true);
-        // Force refresh user state
-        const user = this.authService.currentUser();
-        if (user) {
-          this.authService.currentUser.update(u => u ? { ...u, isPro: true } : null);
+        
+        // Auto-verify payment status with backend
+        try {
+          const user = this.authService.currentUser();
+          if (user) {
+            const response = await fetch(`/api/paychangu/verify?tx_ref=${params['tx_ref'] || ''}`);
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+              // Force refresh user state
+              this.authService.currentUser.update(u => u ? { ...u, isPro: true } : null);
+            }
+          }
+        } catch (error) {
+          console.error('Auto-verification failed:', error);
         }
+
         // Clear message after 5 seconds
         setTimeout(() => this.paymentSuccess.set(false), 5000);
+      } else if (params['payment'] === 'failed' || params['payment'] === 'cancelled') {
+        // Handle failed/cancelled payment
+        console.warn('Payment was not successful:', params['payment']);
+        // Optionally show a message to the user
       }
     });
   }

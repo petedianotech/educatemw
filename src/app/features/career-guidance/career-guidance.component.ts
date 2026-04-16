@@ -28,6 +28,9 @@ interface CareerPath {
       <div class="bg-gradient-to-r from-rose-600 to-pink-600 px-4 py-6 shrink-0 relative z-10 shadow-md">
         <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div class="flex items-center gap-3 relative z-10">
+          <button (click)="goBack()" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all">
+            <mat-icon class="!w-5 !h-5 !text-[20px]">arrow_back</mat-icon>
+          </button>
           <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-lg">
             <mat-icon class="!w-6 !h-6 !text-[24px]">explore</mat-icon>
           </div>
@@ -144,7 +147,9 @@ export class CareerGuidanceComponent {
     { name: 'English', grade: null, isMandatory: true },
     { name: 'Mathematics', grade: null },
     { name: 'Biology', grade: null },
-    { name: 'Physical Science', grade: null },
+    { name: 'Physics', grade: null },
+    { name: 'Chemistry', grade: null },
+    { name: 'Computer Studies', grade: null },
     { name: 'Agriculture', grade: null },
     { name: 'Chichewa', grade: null },
     { name: 'Geography', grade: null },
@@ -157,7 +162,7 @@ export class CareerGuidanceComponent {
       title: 'Medicine & Surgery (MBBS)', 
       institution: 'Kamuzu University of Health Sciences (KUHeS)', 
       pointsRange: '6 - 12 points', 
-      requirements: 'Distinctions in English, Mathematics, Biology, and Physical Science.',
+      requirements: 'Distinctions in English, Mathematics, Biology, Chemistry, and Physics.',
       icon: 'medical_services',
       color: 'bg-red-50 text-red-600 border-red-200'
     },
@@ -165,7 +170,7 @@ export class CareerGuidanceComponent {
       title: 'Engineering (Civil, Mech, Elec)', 
       institution: 'Malawi University of Business and Applied Sciences (MUBAS)', 
       pointsRange: '6 - 15 points', 
-      requirements: 'Strong credits/distinctions in Mathematics and Physical Science. Credit in English.',
+      requirements: 'Strong credits/distinctions in Mathematics, Physics, and Chemistry. Credit in English.',
       icon: 'engineering',
       color: 'bg-amber-50 text-amber-600 border-amber-200'
     },
@@ -173,7 +178,7 @@ export class CareerGuidanceComponent {
       title: 'Agriculture & Natural Resources', 
       institution: 'Lilongwe University of Agriculture and Natural Resources (LUANAR)', 
       pointsRange: '10 - 20 points', 
-      requirements: 'Credits in English, Mathematics, Biology, and Agriculture or Physical Science.',
+      requirements: 'Credits in English, Mathematics, Biology, and Agriculture or Chemistry.',
       icon: 'agriculture',
       color: 'bg-emerald-50 text-emerald-600 border-emerald-200'
     },
@@ -189,7 +194,7 @@ export class CareerGuidanceComponent {
       title: 'Computer Science / IT', 
       institution: 'University of Malawi (UNIMA) / MUBAS / Mzuzu University (MZUNI)', 
       pointsRange: '9 - 16 points', 
-      requirements: 'Strong credits in Mathematics and Physical Science. Credit in English.',
+      requirements: 'Strong credits in Mathematics, Physics, and Computer Studies. Credit in English.',
       icon: 'computer',
       color: 'bg-cyan-50 text-cyan-600 border-cyan-200'
     },
@@ -246,5 +251,9 @@ export class CareerGuidanceComponent {
     if (points <= 20) return 'Great! You qualify for most science, agriculture, and business degree programs.';
     if (points <= 36) return 'Good. You meet the minimum requirement for university entry. Consider education or humanities.';
     return 'You need 36 points or less (including English credit) to qualify for public university selection.';
+  }
+
+  goBack() {
+    window.history.back();
   }
 }

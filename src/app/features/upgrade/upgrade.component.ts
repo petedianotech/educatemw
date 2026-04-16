@@ -13,6 +13,12 @@ import { PaymentService } from '../../core/services/payment.service';
   template: `
     <div class="h-full bg-slate-50 overflow-y-auto custom-scrollbar">
       <div class="p-4 sm:p-6 lg:p-8 pb-32 max-w-4xl mx-auto">
+        <!-- Back Button -->
+        <button (click)="router.navigate(['/dashboard'])" class="mb-6 flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors font-black uppercase tracking-widest text-xs">
+          <mat-icon class="!w-4 !h-4 !text-[16px]">arrow_back</mat-icon>
+          Back to Dashboard
+        </button>
+
         <!-- Special Offer Header -->
         <div class="bg-gradient-to-br from-indigo-900 to-blue-900 text-white rounded-[2.5rem] p-8 mb-8 text-center shadow-xl relative overflow-hidden">
           <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
