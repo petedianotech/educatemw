@@ -214,8 +214,12 @@ export class CommunityComponent implements OnInit, OnDestroy {
   }
 
   async sendAudioMessage(audioUrl: string) {
+    console.log('Received audio URL to send:', audioUrl);
     const user = this.authService.currentUser();
-    if (!user || this.isSubmitting()) return;
+    if (!user || this.isSubmitting()) {
+      console.log('Send aborted: User', user, 'or isSubmitting', this.isSubmitting());
+      return;
+    }
 
     this.isSubmitting.set(true);
     try {

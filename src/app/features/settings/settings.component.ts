@@ -380,6 +380,12 @@ export class SettingsComponent {
     }
   }
 
+  onImageDone() {
+    this.isUpdating.set(false);
+    this.updateMsg.set('Profile picture updated successfully!');
+    setTimeout(() => this.updateMsg.set(''), 3000);
+  }
+
   async onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -394,12 +400,10 @@ export class SettingsComponent {
     try {
       await this.authService.uploadProfilePicture(file);
       console.log('Profile picture uploaded successfully');
-      this.updateMsg.set('Profile picture updated successfully!');
-      setTimeout(() => this.updateMsg.set(''), 3000);
+      // Do not clear isUpdating here; let onImageDone() do it when the image actually renders
     } catch (error) {
       console.error('Failed to upload profile picture', error);
       this.updateMsg.set('Failed to upload profile picture: ' + (error as Error).message);
-    } finally {
       this.isUpdating.set(false);
     }
   }

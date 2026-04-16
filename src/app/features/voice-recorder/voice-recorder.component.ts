@@ -118,7 +118,11 @@ export class VoiceRecorderComponent implements OnDestroy {
   async upload() {
     const blob = this.audioBlob();
     const user = this.authService.currentUser();
-    if (!blob || !user) return;
+    console.log('Uploading audio, blob size:', blob?.size);
+    if (!blob || !user) {
+      console.log('Upload aborted: No blob or user found.');
+      return;
+    }
 
     this.isUploading.set(true);
     try {
