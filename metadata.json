@@ -1,5 +1,5 @@
 {
   "name": "Educate MW",
   "description": "A highly reliable, scalable PWA educational ecosystem for students in Malawi featuring AI tutoring, offline notes, real-time community, and quizzes.",
-  "requestFramePermissions": []
+  "requestFramePermissions": ["microphone"]
 }

@@ -196,40 +196,26 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
       </div>
 
       <!-- Input Area -->
-      <div class="p-4 bg-white/80 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] pb-safe">
-        @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits || 0) <= 0) {
-          <div class="max-w-3xl mx-auto text-center p-6 bg-slate-900 rounded-[2.5rem] border border-slate-800 shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-            <mat-icon class="text-amber-400 mb-3 !w-10 !h-10 !text-[40px]">workspace_premium</mat-icon>
-            <h4 class="font-black text-white text-xl mb-2 tracking-tight">Daily Limit Reached</h4>
-            <p class="text-sm text-slate-400 font-medium mb-6">You've used all your free credits for today. Upgrade to Pro for unlimited MSCE tutoring with Cleo.</p>
-            <a routerLink="/upgrade" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-500 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/30 hover:scale-105 transition-transform">
-              <span>Unlock Unlimited Access</span>
-              <mat-icon>arrow_forward</mat-icon>
-            </a>
+      <div class="p-4 bg-white border-t border-slate-200 pb-safe">
+        <div class="max-w-4xl mx-auto flex items-end gap-3">
+          <div class="flex-1 bg-slate-100 rounded-xl focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500 transition-all shadow-inner overflow-hidden">
+            <textarea 
+              [ngModel]="inputText()"                
+              (ngModelChange)="inputText.set($event)"
+              (keydown.enter)="handleEnter($event)"
+              placeholder="Message..."
+              class="w-full py-3 px-4 bg-transparent border-none focus:ring-0 resize-none outline-none text-[15px] font-medium text-slate-900 placeholder-slate-500"
+              rows="1"
+              style="min-height: 48px; max-height: 120px; display: block;"
+            ></textarea>
           </div>
-        } @else {
-          <div class="max-w-4xl mx-auto relative flex items-end gap-3">
-            <div class="flex-1 relative bg-white border-2 border-slate-200 rounded-[2rem] focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all duration-300 shadow-sm overflow-hidden">
-              <textarea 
-                [ngModel]="inputText()"
-                (ngModelChange)="inputText.set($event)"
-                (keydown.enter)="handleEnter($event)"
-                placeholder="Ask Cleo anything about your MSCE subjects..."
-                class="w-full py-4 px-6 bg-transparent border-none focus:ring-0 resize-none outline-none text-[15px] font-bold text-slate-900 placeholder-slate-400 leading-relaxed"
-                rows="1"
-                style="min-height: 56px; max-height: 160px; display: block;"
-              ></textarea>
-            </div>
-            <button 
-              (click)="sendMessage()"
-              [disabled]="!inputText().trim() || gemini.isLoading()"
-              class="flex-shrink-0 w-14 h-14 flex items-center justify-center text-white bg-blue-600 rounded-full shadow-xl shadow-blue-200 hover:shadow-blue-300 hover:-translate-y-1 active:scale-90 disabled:opacity-30 disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100 transition-all duration-300 relative group overflow-hidden">
-              <div class="absolute inset-0 bg-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <mat-icon class="relative z-10 scale-110">send</mat-icon>
-            </button>
-          </div>
-        }
+          <button 
+            (click)="sendMessage()"
+            [disabled]="!inputText().trim() || gemini.isLoading()"
+            class="flex-shrink-0 w-12 h-12 flex items-center justify-center text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-all">
+            <mat-icon class="scale-100">send</mat-icon>
+          </button>
+        </div>
       </div>
     </div>
   `

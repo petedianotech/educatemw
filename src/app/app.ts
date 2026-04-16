@@ -91,7 +91,7 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
             }
 
             <!-- Floating Download Reward Banner -->
-            @if (dataService.appSettings().isAppOfferActive && authService.currentUser() && !authService.currentUser()?.hasClaimedAppInstallReward && !isBannerDismissed() && router.url === '/dashboard') {
+            @if (dataService.appSettings().isAppOfferActive && authService.currentUser() && !isBannerDismissed() && router.url === '/dashboard') {
               <div class="fixed bottom-24 left-4 right-4 z-40 animate-in slide-in-from-bottom-10 duration-700">
                 <div class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-800 rounded-[2rem] p-5 shadow-2xl border border-white/20 relative overflow-hidden group">
                   <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
@@ -102,17 +102,14 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
                   
                   <div class="flex items-center gap-4 relative z-10">
                     <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shrink-0 shadow-inner">
-                      <mat-icon class="!w-7 !h-7 !text-[28px]">download_for_offline</mat-icon>
+                      <mat-icon class="!w-7 !h-7 !text-[28px]">install_mobile</mat-icon>
                     </div>
                     <div class="flex-1">
-                      <h4 class="text-base font-black text-white leading-tight">Get Our Android App!</h4>
-                      <div class="flex items-center gap-2 mt-1">
-                        <span class="bg-amber-400 text-amber-950 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm">+50 Coins</span>
-                        <span class="bg-sky-400 text-sky-950 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm">+20 AI Credits</span>
-                      </div>
+                      <h4 class="text-base font-black text-white leading-tight">Install App (PWA)</h4>
+                      <p class="text-[10px] text-white/80 font-medium mt-1 leading-tight">Install our app for a faster, better experience.</p>
                     </div>
-                    <button (click)="downloadAndReward()" class="bg-white text-indigo-700 px-5 py-3 rounded-2xl font-black text-xs shadow-xl active:scale-95 transition-all hover:scale-105 hover:bg-slate-50">
-                      Download
+                    <button (click)="installPwa()" class="bg-white text-indigo-700 px-5 py-3 rounded-2xl font-black text-xs shadow-xl active:scale-95 transition-all hover:scale-105 hover:bg-slate-50">
+                      Install
                     </button>
                   </div>
                 </div>
@@ -406,7 +403,12 @@ export class App implements OnInit {
 
   async installPwa() {
     const prompt = this.deferredPrompt();
-    if (!prompt) return;
+    if (!prompt) {
+       // Fallback message if they aren't on a compatible browser
+       alert("Your browser currently doesn't support direct installation or the app is already installed.");
+       this.isBannerDismissed.set(true);
+       return;
+    }
 
     prompt.prompt();
     const { outcome } = await prompt.userChoice;
@@ -414,20 +416,14 @@ export class App implements OnInit {
     
     if (outcome === 'accepted') {
       this.showInstallPopup.set(false);
+      this.isBannerDismissed.set(true);
     }
     this.deferredPrompt.set(null);
   }
 
   async downloadAndReward() {
-    // Explanation: We use window.open to trigger the direct download from Codemagic.
-    // In a production app, this would be a direct link to the APK file hosted on a CDN or cloud storage.
-    // Navigating to a file URL with an APK extension triggers the browser's download mechanism.
-    const downloadUrl = 'https://codemagic.io/app/placeholder/download'; 
-    window.open(downloadUrl, '_blank');
-    
-    // Reward the user immediately
-    await this.authService.claimAppInstallReward();
-    this.isBannerDismissed.set(true);
+    // Deprecated for now, using PWA install instead without rewards.
+    this.installPwa();
   }
 
   async onSideFileSelected(event: Event) {

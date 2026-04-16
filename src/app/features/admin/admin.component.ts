@@ -856,23 +856,51 @@ interface ChartData {
               <!-- Upload Form -->
               <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-6">
                 <h3 class="text-xl font-black text-slate-900">Add Video Lesson</h3>
-                <input [(ngModel)]="videoTitle" placeholder="Video Title" class="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 font-bold">
-                <input [(ngModel)]="videoDescription" placeholder="Description" class="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 font-bold">
-                <input [(ngModel)]="videoUrl" placeholder="YouTube URL" class="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 font-bold">
-                <button (click)="saveVideo()" [disabled]="isSubmitting()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg hover:bg-indigo-700 transition-all">Publish Video</button>
+                
+                <div>
+                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Video Title</label>
+                  <input [ngModel]="videoTitle()" (ngModelChange)="videoTitle.set($event)" placeholder="E.g., Intro to Algebra" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 mt-1">
+                </div>
+
+                <div>
+                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Description</label>
+                  <textarea [ngModel]="videoDescription()" (ngModelChange)="videoDescription.set($event)" rows="3" placeholder="Briefly describe this lesson..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 mt-1 resize-none"></textarea>
+                </div>
+
+                <div>
+                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">YouTube URL</label>
+                  <input [ngModel]="videoUrl()" (ngModelChange)="videoUrl.set($event)" placeholder="https://youtube.com/watch?v=..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 mt-1">
+                  <p class="text-[10px] font-medium text-slate-400 mt-2 ml-1">Paste a standard YouTube link, short, or list URL.</p>
+                </div>
+                
+                <button (click)="saveVideo()" [disabled]="isSubmitting() || !videoTitle().trim() || !videoUrl().trim()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-6">
+                  {{ isSubmitting() ? 'Publishing...' : 'Publish Video Lesson' }}
+                </button>
               </div>
               
               <!-- Video List -->
-              <div class="space-y-6">
+              <div class="space-y-4 max-h-[800px] overflow-y-auto pr-2">
                 @for (video of dataService.videoLessons(); track video.id) {
-                  <div class="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm flex items-center justify-between">
-                    <div>
-                      <h4 class="font-black text-slate-900">{{ video.title }}</h4>
-                      <p class="text-[10px] text-slate-400 font-bold uppercase">{{ video.category }}</p>
+                  <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center justify-between group hover:border-indigo-200 hover:shadow-md transition-all">
+                    <div class="flex items-center gap-4">
+                      <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center shrink-0">
+                        <mat-icon>play_circle</mat-icon>
+                      </div>
+                      <div>
+                        <h4 class="font-black text-slate-900 tracking-tight line-clamp-1 truncate block max-w-[200px] sm:max-w-xs">{{ video.title }}</h4>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{{ video.category }}</p>
+                      </div>
                     </div>
-                    <button (click)="deleteVideo(video.id)" class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-                      <mat-icon>delete</mat-icon>
+                    <button (click)="deleteVideo(video.id)" title="Delete video" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100">
+                      <mat-icon class="!w-5 !h-5 !text-[20px]">delete</mat-icon>
                     </button>
+                  </div>
+                } @empty {
+                  <div class="text-center py-20 bg-white rounded-[3rem] border border-slate-200 border-dashed">
+                    <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-300">
+                      <mat-icon class="!w-8 !h-8 !text-[32px]">videocam_off</mat-icon>
+                    </div>
+                    <p class="text-slate-400 font-black uppercase tracking-widest">No video lessons published</p>
                   </div>
                 }
               </div>

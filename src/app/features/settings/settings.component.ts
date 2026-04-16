@@ -383,17 +383,22 @@ export class SettingsComponent {
   async onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    if (!file) return;
+    if (!file) {
+      console.log('No file selected');
+      return;
+    }
+    console.log('File selected:', file.name, file.type, file.size);
 
     this.isUpdating.set(true);
     this.updateMsg.set('Uploading...');
     try {
       await this.authService.uploadProfilePicture(file);
+      console.log('Profile picture uploaded successfully');
       this.updateMsg.set('Profile picture updated successfully!');
       setTimeout(() => this.updateMsg.set(''), 3000);
     } catch (error) {
       console.error('Failed to upload profile picture', error);
-      this.updateMsg.set('Failed to upload profile picture.');
+      this.updateMsg.set('Failed to upload profile picture: ' + (error as Error).message);
     } finally {
       this.isUpdating.set(false);
     }

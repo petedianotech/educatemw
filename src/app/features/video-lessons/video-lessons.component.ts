@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
-import { DataService, Note } from '../../core/services/data.service';
+import { DataService, VideoLesson, Note } from '../../core/services/data.service';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -56,7 +56,7 @@ import { RouterLink } from '@angular/router';
               <mat-icon class="text-sm">bookmark_border</mat-icon>
             </button>
           </div>
-          <p class="text-slate-400 text-xs mt-3 leading-relaxed line-clamp-2 font-medium">{{activeVideo()!.content}}</p>
+          <p class="text-slate-400 text-xs mt-3 leading-relaxed line-clamp-2 font-medium">{{activeVideo()!.description}}</p>
         </div>
       }
 
@@ -134,15 +134,30 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   sanitizer = inject(DomSanitizer);
   
-  activeVideo = signal<Note | null>(null);
+  activeVideo = signal<VideoLesson | null>(null);
 
   videoNotes = computed(() => {
-    return this.dataService.notes().filter(note => 
-      note.youtubeUrl && (note.destination === 'video-lessons' || !(note.destination))
-    );
+    // Merge notes published via destination 'video-lessons' with those published in 'videos' tab natively
+    const notesAsVideos: VideoLesson[] = this.dataService.notes()
+      .filter(note => note.youtubeUrl && note.destination === 'video-lessons')
+      .map(note => ({
+        id: note.id,
+        title: note.title,
+        description: note.content || '',
+        youtubeUrl: note.youtubeUrl!,
+        category: note.category,
+        createdAt: note.createdAt
+      }));
+    const nativeVideos = this.dataService.videoLessons();
+    return [...nativeVideos, ...notesAsVideos].sort((a, b) => {
+      const db = (b.createdAt as any)?.toMillis?.() || Date.now();
+      const da = (a.createdAt as any)?.toMillis?.() || Date.now();
+      return db - da; 
+    });
   });
 
   ngOnInit() {
+    this.dataService.subscribeToVideoLessons();
     this.dataService.subscribeToNotes();
     // Auto-select first video when data loads
     setTimeout(() => {
@@ -154,6 +169,7 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.dataService.unsubscribeFromVideoLessons();
     this.dataService.unsubscribeFromNotes();
   }
 

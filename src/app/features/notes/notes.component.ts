@@ -15,87 +15,60 @@ import { FormsModule } from '@angular/forms';
   template: `
     <div class="flex flex-col h-screen bg-slate-50 overflow-hidden relative">
       <!-- Header -->
-      <div class="bg-slate-950 px-6 py-8 shrink-0 relative z-10 shadow-2xl">
-        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
-        
-        <div class="max-w-7xl mx-auto relative z-10">
-          <div class="flex items-center gap-4 mb-8">
-            <a routerLink="/dashboard" class="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white active:scale-90 transition-all backdrop-blur-md border border-white/10">
-              <mat-icon>arrow_back</mat-icon>
-            </a>
-            <div>
-              <h1 class="text-3xl font-black text-white tracking-tight leading-none">Study Library</h1>
-              <p class="text-indigo-300 font-bold text-xs mt-2 uppercase tracking-widest">Malawi's Premium Resource Hub</p>
+      <div class="bg-slate-950 px-6 py-6 shrink-0 relative z-10 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-4">
+              <a routerLink="/dashboard" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white active:scale-90 transition-all border border-white/10">
+                <mat-icon>arrow_back</mat-icon>
+              </a>
+              <div>
+                <h1 class="text-2xl font-black text-white tracking-tight">Study Library</h1>
+              </div>
             </div>
           </div>
 
-          <!-- Modern Filter Bar -->
-          <div class="flex flex-col gap-6">
-            <!-- Level & Access Filters -->
-            <div class="flex flex-wrap items-center gap-4">
-              <div class="flex bg-white/5 p-1 rounded-2xl border border-white/10 backdrop-blur-md">
-                <button (click)="selectedLevel.set('All')" [class.bg-indigo-600]="selectedLevel() === 'All'" class="px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all">All Levels</button>
-                <button (click)="selectedLevel.set('Secondary')" [class.bg-indigo-600]="selectedLevel() === 'Secondary'" class="px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all">Secondary</button>
-                <button (click)="selectedLevel.set('Primary')" [class.bg-indigo-600]="selectedLevel() === 'Primary'" class="px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all">Primary</button>
-              </div>
-
-              <div class="flex bg-white/5 p-1 rounded-2xl border border-white/10 backdrop-blur-md">
-                <button (click)="selectedAccess.set('All')" [class.bg-indigo-600]="selectedAccess() === 'All'" class="px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all">All Access</button>
-                <button (click)="selectedAccess.set('Free')" [class.bg-indigo-600]="selectedAccess() === 'Free'" class="px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all">Free</button>
-                <button (click)="selectedAccess.set('Pro')" [class.bg-indigo-600]="selectedAccess() === 'Pro'" class="px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all">Pro</button>
-              </div>
-
-              <div class="relative ml-auto">
-                <mat-icon class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 scale-75">sort</mat-icon>
-                <select [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)" 
-                        class="pl-10 pr-8 py-3 bg-white/10 border border-white/10 rounded-xl text-white font-bold text-sm outline-none focus:bg-white/20 transition-all appearance-none cursor-pointer">
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                  <option value="title">Title A-Z</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Subject & Form Filters -->
-            <div class="flex flex-wrap items-center gap-4">
-              <div class="flex-1 min-w-[200px]">
-                <div class="relative">
-                  <mat-icon class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 scale-75">book</mat-icon>
-                  <select [ngModel]="selectedSubject()" (ngModelChange)="selectedSubject.set($event); currentPage.set(1)" 
-                          class="w-full pl-10 pr-8 py-3 bg-white/10 border border-white/10 rounded-xl text-white font-bold text-sm outline-none focus:bg-white/20 transition-all appearance-none cursor-pointer">
-                    <option value="All">All Subjects</option>
-                    @for (subject of subjects; track subject) {
-                      <option [value]="subject">{{ subject }}</option>
-                    }
-                  </select>
-                </div>
-              </div>
-
-              <div class="flex-1 min-w-[200px]">
-                <div class="relative">
-                  <mat-icon class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 scale-75">school</mat-icon>
-                  <select [ngModel]="selectedForm()" (ngModelChange)="selectedForm.set($event); currentPage.set(1)" 
-                          class="w-full pl-10 pr-8 py-3 bg-white/10 border border-white/10 rounded-xl text-white font-bold text-sm outline-none focus:bg-white/20 transition-all appearance-none cursor-pointer">
-                    <option value="All">All Classes</option>
-                    @if (selectedLevel() === 'Secondary') {
-                      <option value="Form 1">Form 1</option>
-                      <option value="Form 2">Form 2</option>
-                      <option value="Form 3">Form 3</option>
-                      <option value="Form 4">Form 4</option>
-                    } @else if (selectedLevel() === 'Primary') {
-                      <option value="Standard 1">Standard 1</option>
-                      <option value="Standard 2">Standard 2</option>
-                      <option value="Standard 3">Standard 3</option>
-                      <option value="Standard 4">Standard 4</option>
-                      <option value="Standard 5">Standard 5</option>
-                      <option value="Standard 6">Standard 6</option>
-                      <option value="Standard 7">Standard 7</option>
-                      <option value="Standard 8">Standard 8</option>
-                    }
-                  </select>
-                </div>
-              </div>
-            </div>
+          <!-- Compact Filter Bar -->
+          <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            <select [ngModel]="selectedLevel()" (ngModelChange)="selectedLevel.set($event)" class="bg-white/10 border border-white/10 rounded-lg text-white font-bold text-xs p-2 outline-none">
+                <option value="All">All Levels</option>
+                <option value="Secondary">Secondary</option>
+                <option value="Primary">Primary</option>
+            </select>
+            <select [ngModel]="selectedSubject()" (ngModelChange)="selectedSubject.set($event); currentPage.set(1)" class="bg-white/10 border border-white/10 rounded-lg text-white font-bold text-xs p-2 outline-none">
+                <option value="All">All Subjects</option>
+                @for (subject of subjects; track subject) {
+                    <option [value]="subject">{{ subject }}</option>
+                }
+            </select>
+            <select [ngModel]="selectedForm()" (ngModelChange)="selectedForm.set($event); currentPage.set(1)" class="bg-white/10 border border-white/10 rounded-lg text-white font-bold text-xs p-2 outline-none">
+              <option value="All">All Classes</option>
+              @if (selectedLevel() === 'Secondary') {
+                <option value="Form 1">Form 1</option>
+                <option value="Form 2">Form 2</option>
+                <option value="Form 3">Form 3</option>
+                <option value="Form 4">Form 4</option>
+              } @else if (selectedLevel() === 'Primary') {
+                <option value="Standard 1">Standard 1</option>
+                <option value="Standard 2">Standard 2</option>
+                <option value="Standard 3">Standard 3</option>
+                <option value="Standard 4">Standard 4</option>
+                <option value="Standard 5">Standard 5</option>
+                <option value="Standard 6">Standard 6</option>
+                <option value="Standard 7">Standard 7</option>
+                <option value="Standard 8">Standard 8</option>
+              }
+            </select>
+            <select [ngModel]="selectedAccess()" (ngModelChange)="selectedAccess.set($event)" class="bg-white/10 border border-white/10 rounded-lg text-white font-bold text-xs p-2 outline-none">
+                <option value="All">All Access</option>
+                <option value="Free">Free</option>
+                <option value="Pro">Pro</option>
+            </select>
+            <select [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)" class="bg-white/10 border border-white/10 rounded-lg text-white font-bold text-xs p-2 outline-none">
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="title">Title</option>
+            </select>
           </div>
         </div>
       </div>

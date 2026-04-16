@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, ViewChild, ElementRef, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, computed, ViewChild, ElementRef, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { VoiceRecorderComponent } from '../voice-recorder/voice-recorder.component';
 import { DataService } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,7 +11,7 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-community',
   standalone: true,
-  imports: [FormsModule, MatIconModule, DatePipe, RouterLink, NgOptimizedImage],
+  imports: [FormsModule, VoiceRecorderComponent, MatIconModule, DatePipe, RouterLink, NgOptimizedImage],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     textarea::-webkit-scrollbar {
@@ -81,12 +82,12 @@ import { RouterLink } from '@angular/router';
             <div class="flex flex-col max-w-[80%]" [class.items-end]="msg.authorId === authService.currentUser()?.uid">
               <div class="flex items-center gap-2 mb-1 px-1">
                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  {{msg.authorId === authService.currentUser()?.uid ? 'You' : msg.authorName}}
+                  {{msg.authorId === authService.currentUser()?.uid ? 'You' : (msg.authorId === teacherUid() ? 'Teacher' : msg.authorName)}}
                 </span>
                 <span class="text-[9px] text-slate-300 font-bold">{{getMessageDate(msg.createdAt) | date:'shortTime'}}</span>
               </div>
               
-              <div class="px-4 py-3 rounded-[1.5rem] shadow-sm border relative group transition-all duration-300"
+              <div class="px-4 py-3 rounded-xl shadow-sm border relative group transition-all duration-300"
                    (touchstart)="onMessageTouchStart(msg.id)"
                    (touchend)="onMessageTouchEnd()"
                    (mousedown)="onMessageTouchStart(msg.id)"
@@ -101,13 +102,13 @@ import { RouterLink } from '@angular/router';
                    [class.border-slate-800]="msg.authorId === authService.currentUser()?.uid"
                    [class.rounded-tr-none]="msg.authorId === authService.currentUser()?.uid">
                 
-                <p class="whitespace-pre-wrap text-[14px] leading-relaxed font-medium">{{msg.content}}</p>
-                
-                @if (msg.authorId === authService.currentUser()?.uid || authService.currentUser()?.role === 'admin') {
-                  <button (click)="deleteMessage(msg.id)" 
-                          class="absolute -top-2 -right-2 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 shadow-sm transition-all">
-                    <mat-icon class="!w-3.5 !h-3.5 !text-[14px]">delete</mat-icon>
-                  </button>
+                @if (msg.content.startsWith('🎵 Audio Note: ')) {
+                  <audio controls class="w-full mt-2 h-10">
+                    <source [src]="msg.content.replace('🎵 Audio Note: ', '')" type="audio/webm">
+                    Your browser does not support the audio element.
+                  </audio>
+                } @else {
+                  <p class="whitespace-pre-wrap text-[14px] leading-relaxed font-medium">{{msg.content}}</p>
                 }
               </div>
             </div>
@@ -124,25 +125,29 @@ import { RouterLink } from '@angular/router';
       </div>
 
       <!-- Input Area -->
-      <div class="p-4 bg-white/80 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] pb-safe">
-        <div class="max-w-4xl mx-auto relative flex items-end gap-3">
-          <div class="flex-1 relative bg-white border-2 border-slate-200 rounded-[2rem] focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all duration-300 shadow-sm overflow-hidden">
+      <div class="p-4 bg-white border-t border-slate-200 pb-safe">
+        <div class="max-w-4xl mx-auto flex items-end gap-3">
+          <div class="flex-1 bg-slate-100 rounded-xl focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500 transition-all shadow-inner overflow-hidden">
             <textarea 
-              [(ngModel)]="newMessage"
+              [(ngModel)]="newMessage"                
               (keydown.enter)="handleEnter($event)"
-              placeholder="Share a study tip or ask a question..."
-              class="w-full py-4 px-6 bg-transparent border-none focus:ring-0 resize-none outline-none text-[15px] font-bold text-slate-900 placeholder-slate-400 leading-relaxed"
+              placeholder="Message..."
+              class="w-full py-3 px-4 bg-transparent border-none focus:ring-0 resize-none outline-none text-[15px] font-medium text-slate-900 placeholder-slate-500"
               rows="1"
-              style="min-height: 56px; max-height: 160px; display: block;"
+              style="min-height: 48px; max-height: 120px; display: block;"
             ></textarea>
           </div>
-          <button 
-            (click)="sendMessage()"
-            [disabled]="!newMessage.trim() || isSubmitting()"
-            class="flex-shrink-0 w-14 h-14 flex items-center justify-center text-white bg-slate-900 rounded-full shadow-xl shadow-slate-200 hover:shadow-indigo-200 hover:-translate-y-1 active:scale-90 disabled:opacity-30 disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100 transition-all duration-300 relative group overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-blue-500 to-sky-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <mat-icon class="relative z-10 scale-110">send</mat-icon>
-          </button>
+          
+          @if (newMessage.trim().length === 0) {
+            <app-voice-recorder (uploaded)="sendAudioMessage($event)" />
+          } @else {
+            <button 
+              (click)="sendMessage()"
+              [disabled]="!newMessage.trim() || isSubmitting()"
+              class="flex-shrink-0 w-12 h-12 flex items-center justify-center text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-all">
+              <mat-icon class="scale-100">send</mat-icon>
+            </button>
+          }
         </div>
       </div>
     </div>
@@ -155,6 +160,13 @@ export class CommunityComponent implements OnInit, OnDestroy {
   newMessage = '';
   isSubmitting = signal(false);
   pressingMessageId = signal<string | null>(null);
+  
+  teacherUid = computed(() => {
+    const users = this.dataService.users();
+    const teacher = users.find(u => u.email === 'mscepreparation@gmail.com');
+    return teacher ? teacher.uid : null;
+  });
+
   private pressTimer: ReturnType<typeof setTimeout> | null = null;
   
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
@@ -199,6 +211,18 @@ export class CommunityComponent implements OnInit, OnDestroy {
   async deleteMessage(messageId: string) {
     if (confirm('Delete this message?')) {
       await this.dataService.deleteMessage(messageId);
+    }
+  }
+
+  async sendAudioMessage(audioUrl: string) {
+    const user = this.authService.currentUser();
+    if (!user || this.isSubmitting()) return;
+
+    this.isSubmitting.set(true);
+    try {
+      await this.dataService.sendMessage(user.uid, user.displayName || 'Student', user.photoURL || '', '🎵 Audio Note: ' + audioUrl);
+    } finally {
+      this.isSubmitting.set(false);
     }
   }
 
