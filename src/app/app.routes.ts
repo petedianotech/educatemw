@@ -82,6 +82,10 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard]
   },
   {
+    path: 'books/:slug',
+    loadComponent: () => import('./features/note-detail/note-detail.component').then(m => m.NoteDetailComponent)
+  },
+  {
     path: 'upgrade',
     loadComponent: () => import('./features/upgrade/upgrade.component').then(m => m.UpgradeComponent),
     canActivate: [authGuard]

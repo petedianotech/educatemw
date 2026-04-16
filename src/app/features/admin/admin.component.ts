@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, OnDestroy, PLATFORM_ID, NO_ERRORS_SCHEMA } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DataService, Quiz, QuizQuestion, Note } from '../../core/services/data.service';
+import { DataService, Quiz, QuizQuestion, Note, AppUpdate } from '../../core/services/data.service';
+import { GeminiService } from '../../core/services/gemini.service';
 import { Timestamp } from 'firebase/firestore';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe, DecimalPipe, CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/common';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 @Component({
   selector: 'app-admin',
@@ -261,33 +261,82 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
                     <div class="grid grid-cols-2 gap-6">
                       <div>
-                        <label for="note-category" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Category</label>
+                        <label for="note-category" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Category / Subject</label>
                         <div class="relative">
-                          <select id="note-category" [ngModel]="category()" (ngModelChange)="category.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none pr-12">
+                          <select id="note-category" [ngModel]="category()" (ngModelChange)="category.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none pr-12 cursor-pointer hover:bg-slate-100">
                             <option value="Mathematics">Mathematics</option>
-                            <option value="Science">Science</option>
-                            <option value="Biology">Biology</option>
                             <option value="English">English</option>
+                            <option value="Biology">Biology</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Agriculture">Agriculture</option>
+                            <option value="Geography">Geography</option>
                             <option value="History">History</option>
+                            <option value="Social and Life Skills">Social and Life Skills</option>
+                            <option value="Chichewa">Chichewa</option>
+                            <option value="Computer Studies">Computer Studies</option>
+                            <option value="Home Economics">Home Economics</option>
+                            <option value="Bible Knowledge">Bible Knowledge</option>
                             <option value="Past Paper">Past Paper</option>
                             <option value="Announcement">Announcement</option>
                             <option value="Video">Video</option>
                           </select>
-                          <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+                          <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-indigo-500">
                             <mat-icon>expand_more</mat-icon>
                           </div>
                         </div>
                       </div>
                       <div>
-                        <label for="note-destination" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Destination</label>
+                        <label for="note-destination" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Publish Destination</label>
                         <div class="relative">
-                          <select id="note-destination" [ngModel]="destination()" (ngModelChange)="destination.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none pr-12">
-                            <option value="notes">Notes Section</option>
-                            <option value="past-papers">Past Papers Section</option>
-                            <option value="announcements">Announcements Section</option>
-                            <option value="video-lessons">Video Lessons Section</option>
+                          <select id="note-destination" [ngModel]="destination()" (ngModelChange)="destination.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none pr-12 cursor-pointer hover:bg-slate-100">
+                            <option value="notes">📚 Notes Section</option>
+                            <option value="past-papers">📝 Past Papers Section</option>
+                            <option value="announcements">📢 Announcements Section</option>
+                            <option value="video-lessons">▶️ Video Lessons Section</option>
                           </select>
-                          <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+                          <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-indigo-500">
+                            <mat-icon>expand_more</mat-icon>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                      <div>
+                        <label for="note-level" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Education Level</label>
+                        <div class="relative">
+                          <select id="note-level" [ngModel]="level()" (ngModelChange)="level.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none pr-12 cursor-pointer hover:bg-slate-100">
+                            <option value="Secondary">Secondary School</option>
+                            <option value="Primary">Primary School</option>
+                          </select>
+                          <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-indigo-500">
+                            <mat-icon>expand_more</mat-icon>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label for="note-form" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Class / Form</label>
+                        <div class="relative">
+                          <select id="note-form" [ngModel]="form()" (ngModelChange)="form.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none pr-12 cursor-pointer hover:bg-slate-100">
+                            <option value="">All Classes</option>
+                            @if (level() === 'Secondary') {
+                              <option value="Form 1">Form 1</option>
+                              <option value="Form 2">Form 2</option>
+                              <option value="Form 3">Form 3</option>
+                              <option value="Form 4">Form 4</option>
+                            } @else {
+                              <option value="Standard 1">Standard 1</option>
+                              <option value="Standard 2">Standard 2</option>
+                              <option value="Standard 3">Standard 3</option>
+                              <option value="Standard 4">Standard 4</option>
+                              <option value="Standard 5">Standard 5</option>
+                              <option value="Standard 6">Standard 6</option>
+                              <option value="Standard 7">Standard 7</option>
+                              <option value="Standard 8">Standard 8</option>
+                            }
+                          </select>
+                          <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-indigo-500">
                             <mat-icon>expand_more</mat-icon>
                           </div>
                         </div>
@@ -324,6 +373,42 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
                       <textarea id="note-content" [ngModel]="content()" (ngModelChange)="content.set($event)" rows="8" placeholder="Write your content here..." class="w-full p-6 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-mono text-sm text-slate-800 resize-none"></textarea>
                     </div>
                   }
+
+                  <!-- SEO Section -->
+                  <div class="pt-6 border-t border-slate-100">
+                    <div class="flex items-center justify-between mb-4">
+                      <h4 class="text-sm font-black text-slate-900 uppercase tracking-tight">SEO Optimization</h4>
+                      <button (click)="generateSEOAI()" 
+                              [disabled]="isGeneratingSEO() || !title()"
+                              class="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-100 transition-all disabled:opacity-50">
+                        @if (isGeneratingSEO()) {
+                          <div class="w-3 h-3 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin"></div>
+                          <span>Analyzing...</span>
+                        } @else {
+                          <mat-icon class="!w-4 !h-4 !text-[16px]">auto_awesome</mat-icon>
+                          <span>SEO AI</span>
+                        }
+                      </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                      <div>
+                        <label for="seo-title" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">SEO Title (Max 60 chars)</label>
+                        <input id="seo-title" type="text" [ngModel]="seoTitle()" (ngModelChange)="seoTitle.set($event)" placeholder="e.g. Biology MSCE PDF Download Malawi" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                      </div>
+                      <div>
+                        <label for="seo-desc" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Meta Description (Max 155 chars)</label>
+                        <textarea id="seo-desc" [ngModel]="seoDescription()" (ngModelChange)="seoDescription.set($event)" rows="3" placeholder="Study and pass MSCE with our Malawian syllabus notes..." class="w-full p-6 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-sm text-slate-800 resize-none"></textarea>
+                      </div>
+                      <div>
+                        <label for="slug" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">URL Slug (Deep Link)</label>
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs text-slate-400 font-mono">/books/</span>
+                          <input id="slug" type="text" [ngModel]="slug()" (ngModelChange)="slug.set($event)" placeholder="mathematics-archivers-book-3" class="flex-1 px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-mono text-xs text-slate-900">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
                   <div class="flex gap-4 pt-4">
                     @if (editingNoteId()) {
@@ -656,6 +741,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 })
 export class AdminComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
+  geminiService = inject(GeminiService);
   router = inject(Router);
   
   isSidebarOpen = signal(false);
@@ -673,8 +759,16 @@ export class AdminComponent implements OnInit, OnDestroy {
   driveUrl = signal('');
   youtubeUrl = signal('');
   isProOnly = signal(false);
+  level = signal<'Primary' | 'Secondary'>('Secondary');
+  form = signal('');
   isSubmitting = signal(false);
   editingNoteId = signal<string | null>(null);
+
+  // SEO State
+  seoTitle = signal('');
+  seoDescription = signal('');
+  slug = signal('');
+  isGeneratingSEO = signal(false);
 
   // Quiz State
   quizTitle = signal('');
@@ -745,17 +839,26 @@ export class AdminComponent implements OnInit, OnDestroy {
     if (!this.updateTitle().trim() || !this.updateContent().trim() || this.isSubmitting()) return;
     this.isSubmitting.set(true);
     try {
-      await this.dataService.createAppUpdate({
+      const updateData: Partial<AppUpdate> = {
         title: this.updateTitle(),
         content: this.updateContent(),
-        type: this.updateType(),
-        driveUrl: this.updateDriveUrl() || undefined
-      });
+        type: this.updateType()
+      };
+      if (this.updateDriveUrl().trim()) {
+        updateData.driveUrl = this.updateDriveUrl().trim();
+      }
+      await this.dataService.createAppUpdate(updateData as Omit<AppUpdate, 'id' | 'createdAt'>);
       this.updateTitle.set('');
       this.updateContent.set('');
       this.updateDriveUrl.set('');
+      if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+        alert('Update published successfully!');
+      }
     } catch (error) {
       console.error(error);
+      if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+        alert('Failed to publish update. Please try again.');
+      }
     } finally {
       this.isSubmitting.set(false);
     }
@@ -856,6 +959,11 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.driveUrl.set(note.driveUrl || '');
     this.youtubeUrl.set(note.youtubeUrl || '');
     this.isProOnly.set(note.isProOnly);
+    this.level.set(note.level || 'Secondary');
+    this.form.set(note.form || '');
+    this.seoTitle.set(note.seoTitle || '');
+    this.seoDescription.set(note.seoDescription || '');
+    this.slug.set(note.slug || '');
     this.editingNoteId.set(note.id);
     this.activeTab.set('upload');
   }
@@ -868,8 +976,44 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.driveUrl.set('');
     this.youtubeUrl.set('');
     this.isProOnly.set(false);
+    this.level.set('Secondary');
+    this.form.set('');
+    this.seoTitle.set('');
+    this.seoDescription.set('');
+    this.slug.set('');
     this.editingNoteId.set(null);
     this.activeTab.set('manage');
+  }
+
+  async generateSEOAI() {
+    if (!this.title().trim() || this.isGeneratingSEO()) return;
+    this.isGeneratingSEO.set(true);
+    try {
+      const result = await this.geminiService.generateSEO(
+        this.title(),
+        this.category(),
+        this.content() || 'Educational material for Malawian students.'
+      );
+      if (result) {
+        this.seoTitle.set(result.seoTitle);
+        this.seoDescription.set(result.seoDescription);
+        // Generate slug if empty
+        if (!this.slug().trim()) {
+          this.slug.set(this.generateSlug(this.title()));
+        }
+      }
+    } catch (error) {
+      console.error('SEO Generation failed:', error);
+    } finally {
+      this.isGeneratingSEO.set(false);
+    }
+  }
+
+  private generateSlug(text: string): string {
+    return text
+      .toLowerCase()
+      .replace(/[^\w ]+/g, '')
+      .replace(/ +/g, '-');
   }
 
   async deleteNote(noteId: string) {
@@ -879,37 +1023,58 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   async saveNote() {
-    console.log('saveNote clicked', { title: this.title() });
-    if (!this.title().trim()) {
-      console.warn('Title is empty');
+    if (!this.title().trim() || this.isSubmitting()) {
+      if (!this.title().trim() && isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+        alert('Title is required');
+      }
       return;
     }
     
+    this.isSubmitting.set(true);
     try {
-      const noteData = {
-        title: this.title(),
+      const noteData: Partial<Note> = {
+        title: this.title().trim(),
         category: this.category(),
         destination: this.destination(),
-        content: this.content(),
-        driveUrl: this.driveUrl() || undefined,
-        youtubeUrl: this.youtubeUrl() || undefined,
-        isProOnly: this.isProOnly()
+        isProOnly: this.isProOnly(),
+        level: this.level(),
+        form: this.form(),
+        seoTitle: this.seoTitle().trim(),
+        seoDescription: this.seoDescription().trim(),
+        slug: this.slug().trim() || this.generateSlug(this.title())
       };
-      console.log('Saving noteData:', noteData);
+      
+      if (this.content().trim()) noteData.content = this.content().trim();
+      if (this.driveUrl().trim()) noteData.driveUrl = this.driveUrl().trim();
+      if (this.youtubeUrl().trim()) noteData.youtubeUrl = this.youtubeUrl().trim();
+
       if (this.editingNoteId()) {
         await this.dataService.updateNote(this.editingNoteId()!, noteData);
         this.cancelEdit();
+        if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+          alert('Material updated successfully!');
+        }
       } else {
-        await this.dataService.createNote(noteData);
+        await this.dataService.createNote(noteData as Omit<Note, 'id' | 'createdAt'>);
         this.title.set('');
         this.content.set('');
         this.driveUrl.set('');
         this.youtubeUrl.set('');
         this.isProOnly.set(false);
+        this.seoTitle.set('');
+        this.seoDescription.set('');
+        this.slug.set('');
+        if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+          alert('Material published successfully!');
+        }
       }
-      console.log('Save successful');
     } catch (error) {
       console.error('Save failed:', error);
+      if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+        alert('Failed to publish material. Please try again.');
+      }
+    } finally {
+      this.isSubmitting.set(false);
     }
   }
 }

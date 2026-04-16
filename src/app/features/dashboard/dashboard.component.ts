@@ -226,6 +226,25 @@ interface Notification {
               <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Master subjects</p>
             </a>
           </div>
+
+          <!-- Recent Materials -->
+          <div class="mb-8 shrink-0">
+            <div class="flex items-center justify-between mb-4 px-1">
+              <h3 class="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Recent Materials</h3>
+              <a routerLink="/notes" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">See All</a>
+            </div>
+            <div class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar snap-x">
+              @for (note of recentNotes(); track note.id) {
+                <a [routerLink]="['/books', note.slug || note.id]" class="min-w-[200px] bg-white rounded-2xl p-4 border border-slate-200 shadow-sm snap-start hover:border-indigo-200 transition-all group">
+                  <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                    <mat-icon class="!w-5 !h-5 !text-[20px]">description</mat-icon>
+                  </div>
+                  <h4 class="text-xs font-black text-slate-900 line-clamp-2 mb-1">{{ note.title }}</h4>
+                  <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ note.category }}</p>
+                </a>
+              }
+            </div>
+          </div>
         }
 
         <!-- Pro Upgrade Banner -->
@@ -308,6 +327,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   announcements = computed(() => {
     return this.dataService.notes().filter(note => note.destination === 'announcements');
+  });
+
+  recentNotes = computed(() => {
+    return this.dataService.notes()
+      .filter(note => note.destination === 'notes' || note.destination === 'past-papers' || !note.destination)
+      .sort((a, b) => {
+        const dateA = this.toDate(a.createdAt)?.getTime() || 0;
+        const dateB = this.toDate(b.createdAt)?.getTime() || 0;
+        return dateB - dateA;
+      })
+      .slice(0, 10);
   });
 
   ngOnInit() {

@@ -36,6 +36,11 @@ export interface GeneratedQuiz {
   }[];
 }
 
+export interface GeneratedSEO {
+  seoTitle: string;
+  seoDescription: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class GeminiService {
   private ai: GoogleGenAI | null = null;
@@ -242,6 +247,46 @@ Guidelines for your responses:
     } catch (error) {
       console.error('Error generating quiz:', error);
       throw error;
+    }
+  }
+
+  async generateSEO(title: string, category: string, content: string): Promise<GeneratedSEO | null> {
+    try {
+      const ai = await this.getAI();
+      const prompt = `You are an expert SEO strategist specializing in the Malawian education market. Your goal is to rewrite the provided content (Book or Past Paper details) into high-ranking SEO Metadata.
+Rules:
+Primary Keywords: Use terms like 'MSCE', 'PSLCE', 'MANEB', 'Malawi Curriculum', and 'Secondary School'.
+Local Context: Include mentions of 'Malawian students' and 'New Syllabus'.
+Format: Output exactly two items in a JSON object:
+seoTitle: Max 60 characters. Must include the book name + 'PDF Download' + 'Malawi'.
+seoDescription: Max 155 characters. Start with a strong call to action (e.g., 'Download', 'Study', 'Pass MSCE'). Mention that it is for the Malawian syllabus.
+
+Input details:
+Title: ${title}
+Category: ${category}
+Content/Description: ${content}
+
+Return ONLY valid JSON matching this schema:
+{
+  "seoTitle": "string",
+  "seoDescription": "string"
+}`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+        }
+      });
+
+      if (response.text) {
+        return JSON.parse(response.text) as GeneratedSEO;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error generating SEO:', error);
+      return null;
     }
   }
 }

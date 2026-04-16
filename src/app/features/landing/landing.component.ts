@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -214,10 +214,14 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class LandingComponent implements OnInit {
   authService = inject(AuthService);
+  router = inject(Router);
   isLoading = signal(true);
 
   ngOnInit() {
     // Global loading is handled in App component
     this.isLoading.set(false);
+    if (this.authService.currentUser()) {
+      this.router.navigate(['/dashboard'], { replaceUrl: true });
+    }
   }
 }

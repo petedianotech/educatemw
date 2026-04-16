@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { db } from '../../../firebase';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc, where, arrayUnion, arrayRemove, increment, limit } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc, where, arrayUnion, arrayRemove, increment, limit, getDocs } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../../../firebase';
 import { UserProfile } from './auth.service';
 
@@ -36,6 +36,11 @@ export interface Note {
   createdAt: Date | Timestamp;
   driveUrl?: string;
   youtubeUrl?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  slug?: string;
+  level?: 'Primary' | 'Secondary';
+  form?: string;
 }
 
 export interface QuizQuestion {
@@ -331,6 +336,19 @@ export class DataService {
       await deleteDoc(doc(db, 'notes', noteId));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `notes/${noteId}`);
+    }
+  }
+
+  async getNoteBySlug(slug: string): Promise<Note | null> {
+    try {
+      const q = query(collection(db, 'notes'), where('slug', '==', slug), limit(1));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) return null;
+      const doc = snapshot.docs[0];
+      return { id: doc.id, ...doc.data() } as Note;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.GET, 'notes');
+      return null;
     }
   }
 

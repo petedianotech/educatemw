@@ -277,6 +277,10 @@ export class LoginComponent implements OnInit {
   recoveryAnswers: string[] = [];
 
   ngOnInit() {
+    if (this.authService.currentUser()) {
+      this.router.navigate(['/dashboard'], { replaceUrl: true });
+      return;
+    }
     this.checkMagicLink();
   }
 
