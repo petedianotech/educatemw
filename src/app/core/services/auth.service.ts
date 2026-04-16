@@ -368,7 +368,7 @@ export class AuthService {
         await this.createNewUserProfile(user, user.isAnonymous ? 'Guest' : (user.displayName || 'Student'));
       }
     } catch (error) {
-      handleFirestoreError(error, OperationType.GET, \`users/\${user.uid}\`);
+      handleFirestoreError(error, OperationType.GET, `users/${user.uid}`);
     }
   }
 
@@ -385,7 +385,7 @@ export class AuthService {
     const user = this.currentUser();
     if (!user) throw new Error('User not authenticated');
 
-    const storageRef = ref(storage, \`profilePictures/\${user.uid}/profile.jpg\`);
+    const storageRef = ref(storage, `profilePictures/${user.uid}/profile.jpg`);
     await uploadBytes(storageRef, file);
     const downloadURL = await getDownloadURL(storageRef);
 
@@ -396,7 +396,7 @@ export class AuthService {
   }
 
   async getUserByPhone(phone: string): Promise<UserProfile | null> {
-    const emailAlias = \`\${phone.replace(/[^0-9+]/g, '')}@edumalawi.local\`;
+    const emailAlias = `${phone.replace(/[^0-9+]/g, '')}@edumalawi.local`;
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', emailAlias));
     const querySnapshot = await getDocs(q);
@@ -405,7 +405,7 @@ export class AuthService {
   }
 
   async getSecurityQuestions(identifier: string): Promise<{ uid: string, questions: SecurityQuestion[] } | null> {
-    const id = identifier.includes('@') ? identifier : \`\${identifier.replace(/[^0-9+]/g, '')}@edumalawi.local\`;
+    const id = identifier.includes('@') ? identifier : `${identifier.replace(/[^0-9+]/g, '')}@edumalawi.local`;
     const recoveryRef = doc(db, 'recovery', id);
     const snap = await getDoc(recoveryRef);
     if (snap.exists()) return snap.data() as { uid: string, questions: SecurityQuestion[] };
@@ -478,7 +478,7 @@ export class AuthService {
     if (!user) throw new Error('User not authenticated');
 
     const userRef = doc(db, 'users', user.uid);
-    const recoveryRef = doc(db, 'recovery', user.email || \`\${user.uid}@edumalawi.local\`);
+    const recoveryRef = doc(db, 'recovery', user.email || `${user.uid}@edumalawi.local`);
 
     const formattedQuestions = questions.map(q => ({ 
       question: q.question, 

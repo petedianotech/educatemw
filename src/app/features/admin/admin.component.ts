@@ -1040,7 +1040,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   router = inject(Router);
   
   isSidebarOpen = signal(false);
-  activeTab = signal<'overview' | 'upload' | 'manage' | 'students' | 'quizzes' | 'revenue' | 'updates' | 'exams'>('overview');
+  activeTab = signal<'overview' | 'upload' | 'manage' | 'students' | 'quizzes' | 'revenue' | 'updates' | 'exams' | 'videos'>('overview');
   chartRange = signal<'7d' | '30d' | 'year'>('7d');
 
   chartData = computed(() => {
@@ -1534,6 +1534,17 @@ export class AdminComponent implements OnInit, OnDestroy {
     } else {
       // Fallback for non-browser environments if needed, but usually delete is user-triggered
       await this.dataService.deleteNote(noteId);
+    }
+  }
+
+  async deleteExamDate(dateId: string) {
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+      if (window.confirm('Delete this exam date?')) {
+        await this.dataService.deleteExamDate(dateId);
+        this.showNotification('Exam date deleted');
+      }
+    } else {
+      await this.dataService.deleteExamDate(dateId);
     }
   }
 
