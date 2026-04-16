@@ -815,7 +815,14 @@ export class AdminComponent implements OnInit, OnDestroy {
     const revenue = this.dataService.revenueRecords();
     
     // Get last 6 months
-    const months = [];
+    const months: {
+      name: string;
+      month: number;
+      year: number;
+      users: number;
+      pro: number;
+      revenue: number;
+    }[] = [];
     const now = new Date();
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -899,6 +906,11 @@ export class AdminComponent implements OnInit, OnDestroy {
   slug = signal('');
   isGeneratingSEO = signal(false);
   notification = signal<{ message: string, type: 'success' | 'error' } | null>(null);
+
+  showNotification(message: string, type: 'success' | 'error' = 'success') {
+    this.notification.set({ message, type });
+    setTimeout(() => this.notification.set(null), 3000);
+  }
 
   // Quiz State
   quizTitle = signal('');
