@@ -227,7 +227,29 @@ interface ChartData {
               </div>
 
               <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                <h3 class="text-lg font-black text-slate-900 mb-2 uppercase tracking-tight">Growth & Revenue Trend</h3>
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Growth & Revenue Trend</h3>
+                  <div class="flex p-1 bg-slate-100 rounded-xl">
+                    <button (click)="chartRange.set('7d')" 
+                            [class.bg-white]="chartRange() === '7d'" 
+                            [class.shadow-sm]="chartRange() === '7d'"
+                            class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
+                            [class.text-indigo-600]="chartRange() === '7d'"
+                            [class.text-slate-500]="chartRange() !== '7d'">7D</button>
+                    <button (click)="chartRange.set('30d')" 
+                            [class.bg-white]="chartRange() === '30d'" 
+                            [class.shadow-sm]="chartRange() === '30d'"
+                            class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
+                            [class.text-indigo-600]="chartRange() === '30d'"
+                            [class.text-slate-500]="chartRange() !== '30d'">30D</button>
+                    <button (click)="chartRange.set('year')" 
+                            [class.bg-white]="chartRange() === 'year'" 
+                            [class.shadow-sm]="chartRange() === 'year'"
+                            class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
+                            [class.text-indigo-600]="chartRange() === 'year'"
+                            [class.text-slate-500]="chartRange() !== 'year'">1Y</button>
+                  </div>
+                </div>
                 <div class="flex items-center gap-4 mb-6">
                   <div class="flex items-center gap-2">
                     <div class="w-3 h-3 rounded-full bg-blue-500"></div>
@@ -242,31 +264,42 @@ interface ChartData {
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenue (k)</span>
                   </div>
                 </div>
-                <div class="h-64 relative">
+                <div class="h-64 relative flex">
                   @let data = chartData();
                   @let max = getMaxValue(data);
-                  <svg class="w-full h-full overflow-visible" viewBox="0 0 400 200" preserveAspectRatio="none">
-                    <!-- Grid Lines -->
-                    <line x1="0" y1="0" x2="400" y2="0" stroke="#f1f5f9" stroke-width="1" />
-                    <line x1="0" y1="50" x2="400" y2="50" stroke="#f1f5f9" stroke-width="1" />
-                    <line x1="0" y1="100" x2="400" y2="100" stroke="#f1f5f9" stroke-width="1" />
-                    <line x1="0" y1="150" x2="400" y2="150" stroke="#f1f5f9" stroke-width="1" />
-                    <line x1="0" y1="200" x2="400" y2="200" stroke="#f1f5f9" stroke-width="1" />
+                  <!-- Y-Axis Labels -->
+                  <div class="flex flex-col justify-between text-[8px] font-black text-slate-400 w-8 py-2">
+                    <span>{{ max }}</span>
+                    <span>{{ (max * 0.75) | number:'1.0-0' }}</span>
+                    <span>{{ (max * 0.5) | number:'1.0-0' }}</span>
+                    <span>{{ (max * 0.25) | number:'1.0-0' }}</span>
+                    <span>0</span>
+                  </div>
 
-                    <!-- Lines -->
-                    <path [attr.d]="getLinePath(data, 'users', 200, 400, max)" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                    <path [attr.d]="getLinePath(data, 'pro', 200, 400, max)" fill="none" stroke="#f43f5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                    <path [attr.d]="getLinePath(data, 'revenue_scaled', 200, 400, max)" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                  <div class="flex-1 relative">
+                    <svg class="w-full h-full overflow-visible" viewBox="0 0 400 200" preserveAspectRatio="none">
+                      <!-- Grid Lines -->
+                      <line x1="0" y1="0" x2="400" y2="0" stroke="#f1f5f9" stroke-width="1" />
+                      <line x1="0" y1="50" x2="400" y2="50" stroke="#f1f5f9" stroke-width="1" />
+                      <line x1="0" y1="100" x2="400" y2="100" stroke="#f1f5f9" stroke-width="1" />
+                      <line x1="0" y1="150" x2="400" y2="150" stroke="#f1f5f9" stroke-width="1" />
+                      <line x1="0" y1="200" x2="400" y2="200" stroke="#f1f5f9" stroke-width="1" />
+
+                      <!-- Lines -->
+                      <path [attr.d]="getLinePath(data, 'users', 200, 400, max)" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                      <path [attr.d]="getLinePath(data, 'pro', 200, 400, max)" fill="none" stroke="#f43f5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                      <path [attr.d]="getLinePath(data, 'revenue_scaled', 200, 400, max)" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                      
+                      <!-- Area Fills -->
+                      <path [attr.d]="getLinePath(data, 'users', 200, 400, max) + ' L 400,200 L 0,200 Z'" fill="url(#grad-blue)" opacity="0.1" />
+                    </svg>
                     
-                    <!-- Area Fills (Optional but looks nice) -->
-                    <path [attr.d]="getLinePath(data, 'users', 200, 400, max) + ' L 400,200 L 0,200 Z'" fill="url(#grad-blue)" opacity="0.1" />
-                  </svg>
-                  
-                  <!-- X-Axis Labels -->
-                  <div class="flex justify-between mt-4">
-                    @for (m of data; track m.name) {
-                      <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ m.name }}</span>
-                    }
+                    <!-- X-Axis Labels -->
+                    <div class="flex justify-between mt-4">
+                      @for (m of data; track m.name + $index) {
+                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap overflow-hidden text-ellipsis max-w-[40px] text-center">{{ m.name }}</span>
+                      }
+                    </div>
                   </div>
 
                   <svg width="0" height="0" class="absolute">
@@ -572,33 +605,125 @@ interface ChartData {
                 <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm sticky top-8">
                   <h3 class="text-xl font-black text-slate-900 mb-8">{{ editingQuizId() ? 'Edit Quiz' : 'Create Quiz' }}</h3>
                   <div class="space-y-6">
-                    <div>
-                      <label for="quiz-title" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Title</label>
-                      <input id="quiz-title" type="text" [ngModel]="quizTitle()" (ngModelChange)="quizTitle.set($event)" placeholder="Quiz Title" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div>
+                        <label for="quiz-title" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Quiz Title</label>
+                        <input id="quiz-title" type="text" [ngModel]="quizTitle()" (ngModelChange)="quizTitle.set($event)" placeholder="e.g. Biology Paper 1 Mock" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                      </div>
                       <div>
                         <label for="quiz-category" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Category</label>
-                        <select id="quiz-category" [ngModel]="quizCategory()" (ngModelChange)="quizCategory.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none">
-                          <option value="Mathematics">Mathematics</option>
-                          <option value="Science">Science</option>
-                          <option value="Biology">Biology</option>
-                          <option value="English">English</option>
-                          <option value="History">History</option>
-                        </select>
+                        <div class="relative">
+                          <select id="quiz-category" [ngModel]="quizCategory()" (ngModelChange)="quizCategory.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 appearance-none cursor-pointer">
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="English">English</option>
+                            <option value="Biology">Biology</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Agriculture">Agriculture</option>
+                            <option value="Geography">Geography</option>
+                            <option value="History">History</option>
+                          </select>
+                          <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-indigo-500">
+                            <mat-icon>expand_more</mat-icon>
+                          </div>
+                        </div>
                       </div>
                       <div>
-                        <label for="quiz-time" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Time (m)</label>
-                        <input id="quiz-time" type="number" [ngModel]="quizTimeLimit()" (ngModelChange)="quizTimeLimit.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                        <label for="quiz-desc" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Description (Optional)</label>
+                        <input id="quiz-desc" type="text" [ngModel]="quizDescription()" (ngModelChange)="quizDescription.set($event)" placeholder="Short info about the quiz" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
                       </div>
                     </div>
-                    <button (click)="addQuestion()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all uppercase tracking-widest flex items-center justify-center gap-2">
-                      <mat-icon>add</mat-icon>
-                      Add Question ({{ quizQuestions().length }})
-                    </button>
-                    <button (click)="saveQuiz()" [disabled]="isSubmitting() || quizQuestions().length === 0" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 uppercase tracking-widest disabled:opacity-50">
-                      {{ isSubmitting() ? 'Saving...' : 'Publish Quiz' }}
-                    </button>
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <label for="quiz-time" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Time (m)</label>
+                          <input id="quiz-time" type="number" [ngModel]="quizTimeLimit()" (ngModelChange)="quizTimeLimit.set($event)" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
+                        </div>
+                        <div class="flex items-end">
+                          <label class="flex items-center gap-3 cursor-pointer w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-colors"
+                                 [class.bg-indigo-50]="quizIsProOnly()" [class.border-indigo-200]="quizIsProOnly()">
+                            <div class="relative flex items-center justify-center w-6 h-6 rounded border-2 transition-colors"
+                                 [class.border-indigo-600]="quizIsProOnly()" [class.bg-indigo-600]="quizIsProOnly()"
+                                 [class.border-slate-300]="!quizIsProOnly()" [class.bg-white]="!quizIsProOnly()">
+                              <input type="checkbox" [ngModel]="quizIsProOnly()" (ngModelChange)="quizIsProOnly.set($event)" class="opacity-0 absolute inset-0 cursor-pointer w-full h-full">
+                              @if (quizIsProOnly()) {
+                                <mat-icon class="text-white !w-4 !h-4 !text-[16px]">check</mat-icon>
+                              }
+                            </div>
+                            <span class="text-sm font-black uppercase tracking-tight" [class.text-indigo-700]="quizIsProOnly()" [class.text-slate-700]="!quizIsProOnly()">Pro Only</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div class="pt-6 border-t border-slate-100">
+                        <div class="flex items-center justify-between mb-4">
+                          <h4 class="text-sm font-black text-slate-900 uppercase tracking-tight">Questions ({{ quizQuestions().length }}/10)</h4>
+                          @if (quizQuestions().length < 10) {
+                            <button (click)="addQuestion()" class="flex items-center gap-1 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-100 transition-all">
+                              <mat-icon class="!w-4 !h-4 !text-[16px]">add</mat-icon>
+                              Add
+                            </button>
+                          }
+                        </div>
+
+                        <div class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                          @for (q of quizQuestions(); track $index) {
+                            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 relative group">
+                              <button (click)="removeQuestion($index)" class="absolute top-2 right-2 text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all">
+                                <mat-icon class="!w-4 !h-4 !text-[16px]">delete</mat-icon>
+                              </button>
+                              
+                              <div>
+                                <label [attr.for]="'q-text-' + $index" class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Question {{ $index + 1 }}</label>
+                                <input type="text" [attr.id]="'q-text-' + $index" [(ngModel)]="q.text" placeholder="Enter question..." class="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 text-sm font-bold">
+                              </div>
+
+                              <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label [attr.for]="'q-opt-a-' + $index" class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Option A</label>
+                                  <input type="text" [attr.id]="'q-opt-a-' + $index" [(ngModel)]="q.options![0]" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                </div>
+                                <div>
+                                  <label [attr.for]="'q-opt-b-' + $index" class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Option B</label>
+                                  <input type="text" [attr.id]="'q-opt-b-' + $index" [(ngModel)]="q.options![1]" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                </div>
+                                <div>
+                                  <label [attr.for]="'q-opt-c-' + $index" class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Option C</label>
+                                  <input type="text" [attr.id]="'q-opt-c-' + $index" [(ngModel)]="q.options![2]" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                </div>
+                                <div>
+                                  <label [attr.for]="'q-opt-d-' + $index" class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Option D</label>
+                                  <input type="text" [attr.id]="'q-opt-d-' + $index" [(ngModel)]="q.options![3]" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold">
+                                </div>
+                              </div>
+
+                              <div>
+                                <label [attr.for]="'q-correct-' + $index" class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Correct Answer</label>
+                                <select [attr.id]="'q-correct-' + $index" [(ngModel)]="q.correctAnswer" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold appearance-none">
+                                  <option value="">Select Answer</option>
+                                  <option [value]="q.options![0]">A: {{ q.options![0] }}</option>
+                                  <option [value]="q.options![1]">B: {{ q.options![1] }}</option>
+                                  <option [value]="q.options![2]">C: {{ q.options![2] }}</option>
+                                  <option [value]="q.options![3]">D: {{ q.options![3] }}</option>
+                                </select>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </div>
+
+                      <div class="flex gap-4 pt-4">
+                        @if (editingQuizId()) {
+                          <button (click)="resetQuizForm()" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black hover:bg-slate-200 transition-all uppercase tracking-widest">Cancel</button>
+                        }
+                        <button (click)="saveQuiz()" [disabled]="isSubmitting() || quizQuestions().length === 0" class="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-2">
+                          @if (isSubmitting()) {
+                            <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            <span>Publishing...</span>
+                          } @else {
+                            {{ editingQuizId() ? 'Update & Publish' : 'Publish Quiz' }}
+                          }
+                        </button>
+                      </div>
                   </div>
                 </div>
               </div>
@@ -613,7 +738,12 @@ interface ChartData {
                       </div>
                       <div>
                         <h4 class="text-lg font-black text-slate-900 tracking-tight">{{ quiz.title }}</h4>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ quiz.category }} • {{ quiz.questions.length }} Questions</p>
+                        <div class="flex items-center gap-2 mt-1">
+                          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ quiz.category }} • {{ quiz.questions.length }} Questions</p>
+                          @if (quiz.isProOnly) {
+                            <span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[8px] font-black uppercase tracking-widest border border-indigo-100">PRO Only</span>
+                          }
+                        </div>
                       </div>
                     </div>
                     <div class="flex gap-2">
@@ -810,39 +940,76 @@ export class AdminComponent implements OnInit, OnDestroy {
   
   isSidebarOpen = signal(false);
   activeTab = signal<'overview' | 'upload' | 'manage' | 'students' | 'quizzes' | 'revenue' | 'updates' | 'exams'>('overview');
+  chartRange = signal<'7d' | '30d' | 'year'>('7d');
+
   chartData = computed(() => {
     const users = this.dataService.users();
     const revenue = this.dataService.revenueRecords();
+    const range = this.chartRange();
     
-    // Get last 6 months
-    const months: {
+    const segments: {
       name: string;
-      month: number;
-      year: number;
+      start: Date;
+      end: Date;
       users: number;
       pro: number;
       revenue: number;
     }[] = [];
+
     const now = new Date();
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({
-        name: d.toLocaleString('default', { month: 'short' }),
-        month: d.getMonth(),
-        year: d.getFullYear(),
-        users: 0,
-        pro: 0,
-        revenue: 0
-      });
+    
+    if (range === '7d') {
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        d.setHours(0, 0, 0, 0);
+        const endDay = new Date(d);
+        endDay.setHours(23, 59, 59, 999);
+        segments.push({
+          name: d.toLocaleDateString('default', { weekday: 'short' }),
+          start: d,
+          end: endDay,
+          users: 0,
+          pro: 0,
+          revenue: 0
+        });
+      }
+    } else if (range === '30d') {
+      for (let i = 29; i >= 0; i -= 2) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        d.setHours(0, 0, 0, 0);
+        const endDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (i - 1));
+        endDay.setHours(23, 59, 59, 999);
+        segments.push({
+          name: d.toLocaleDateString('default', { month: 'short', day: 'numeric' }),
+          start: d,
+          end: endDay,
+          users: 0,
+          pro: 0,
+          revenue: 0
+        });
+      }
+    } else {
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+        segments.push({
+          name: d.toLocaleString('default', { month: 'short' }),
+          start: d,
+          end: lastDay,
+          users: 0,
+          pro: 0,
+          revenue: 0
+        });
+      }
     }
 
     users.forEach(u => {
       const d = this.toDate(u.createdAt);
       if (d) {
-        const m = months.find(month => month.month === d.getMonth() && month.year === d.getFullYear());
-        if (m) {
-          m.users++;
-          if (u.isPro) m.pro++;
+        const s = segments.find(seg => d >= seg.start && d <= seg.end);
+        if (s) {
+          s.users++;
+          if (u.isPro) s.pro++;
         }
       }
     });
@@ -850,24 +1017,37 @@ export class AdminComponent implements OnInit, OnDestroy {
     revenue.forEach(r => {
       const d = this.toDate(r.createdAt);
       if (d) {
-        const m = months.find(month => month.month === d.getMonth() && month.year === d.getFullYear());
-        if (m) m.revenue += r.amount;
+        const s = segments.find(seg => d >= seg.start && d <= seg.end);
+        if (s) s.revenue += r.amount;
       }
     });
 
-    // Cumulative users
-    let cumulativeUsers = 0;
-    let cumulativePro = 0;
-    return months.map(m => {
-      cumulativeUsers += m.users;
-      cumulativePro += m.pro;
+    // Initial cumulative values (users already in system before the visible range)
+    const firstSegmentStart = segments[0].start;
+    let cumulativeUsers = users.filter(u => {
+      const d = this.toDate(u.createdAt);
+      return d && d < firstSegmentStart;
+    }).length;
+    
+    let cumulativePro = users.filter(u => {
+      const d = this.toDate(u.createdAt);
+      return d && u.isPro && d < firstSegmentStart;
+    }).length;
+
+    // We only want cumulative if it's year or 30d? 
+    // Usually "Growth" implies cumulative.
+    return segments.map(s => {
+      cumulativeUsers += s.users;
+      cumulativePro += s.pro;
       return {
-        ...m,
+        name: s.name,
+        month: s.start.getMonth(),
+        year: s.start.getFullYear(),
         users: cumulativeUsers,
         pro: cumulativePro,
-        revenue: m.revenue,
-        revenue_scaled: m.revenue / 1000 // Scale for the graph
-      };
+        revenue: s.revenue,
+        revenue_scaled: s.revenue / 1000 
+      } as ChartData;
     });
   });
 
@@ -1045,6 +1225,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   addQuestion() {
+    if (this.quizQuestions().length >= 10) return;
     this.quizQuestions.update(qs => [
       ...qs,
       { text: '', type: 'multiple-choice', options: ['', '', '', ''], correctAnswer: '' }

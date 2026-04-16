@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../core/services/auth.service';
@@ -33,38 +33,6 @@ import { AuthService } from '../../core/services/auth.service';
     }
   `],
   template: `
-    @if (isLoading()) {
-      <div class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center animate-out fade-out duration-500 delay-300 fill-mode-forwards">
-        <!-- Animated Background Orbs -->
-        <div class="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] rounded-full bg-indigo-600/10 blur-[120px] animate-pulse"></div>
-        <div class="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-blue-600/10 blur-[120px] animate-pulse" style="animation-delay: 1.5s"></div>
-        
-        <div class="relative z-10 flex flex-col items-center">
-          <!-- Logo with Catching Animation -->
-          <div class="relative mb-12 group">
-            <div class="absolute inset-0 bg-indigo-500/40 rounded-[2.5rem] blur-2xl animate-pulse"></div>
-            <div class="w-28 h-28 bg-gradient-to-tr from-indigo-600 via-blue-500 to-sky-400 rounded-[2.5rem] flex items-center justify-center text-white shadow-[0_20px_50px_rgba(79,70,229,0.4)] relative z-10 animate-in zoom-in duration-1000 cubic-bezier(0.34, 1.56, 0.64, 1)">
-              <mat-icon class="!w-14 !h-14 !text-[56px] animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">school</mat-icon>
-            </div>
-            <div class="absolute inset-0 animate-spin-slow pointer-events-none">
-              <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 w-3 h-3 bg-indigo-400 rounded-full shadow-[0_0_15px_rgba(129,140,248,0.8)]"></div>
-            </div>
-          </div>
-          
-          <div class="text-center space-y-4">
-            <h2 class="text-4xl font-black text-white tracking-tighter animate-in fade-in slide-in-from-bottom-6 duration-700 delay-500">
-              Educate <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-sky-300">MW</span>
-            </h2>
-            <div class="flex items-center gap-3 justify-center">
-              <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></div>
-              <div class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-              <div class="w-1.5 h-1.5 bg-sky-300 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    }
-
     <div class="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-700 overflow-x-hidden">
       
       <!-- Navigation -->
@@ -106,9 +74,16 @@ import { AuthService } from '../../core/services/auth.service';
           </p>
 
           <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300 mb-16">
-            <a routerLink="/login" class="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all">
-              Start Learning Free
-            </a>
+            @if (authService.currentUser()) {
+              <a routerLink="/dashboard" class="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-2">
+                Go to Dashboard
+                <mat-icon>arrow_forward</mat-icon>
+              </a>
+            } @else {
+              <a routerLink="/login" class="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 active:scale-95 transition-all">
+                Start Learning Free
+              </a>
+            }
           </div>
         </div>
       </section>
@@ -215,11 +190,8 @@ import { AuthService } from '../../core/services/auth.service';
 export class LandingComponent implements OnInit {
   authService = inject(AuthService);
   router = inject(Router);
-  isLoading = signal(true);
 
   ngOnInit() {
-    // Global loading is handled in App component
-    this.isLoading.set(false);
     if (this.authService.currentUser()) {
       this.router.navigate(['/dashboard'], { replaceUrl: true });
     }

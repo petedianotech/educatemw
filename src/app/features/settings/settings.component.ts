@@ -29,16 +29,20 @@ import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/comm
             <div class="absolute inset-0 bg-black/5"></div>
           </div>
           <div class="px-6 pb-6 -mt-12 relative flex flex-col items-center sm:flex-row sm:items-end sm:gap-6 sm:text-left">
-            <div class="relative">
+            <div class="relative group">
               <img ngSrc="{{authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid}}" 
                    alt="Profile" 
                    width="96"
                    height="96"
-                   class="rounded-[1.5rem] bg-slate-100 border-4 border-white shadow-xl object-cover cursor-pointer hover:opacity-80 transition-all" 
+                   class="rounded-[1.5rem] bg-slate-100 border-4 border-white shadow-xl object-cover cursor-pointer hover:brightness-90 transition-all" 
                    (click)="fileInput.click()"
                    (keydown.enter)="fileInput.click()"
                    tabindex="0"
                    referrerpolicy="no-referrer">
+              <button (click)="fileInput.click()" 
+                      class="absolute -bottom-1 -right-1 w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-all active:scale-90 border-2 border-white">
+                <mat-icon class="!w-4 !h-4 !text-[16px]">camera_alt</mat-icon>
+              </button>
               <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" class="hidden">
             </div>
             <div class="mt-4 sm:mt-0 flex-1">

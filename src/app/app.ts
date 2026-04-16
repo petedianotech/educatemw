@@ -62,12 +62,12 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
         </div>
       </div>
     } @else {
-      @if (authService.currentUser()) {
+      @if (authService.currentUser() && router.url !== '/') {
         <div class="flex flex-col h-[100dvh] bg-slate-50 font-sans text-slate-900 overflow-hidden relative">
           
           <!-- Floating Action Buttons (Top Left) -->
           <div class="absolute top-safe left-4 mt-4 z-40 flex gap-2">
-            @if (router.url === '/dashboard' || router.url === '/') {
+            @if (router.url === '/dashboard') {
               <button (click)="toggleMenu()" class="w-12 h-12 rounded-2xl bg-white/90 backdrop-blur-md shadow-lg border border-white/20 flex items-center justify-center text-slate-800 hover:bg-white active:scale-95 transition-all group">
                 <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
                   <mat-icon class="scale-90">menu</mat-icon>
@@ -167,10 +167,22 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
             <!-- User Profile Section -->
             <div class="p-6 border-b border-white/5">
               <div class="flex items-center gap-3 mb-4">
-                <img ngSrc="{{authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid}}" alt="Profile" width="48" height="48" class="rounded-2xl bg-slate-800 border-2 border-white/10" referrerpolicy="no-referrer">
+                <div class="relative group">
+                  <img ngSrc="{{authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid}}" 
+                       alt="Profile" 
+                       width="48" 
+                       height="48" 
+                       class="rounded-2xl bg-slate-800 border-2 border-white/10 cursor-pointer hover:brightness-110 transition-all" 
+                       (click)="sideFileInput.click()"
+                       referrerpolicy="no-referrer">
+                  <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-indigo-600 text-white rounded-md flex items-center justify-center shadow-lg border border-white/20 pointer-events-none">
+                    <mat-icon class="!w-3 !h-3 !text-[12px]">camera_alt</mat-icon>
+                  </div>
+                  <input type="file" #sideFileInput (change)="onSideFileSelected($event)" accept="image/*" class="hidden">
+                </div>
                 <div class="flex flex-col">
-                  <h3 class="text-white font-bold">{{authService.currentUser()?.displayName}}</h3>
-                  <span class="text-xs text-slate-400">{{authService.currentUser()?.email}}</span>
+                  <h3 class="text-white font-bold leading-tight">{{authService.currentUser()?.displayName}}</h3>
+                  <span class="text-[10px] text-slate-400 truncate w-32">{{authService.currentUser()?.email}}</span>
                 </div>
               </div>
               @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
@@ -372,6 +384,18 @@ export class App implements OnInit {
       this.showInstallPopup.set(false);
     }
     this.deferredPrompt.set(null);
+  }
+
+  async onSideFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    try {
+      await this.authService.uploadProfilePicture(file);
+    } catch (error) {
+      console.error('Failed to upload profile picture from sidebar', error);
+    }
   }
 
   logout() {
