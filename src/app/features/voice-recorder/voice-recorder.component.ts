@@ -74,7 +74,9 @@ export class VoiceRecorderComponent implements OnDestroy {
       const chunks: Blob[] = [];
       this.mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
       this.mediaRecorder.onstop = () => {
+        console.log('MediaRecorder onstop fired, chunks count:', chunks.length);
         const blob = new Blob(chunks, { type: 'audio/webm' });
+        console.log('Blob created, size:', blob.size);
         this.audioBlob.set(blob);
         this.audioUrl.set(URL.createObjectURL(blob));
       };
@@ -127,7 +129,9 @@ export class VoiceRecorderComponent implements OnDestroy {
     this.isUploading.set(true);
     try {
       const url = await this.voiceService.uploadVoiceNote(user.uid, blob);
+      console.log('Voice note uploaded, URL:', url);
       this.uploaded.emit(url);
+      console.log('Event emitted.');
       this.cancel();
     } catch (error) {
       console.error('Error uploading voice note:', error);
