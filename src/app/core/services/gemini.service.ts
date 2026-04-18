@@ -1,7 +1,9 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import type { GoogleGenAI } from '@google/genai';
 import type { DBSchema, IDBPDatabase } from 'idb';
 import { DataService } from './data.service';
+import { AuthService } from './auth.service';
 
 import { NTHONDO_KNOWLEDGE } from '../knowledge/curriculum';
 import { CURRICULUM_EXPANDED_KNOWLEDGE } from '../knowledge/curriculum_expanded';
@@ -47,6 +49,12 @@ export interface GeneratedSEO {
 
 @Injectable({ providedIn: 'root' })
 export class GeminiService {
+  private _authService = inject(AuthService);
+
+  private _platformId = inject(PLATFORM_ID);
+
+  readonly EMI_AVATAR = '/emi-avatar.png';
+  
   private ai: GoogleGenAI | null = null;
   private dbPromise: Promise<IDBPDatabase<ChatDB>> | null = null;
   private dataService = inject(DataService);
@@ -55,8 +63,10 @@ export class GeminiService {
   isLoading = signal<boolean>(false);
 
   constructor() {
-    this.loadHistory();
-    this.dataService.subscribeToNotes();
+    if (isPlatformBrowser(this._platformId)) {
+      this.loadHistory();
+      this.dataService.subscribeToNotes();
+    }
   }
 
   private async getAI() {
@@ -72,6 +82,9 @@ export class GeminiService {
   }
 
   private async getDB() {
+    if (!isPlatformBrowser(this._platformId)) {
+      throw new Error('IndexedDB is not available on the server.');
+    }
     if (!this.dbPromise) {
       const { openDB } = await import('idb');
       this.dbPromise = openDB<ChatDB>('edu-chat-db', 1, {

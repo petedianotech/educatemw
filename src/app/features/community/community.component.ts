@@ -28,13 +28,13 @@ import { RouterLink } from '@angular/router';
       70% { box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); }
       100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
     }
-    @keyframes recording-pulse {
+    @keyframes pump {
       0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.2); opacity: 0.5; }
+      50% { transform: scale(1.4); opacity: 0.6; }
       100% { transform: scale(1); opacity: 1; }
     }
-    .animate-recording {
-      animation: recording-pulse 1.5s infinite ease-in-out;
+    .animate-pump {
+      animation: pump 2s infinite ease-in-out;
     }
   `],
   template: `
@@ -53,9 +53,7 @@ import { RouterLink } from '@angular/router';
           <div>
             <h2 class="text-lg font-black tracking-tight leading-tight text-slate-900">Community Chat</h2>
             <div class="flex items-center gap-1.5">
-              <span class="relative flex h-2 w-2">
-                <span class="inline-flex rounded-full h-2 w-2 bg-emerald-500 animate-recording"></span>
-              </span>
+              <div class="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pump"></div>
               <p class="text-[10px] text-emerald-600 font-black uppercase tracking-widest">Live Discussion</p>
             </div>
           </div>
@@ -299,11 +297,16 @@ export class CommunityComponent implements OnInit, OnDestroy {
 
     } catch (err) {
       console.error('Microphone access denied', err);
+      // For codemagic/webviews we want to provide the most helpful prompt possible to the user
+      // if they haven't explicitly disabled it. We will log the error but not spam standard alerts
+      // if it's purely a Permission denied constraint. Webviews need native permissions handled first.
+      
       if (err instanceof DOMException && err.name === 'NotAllowedError') {
-        alert('Microphone access was denied. Please check your browser settings and ensure you have allowed microphone access for this site. If you are in the AI Studio preview, click "Open in a new tab" at the top right.');
+         console.warn('Microphone permission was denied by the user or the operating system.');
       } else {
-        alert('Could not start microphone. Please try opening the app in a new tab.');
+         console.warn('Could not start microphone. If wrapped in an app, verify native audio permissions are allowed.');
       }
+      alert('Could not access microphone. Please verify you have given this app permission to use audio in your device settings.');
     }
   }
 

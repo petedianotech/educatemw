@@ -4,6 +4,7 @@ import {RouterOutlet, RouterLink, RouterLinkActive, Router} from '@angular/route
 import {AuthService} from './core/services/auth.service';
 import {LoadingService} from './core/services/loading.service';
 import {DataService} from './core/services/data.service';
+import {GeminiService} from './core/services/gemini.service';
 import {MatIconModule} from '@angular/material/icon';
 import { ErrorToastComponent } from './shared/components/error-toast/error-toast.component';
 
@@ -137,8 +138,8 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
               <!-- emi AI (Center, Prominent) -->
               <div class="relative -top-1">
                 <a routerLink="/chat" class="flex flex-col items-center justify-center gap-1 transition-all active:scale-90 group">
-                  <div class="relative flex items-center justify-center w-12 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg shadow-blue-500/30 border-2 border-white/20 group-hover:scale-105 transition-transform overflow-hidden font-black">
-                    <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                   <div class="relative flex items-center justify-center w-12 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg shadow-blue-500/30 border-2 border-white/20 group-hover:scale-105 transition-transform overflow-hidden font-black">
+                    <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                   </div>
                   <span class="text-[10px] font-black tracking-wide text-blue-500">emi AI</span>
                 </a>
@@ -268,7 +269,7 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
 
               <a routerLink="/chat" (click)="closeMenu()" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
                 <div class="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center overflow-hidden">
-                  <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                  <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                 </div>
                 <span class="text-sm">emi AI Assistant</span>
               </a>
@@ -345,6 +346,7 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
 })
 export class App implements OnInit {
   authService = inject(AuthService);
+  gemini = inject(GeminiService);
   loadingService = inject(LoadingService);
   dataService = inject(DataService);
   router = inject(Router);

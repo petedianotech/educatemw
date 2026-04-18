@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy, signal, 
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { DataService } from '../../core/services/data.service';
+import { GeminiService } from '../../core/services/gemini.service';
 import { MatIconModule } from '@angular/material/icon';
 import { Timestamp } from 'firebase/firestore';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
@@ -151,8 +152,8 @@ interface Notification {
             <a routerLink="/chat" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
               <div class="absolute inset-0 bg-gradient-to-br from-transparent to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md shadow-blue-500/30 relative z-10 group-hover:scale-105 transition-transform overflow-hidden">
-                <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
-                @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 5) <= 0) {
+                <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 2) <= 0) {
                   <div class="absolute -top-1.5 -right-1.5 bg-slate-900 text-amber-400 p-1 rounded-lg border-2 border-white shadow-sm">
                     <mat-icon class="!w-3 !h-3 !text-[12px]">lock</mat-icon>
                   </div>
@@ -329,6 +330,7 @@ interface Notification {
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
+  gemini = inject(GeminiService);
   dataService = inject(DataService);
   route = inject(ActivatedRoute);
   

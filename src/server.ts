@@ -48,7 +48,7 @@ const possibleBrowserFolders = [
   join(process.cwd(), 'public') // Fallback
 ];
 
-let browserDistFolder = possibleBrowserFolders.find(path => existsSync(path)) || possibleBrowserFolders[0];
+const browserDistFolder = possibleBrowserFolders.find(path => existsSync(path)) || possibleBrowserFolders[0];
 
 const app = express();
 app.use(express.json());

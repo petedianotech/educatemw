@@ -297,7 +297,7 @@ import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/comm
               </div>
               <div class="flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-black shadow-lg shadow-indigo-100 text-xs">
                 <mat-icon class="!w-3.5 !h-3.5 !text-[14px]">bolt</mat-icon>
-                {{ authService.currentUser()?.isPro || authService.currentUser()?.role === 'admin' ? 'Unlimited' : (authService.currentUser()?.aiCredits ?? 5) }}
+                {{ authService.currentUser()?.isPro || authService.currentUser()?.role === 'admin' ? 'Unlimited' : (authService.currentUser()?.aiCredits ?? 2) }}
               </div>
             </div>
           </div>

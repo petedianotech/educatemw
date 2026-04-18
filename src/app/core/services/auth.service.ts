@@ -269,7 +269,7 @@ export class AuthService {
       role: 'student',
       isPro: false,
       isGuest: user.isAnonymous,
-      aiCredits: user.isAnonymous ? 2 : 5,
+      aiCredits: user.isAnonymous ? 1 : 2,
       streak: 0,
       coins: 0,
       lastCreditReset: new Date().toISOString(),
@@ -302,7 +302,7 @@ export class AuthService {
         const data = userSnap.data();
         let profile = {
           ...data,
-          aiCredits: data['aiCredits'] !== undefined ? data['aiCredits'] : (data['isGuest'] ? 2 : 5),
+          aiCredits: data['aiCredits'] !== undefined ? data['aiCredits'] : 2,
           createdAt: data['createdAt']?.toDate() || new Date()
         } as UserProfile;
 
@@ -325,7 +325,7 @@ export class AuthService {
 
         if (lastResetInCAT.getTime() < resetThreshold.getTime()) {
           // Reset credits
-          const dailyAllowance = profile.isGuest ? 2 : 5;
+          const dailyAllowance = profile.isGuest ? 1 : 2;
           const newCredits = (profile.aiCredits || 0) < dailyAllowance ? dailyAllowance : profile.aiCredits;
           
           await updateDoc(userRef, {
@@ -530,7 +530,7 @@ export class AuthService {
     const user = this.currentUser();
     if (!user || user.isPro || user.role === 'admin') return;
     
-    const currentCredits = user.aiCredits !== undefined ? user.aiCredits : 5;
+    const currentCredits = user.aiCredits !== undefined ? user.aiCredits : 2;
     if (currentCredits > 0) {
       const newCredits = currentCredits - 1;
       const userRef = doc(db, 'users', user.uid);
@@ -543,7 +543,7 @@ export class AuthService {
     const user = this.currentUser();
     if (!user || user.pwaInstalled) return;
 
-    const currentCredits = user.aiCredits !== undefined ? user.aiCredits : 5;
+    const currentCredits = user.aiCredits !== undefined ? user.aiCredits : 2;
     const newCredits = currentCredits + 10;
     const userRef = doc(db, 'users', user.uid);
     

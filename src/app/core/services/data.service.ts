@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { db } from '../../../firebase';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc, where, arrayUnion, arrayRemove, increment, limit, getDocs, getCountFromServer } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../../../firebase';
@@ -275,14 +276,24 @@ export class DataService {
   }
 
   subscribeToPremiumUsers(limitCount = 20) {
+    if (!isPlatformBrowser(this.platformId)) return;
     if (this.usersUnsubscribe) this.unsubscribeFromUsers();
     
-    const q = query(collection(db, 'users'), where('isPro', '==', true), orderBy('createdAt', 'desc'), limit(limitCount));
+    // Remote orderBy to avoid missing composite index
+    const q = query(collection(db, 'users'), where('isPro', '==', true), limit(limitCount));
     this.usersUnsubscribe = onSnapshot(q, (snapshot) => {
       const loadedUsers = snapshot.docs.map(doc => ({
         uid: doc.id,
         ...doc.data()
       } as UserProfile));
+      
+      // Sort client-side
+      loadedUsers.sort((a, b) => {
+        const timeA = (a.createdAt as { toMillis?: () => number })?.toMillis?.() || 0;
+        const timeB = (b.createdAt as { toMillis?: () => number })?.toMillis?.() || 0;
+        return timeB - timeA;
+      });
+      
       this.users.set(loadedUsers);
       this.fetchTotalCounts();
     }, (error) => {
@@ -391,8 +402,12 @@ export class DataService {
     }
   }
 
+  private platformId = inject(PLATFORM_ID);
+
   // --- Notes & Past Papers ---
   subscribeToNotes(category?: string, limitCount = 50) {
+    if (!isPlatformBrowser(this.platformId)) return;
+    
     if (this.notesUnsubscribe) this.unsubscribeFromNotes();
     
     let q = query(collection(db, 'notes'), orderBy('createdAt', 'desc'), limit(limitCount));

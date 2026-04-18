@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../core/services/auth.service';
+import { GeminiService } from '../../core/services/gemini.service';
 
 @Component({
   selector: 'app-landing',
@@ -100,7 +101,7 @@ import { AuthService } from '../../core/services/auth.service';
             <!-- Feature 1: emi AI -->
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white hover:-translate-y-2 transition-all duration-500 group">
               <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all overflow-hidden border border-indigo-100">
-                <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
               </div>
               <h3 class="text-xl font-black text-slate-900 mb-3">emi AI Tutor</h3>
               <p class="text-slate-500 text-sm leading-relaxed font-medium">Get instant explanations for any topic, 24/7. emi understands your syllabus perfectly.</p>
@@ -189,6 +190,7 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class LandingComponent implements OnInit {
   authService = inject(AuthService);
+  gemini = inject(GeminiService);
   router = inject(Router);
 
   ngOnInit() {

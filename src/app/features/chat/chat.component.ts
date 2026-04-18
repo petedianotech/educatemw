@@ -88,7 +88,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
           </a>
           <div class="relative">
             <div class="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200 overflow-hidden">
-              <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+              <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
             </div>
           </div>
           <div>
@@ -125,7 +125,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
         @if (gemini.messages().length === 0) {
           <div class="flex flex-col items-center justify-center text-center max-w-md mx-auto px-6 py-12 mt-8">
             <div class="w-20 h-20 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[2rem] flex items-center justify-center mb-6 border border-indigo-100 shadow-xl overflow-hidden group">
-              <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerpolicy="no-referrer">
+              <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerpolicy="no-referrer">
             </div>
             <h3 class="text-2xl font-black text-slate-900 mb-3 tracking-tight">How can I help you today?</h3>
             <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">I'm emi, your AI tutor. Ask me anything about your MSCE subjects.</p>
@@ -149,7 +149,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
             <div class="shrink-0 mt-1">
               @if (msg.role === 'model') {
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-100 overflow-hidden">
-                  <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                  <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                 </div>
               } @else {
                 <img ngSrc="{{authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid}}" 
@@ -187,7 +187,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
           <div class="flex w-full animate-in fade-in duration-300 gap-4 max-w-4xl mx-auto px-2">
             <div class="shrink-0 mt-1">
               <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-100 overflow-hidden">
-                <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover animate-pulse" referrerpolicy="no-referrer">
+                <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover animate-pulse" referrerpolicy="no-referrer">
               </div>
             </div>
             <div class="flex items-center gap-1.5">
