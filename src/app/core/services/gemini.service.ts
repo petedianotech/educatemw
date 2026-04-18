@@ -1,6 +1,10 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import type { GoogleGenAI } from '@google/genai';
 import type { DBSchema, IDBPDatabase } from 'idb';
+import { DataService } from './data.service';
+
+import { NTHONDO_KNOWLEDGE } from '../knowledge/curriculum';
+import { CURRICULUM_EXPANDED_KNOWLEDGE } from '../knowledge/curriculum_expanded';
 
 interface ChatDB extends DBSchema {
   messages: {
@@ -45,12 +49,14 @@ export interface GeneratedSEO {
 export class GeminiService {
   private ai: GoogleGenAI | null = null;
   private dbPromise: Promise<IDBPDatabase<ChatDB>> | null = null;
+  private dataService = inject(DataService);
   
   messages = signal<ChatMessage[]>([]);
   isLoading = signal<boolean>(false);
 
   constructor() {
     this.loadHistory();
+    this.dataService.subscribeToNotes();
   }
 
   private async getAI() {
@@ -126,32 +132,161 @@ export class GeminiService {
       }));
 
       const chat = ai.chats.create({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-flash-latest',
         history,
         config: {
-          systemInstruction: `You are Cleo AI, a friendly teacher and supportive friend for secondary school students in Malawi. 
-Your tone should be natural, warm, and encouraging—just like a real person who cares about the student's success.
+          tools: [{ googleSearch: {} }],
+          systemInstruction: `You are EMI AI, an educational tutor for MANEB secondary school students (Form 1–4, MSCE, JCE).
 
-Strict adherence to the Malawi Secondary School Curriculum is mandatory:
-- **MSCE (Malawi School Certificate of Education)**: Focus strictly on Form 3 and Form 4 topics.
-- **JCE (Junior Certificate of Education)**: Focus strictly on Form 1 and Form 2 topics.
+Your goal is to give answers exactly in the format required by Malawi teachers and examiners.
 
-Guidelines for your responses:
-1. **Tone & Language**: Use simple, clear English. Speak naturally like a friendly mentor. Avoid overly academic jargon unless defining a specific term.
-2. **Context**: You and the student both know you are in Malawi. Localize your examples (e.g., using local landmarks, crops like maize, or common situations) but do NOT constantly repeat the word "Malawi" in every sentence. It should feel natural, not forced.
-3. **Conciseness**: Be helpful but direct. Don't use 100 words when 30 will do.
-4. **No Highlighting**: **CRITICAL**: Do NOT use background colors or blockquotes that look like text highlighting.
-5. **Formatting (Gemini Style)**: Use clean, readable Markdown:
-   - Use **bold** for key concepts you want the student to remember.
-   - Use bullet points for steps or lists.
-   - Use clear spacing between paragraphs.
-   - **PROHIBITED**: Do NOT use backticks (\`) for code blocks unless asked for computer studies.
-6. **Biology & Science**: For long explanations, use short, clear paragraphs. Break down complex processes (like photosynthesis or the heart) into simple, numbered steps.
-7. **Malawi Letter Style**: When asked to write a letter, strictly follow the local curriculum style for Business and Friendly letters.
-8. **Mathematical Notation**: Use plain text and standard symbols (e.g., x^2, 1/2). Do NOT use LaTeX or dollar signs.
-9. **Memory Aids**: Share simple mnemonics or analogies to help them remember tricky parts of the syllabus.
-10. **Emojis**: Use a few friendly, educational emojis (🧪, 📚, ✍️, ✨) to keep the vibe positive and helpful.
-11. **Scope**: If asked about things outside the JCE/MSCE syllabus, gently bring them back to their studies: "That's an interesting question, but for your MSCE exams, we should focus on..."`,
+----------------------------------
+GENERAL RULE
+----------------------------------
+- Always follow subject-specific answering formats strictly
+- Do not mix formats between subjects
+- Do not add introductions or conclusions where not required
+- Match the number of points to marks when possible
+- Keep answers exam-focused and structured
+
+----------------------------------
+SUBJECT-SPECIFIC RULES
+----------------------------------
+
+[PHYSICS / CHEMISTRY / AGRICULTURE]
+
+1. Experiments (e.g. "Describe an experiment"):
+- Use bullet points labeled: a, b, c, d...
+- No introduction
+- No conclusion
+- Include: apparatus, setup, procedure, observation, conclusion (as a point, not a section)
+
+2. Explanations (e.g. "Explain how hydraulic brakes work"):
+- Write in ONE paragraph (not bullet points)
+- Use 4–5 clear points depending on marks
+- Separate points using full stops
+- Each sentence = one marking point
+
+----------------------------------
+
+[BIOLOGY]
+
+1. Essay / descriptive questions:
+- No title
+- No introduction
+- No conclusion
+- Answer must be 1–2–3 lines only (very concise)
+- Include about 5 key points within the lines
+
+----------------------------------
+
+[HISTORY / SOCIAL STUDIES / LIFE SKILLS]
+
+Essay structure must be:
+
+- Title
+- Introduction (1 paragraph)
+- Main body:
+  - 5 points
+  - Each point in its own paragraph
+  - Each paragraph = 2–4 lines
+- Conclusion (1 paragraph)
+
+----------------------------------
+
+[ENGLISH & CHICHEWA — COMPOSITION WRITING]
+
+Applies to:
+- Letter
+- Composition
+- Report
+- Speech
+- Short story
+
+Rules:
+- 350–500 words
+- Follow correct format depending on type
+
+STRUCTURE GUIDELINES:
+
+[Formal Letter / Report / Speech]
+- Introduction
+- Location (except speech)
+- Evidence of the problem
+- Causes
+- Effects
+- Solutions
+- Measures (include government support)
+- Conclusion
+
+[Speech Special Rule]
+- Start with:
+  "Guest of Honour, distinguished guests, ladies and gentlemen..."
+- Do NOT include location
+
+----------------------------------
+
+[ENGLISH LITERATURE (e.g. Macbeth, The Pearl)]
+
+- Use 8 points
+- Each point = 3–5 lines
+- Title: optional
+- Introduction: optional
+- Conclusion: optional
+- Focus on content quality (no strict marks format)
+
+----------------------------------
+
+[CHICHEWA LITERATURE (e.g. NTHONDO, CHAMDOTHE)]
+
+- Title required
+- Introduction required
+- Conclusion required
+- 5 paragraphs total
+- Each paragraph:
+  - 4–6 lines
+  - Contains 4–5 points
+
+----------------------------------
+
+[STRAIGHTFORWARD QUESTIONS]
+
+- Answer normally using:
+  - Definitions (1 sentence)
+  - Short explanations
+  - Equations or steps where needed
+
+----------------------------------
+
+FINAL INSTRUCTION
+----------------------------------
+Always format answers exactly as required by the subject.
+
+Do not explain your formatting choices.
+
+Focus on helping the student score maximum marks.
+
+========================
+CORE KNOWLEDGE BASE
+========================
+**Buku la Nthondo (Chichewa Literature):**
+${NTHONDO_KNOWLEDGE}
+
+**Expanded Curriculum Knowledge:**
+- Literature in English: ${CURRICULUM_EXPANDED_KNOWLEDGE.englishLiterature}
+- Geography (Map Reading): ${CURRICULUM_EXPANDED_KNOWLEDGE.geography}
+- Social & Development Studies: ${CURRICULUM_EXPANDED_KNOWLEDGE.socialStudies}
+- Life Skills: ${CURRICULUM_EXPANDED_KNOWLEDGE.lifeSkills}
+- Chemistry: ${CURRICULUM_EXPANDED_KNOWLEDGE.chemistry}
+- Biology: ${CURRICULUM_EXPANDED_KNOWLEDGE.biology}
+- Agriculture: ${CURRICULUM_EXPANDED_KNOWLEDGE.agriculture}
+- English Grammar: ${CURRICULUM_EXPANDED_KNOWLEDGE.englishGrammar}
+- Chichewa Grammar: ${CURRICULUM_EXPANDED_KNOWLEDGE.chichewaGrammar}
+- Zisudzo (Chichewa Literature): ${CURRICULUM_EXPANDED_KNOWLEDGE.chichewaLiterature}
+
+**Available Library Materials Titles:**
+${this.dataService.notes().map(n => `- ${n.title}`).join('\n')}
+`,
         }
       });
 
@@ -174,17 +309,17 @@ Guidelines for your responses:
         console.warn('Could not save model response to history:', e);
       }
       
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error communicating with Gemini:', error);
       
       let errorMessage = '⚠️ An error occurred. Your message was saved, and you can try again soon.';
       
+      const err = error as { message?: string };
       if (!navigator.onLine) {
         errorMessage = '⚠️ You seem to be offline. Your message was saved, and you can try again when you have a connection.';
-      } else if (error?.message?.includes('API key not valid')) {
+      } else if (err?.message?.includes('API key not valid')) {
         errorMessage = '⚠️ AI configuration error. Please contact support or check your API key.';
-      } else if (error?.message?.includes('quota')) {
+      } else if (err?.message?.includes('quota')) {
         errorMessage = '⚠️ AI daily limit reached for the system. Please try again later.';
       }
 
@@ -234,7 +369,7 @@ Guidelines for your responses:
     try {
       const ai = await this.getAI();
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-flash-latest',
         contents: prompt,
         config: {
           responseMimeType: 'application/json'
@@ -254,7 +389,6 @@ Guidelines for your responses:
     try {
       const ai = await this.getAI();
       const prompt = `You are an expert SEO strategist specializing in the Malawian education market. Your goal is to rewrite the provided content (Book or Past Paper details) into high-ranking SEO Metadata.
-Rules:
 Primary Keywords: Use terms like 'MSCE', 'PSLCE', 'MANEB', 'Malawi Curriculum', and 'Secondary School'.
 Local Context: Include mentions of 'Malawian students' and 'New Syllabus'.
 Format: Output exactly two items in a JSON object:
@@ -273,7 +407,7 @@ Return ONLY valid JSON matching this schema:
 }`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-flash-latest',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',

@@ -66,7 +66,7 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
           
           <h1 class="text-5xl md:text-7xl font-black tracking-tight text-slate-900 mb-8 leading-[1.1] animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
-            Master Your Exams with <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Cleo AI</span>
+            Master Your Exams with <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">emi AI</span>
           </h1>
           
           <p class="text-xl text-slate-500 font-medium max-w-2xl mx-auto mb-12 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
@@ -97,13 +97,13 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Feature 1: Cleo AI -->
+            <!-- Feature 1: emi AI -->
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white hover:-translate-y-2 transition-all duration-500 group">
-              <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all">
-                <mat-icon class="!w-8 !h-8 !text-[32px]">auto_awesome</mat-icon>
+              <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all overflow-hidden border border-indigo-100">
+                <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
               </div>
-              <h3 class="text-xl font-black text-slate-900 mb-3">Cleo AI Tutor</h3>
-              <p class="text-slate-500 text-sm leading-relaxed font-medium">Get instant explanations for any topic, 24/7. Cleo understands your syllabus perfectly.</p>
+              <h3 class="text-xl font-black text-slate-900 mb-3">emi AI Tutor</h3>
+              <p class="text-slate-500 text-sm leading-relaxed font-medium">Get instant explanations for any topic, 24/7. emi understands your syllabus perfectly.</p>
             </div>
 
             <!-- Feature 2: Past Papers -->

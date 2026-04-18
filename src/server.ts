@@ -5,15 +5,50 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
-import {join} from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { readFileSync, existsSync } from 'node:fs';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, updateDoc, collection, addDoc } from 'firebase/firestore';
-import firebaseConfig from '../firebase-applet-config.json' with { type: 'json' };
 
+// Safely resolve the config path
+const getFirebaseConfig = () => {
+  try {
+    const configPath = join(process.cwd(), 'firebase-applet-config.json');
+    if (existsSync(configPath)) {
+      return JSON.parse(readFileSync(configPath, 'utf8'));
+    }
+    // Fallback if built
+    const buildConfigPath = join(process.cwd(), 'dist/app/firebase-applet-config.json');
+    if (existsSync(buildConfigPath)) {
+      return JSON.parse(readFileSync(buildConfigPath, 'utf8'));
+    }
+  } catch (err) {
+    console.error('Failed to load firebase config:', err);
+  }
+  return {};
+};
+
+const firebaseConfig = getFirebaseConfig();
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
 
-const browserDistFolder = join(import.meta.dirname, '../browser');
+let serverDistFolder = '';
+try {
+  serverDistFolder = dirname(fileURLToPath(import.meta.url));
+} catch {
+  serverDistFolder = process.cwd();
+}
+
+// In development with 'ng serve', the dist folders might not exist yet or be in memory.
+// We try to find the browser folder in a few likely places.
+const possibleBrowserFolders = [
+  join(serverDistFolder, '../browser'),
+  join(process.cwd(), 'dist/app/browser'),
+  join(process.cwd(), 'public') // Fallback
+];
+
+let browserDistFolder = possibleBrowserFolders.find(path => existsSync(path)) || possibleBrowserFolders[0];
 
 const app = express();
 app.use(express.json());
@@ -147,7 +182,14 @@ app.use((req, res, next) => {
  * Start the server if this module is the main entry point, or it is ran via PM2.
  * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
  */
-if (isMainModule(import.meta.url) || process.env['pm_id']) {
+let isMain = false;
+try {
+  isMain = isMainModule(import.meta.url);
+} catch {
+  isMain = false;
+}
+
+if (isMain || process.env['pm_id']) {
   const port = process.env['PORT'] || 4000;
   
   // Check for required environment variables

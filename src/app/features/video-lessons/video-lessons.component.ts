@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
-import { DataService, VideoLesson, Note } from '../../core/services/data.service';
+import { DataService, VideoLesson } from '../../core/services/data.service';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -150,8 +150,8 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
       }));
     const nativeVideos = this.dataService.videoLessons();
     return [...nativeVideos, ...notesAsVideos].sort((a, b) => {
-      const db = (b.createdAt as any)?.toMillis?.() || Date.now();
-      const da = (a.createdAt as any)?.toMillis?.() || Date.now();
+      const db = (b.createdAt as { toMillis?: () => number })?.toMillis?.() || Date.now();
+      const da = (a.createdAt as { toMillis?: () => number })?.toMillis?.() || Date.now();
       return db - da; 
     });
   });

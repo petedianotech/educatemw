@@ -36,7 +36,7 @@ import { RouterLink } from '@angular/router';
 
           <section>
             <h2 class="text-xl font-bold text-slate-900 mb-3">4. AI Interactions</h2>
-            <p>Interactions with Cleo AI are processed to provide educational assistance. These interactions may be used in an anonymized way to improve the AI's accuracy and helpfulness.</p>
+            <p>Interactions with emi AI are processed to provide educational assistance. These interactions may be used in an anonymized way to improve the AI's accuracy and helpfulness.</p>
           </section>
 
           <section>

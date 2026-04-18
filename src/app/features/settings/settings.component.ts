@@ -29,28 +29,48 @@ import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/comm
             <div class="absolute inset-0 bg-black/5"></div>
           </div>
           <div class="px-6 pb-6 -mt-12 relative flex flex-col items-center sm:flex-row sm:items-end sm:gap-6 sm:text-left">
-            <div class="relative group">
-              <img ngSrc="{{authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid}}" 
-                   alt="Profile" 
-                   width="96"
-                   height="96"
-                   class="rounded-[1.5rem] bg-slate-100 border-4 border-white shadow-xl object-cover cursor-pointer hover:brightness-90 transition-all" 
-                   (click)="fileInput.click()"
-                   (keydown.enter)="fileInput.click()"
-                   tabindex="0"
-                   referrerpolicy="no-referrer">
-              <button (click)="fileInput.click()" 
-                      class="absolute -bottom-1 -right-1 w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-all active:scale-90 border-2 border-white">
-                <mat-icon class="!w-4 !h-4 !text-[16px]">camera_alt</mat-icon>
-              </button>
+              <div class="relative group">
+                <div class="relative">
+                  <img ngSrc="{{authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid}}" 
+                       alt="Profile" 
+                       width="96"
+                       height="96"
+                       class="rounded-[1.5rem] bg-slate-100 border-4 border-white shadow-xl object-cover cursor-pointer hover:brightness-90 transition-all" 
+                       (click)="fileInput.click()"
+                       (keydown.enter)="fileInput.click()"
+                       tabindex="0"
+                       (error)="isUpdating.set(false)"
+                       (load)="isUpdating.set(false)"
+                       referrerpolicy="no-referrer">
+                  
+                  <!-- Uploading Spinner overlay -->
+                  @if (isUpdating()) {
+                    <div class="absolute inset-0 bg-black/40 rounded-[1.5rem] flex flex-col items-center justify-center text-white backdrop-blur-[2px] transition-all">
+                      <div class="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mb-1"></div>
+                      <span class="text-[8px] font-black uppercase tracking-widest">Uploading</span>
+                    </div>
+                  }
+                </div>
+                
+                <button (click)="fileInput.click()" 
+                        [disabled]="isUpdating()"
+                        class="absolute -bottom-1 -right-1 w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-all active:scale-90 border-2 border-white disabled:opacity-50">
+                  <mat-icon class="!w-4 !h-4 !text-[16px]">camera_alt</mat-icon>
+                </button>
               <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" class="hidden">
             </div>
             <div class="mt-4 sm:mt-0 flex-1">
               <h2 class="text-xl font-black text-slate-900 leading-tight">{{authService.currentUser()?.displayName}}</h2>
               <div class="flex items-center gap-2 mt-1.5 justify-center sm:justify-start">
-                <span class="px-2.5 py-0.5 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-indigo-100">
-                  {{authService.currentUser()?.isPro ? 'PRO MEMBER' : 'FREE STUDENT'}}
-                </span>
+                @if (authService.currentUser()?.isPro) {
+                  <span class="px-2.5 py-0.5 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-md border border-amber-300">
+                    PRO MEMBER
+                  </span>
+                } @else {
+                  <span class="px-2.5 py-0.5 bg-slate-100 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-slate-200">
+                    FREE STUDENT
+                  </span>
+                }
                 @if (authService.currentUser()?.role === 'admin') {
                   <span class="px-2.5 py-0.5 bg-rose-50 text-rose-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-rose-100">
                     ADMIN
@@ -74,11 +94,108 @@ import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/comm
             </div>
 
             @if (updateMsg()) {
-              <div class="bg-emerald-50 text-emerald-600 p-3 rounded-xl border border-emerald-100 text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
-                <mat-icon class="text-xs">check_circle</mat-icon>
-                {{updateMsg()}}
+              <div [class.bg-emerald-50]="!showReward()"
+                   [class.text-emerald-600]="!showReward()"
+                   [class.bg-indigo-600]="showReward()"
+                   [class.text-white]="showReward()"
+                   [class.animate-reward]="showReward()"
+                   class="p-4 rounded-2xl border border-emerald-100 text-xs font-bold flex items-center justify-center gap-3 transition-all shadow-lg">
+                <mat-icon [class.animate-bounce]="showReward()">{{ showReward() ? 'stars' : 'check_circle' }}</mat-icon>
+                <div class="flex flex-col">
+                  @if (showReward()) {
+                    <span class="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Success Reward!</span>
+                  }
+                  <span class="text-sm">{{updateMsg()}}</span>
+                </div>
               </div>
             }
+          </div>
+        </section>
+
+        <!-- Avatar Customization Section -->
+        <section class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
+          <div class="p-5 border-b border-slate-50 flex items-center justify-between">
+            <h3 class="font-black text-slate-900 text-sm flex items-center gap-2">
+              <mat-icon class="text-indigo-600 text-sm">face</mat-icon>
+              Customize Avatar
+            </h3>
+            <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Free for all</span>
+          </div>
+          <div class="p-5 space-y-6">
+            <div class="space-y-4">
+              <!-- Gender Selection -->
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1">Who are you?</p>
+                <div class="flex gap-2">
+                  <button (click)="selectedGender.set('boy')" 
+                          [class.bg-indigo-600]="selectedGender() === 'boy'"
+                          [class.text-white]="selectedGender() === 'boy'"
+                          [class.bg-white]="selectedGender() !== 'boy'"
+                          class="flex-1 py-3 rounded-xl font-bold text-xs border border-slate-200 transition-all active:scale-95 shadow-sm">
+                    Boy
+                  </button>
+                  <button (click)="selectedGender.set('girl')" 
+                          [class.bg-indigo-600]="selectedGender() === 'girl'"
+                          [class.text-white]="selectedGender() === 'girl'"
+                          [class.bg-white]="selectedGender() !== 'girl'"
+                          class="flex-1 py-3 rounded-xl font-bold text-xs border border-slate-200 transition-all active:scale-95 shadow-sm">
+                    Girl
+                  </button>
+                  <button (click)="selectedGender.set('prefer-not-to-say')" 
+                          [class.bg-indigo-600]="selectedGender() === 'prefer-not-to-say'"
+                          [class.text-white]="selectedGender() === 'prefer-not-to-say'"
+                          [class.bg-white]="selectedGender() !== 'prefer-not-to-say'"
+                          class="flex-1 py-3 rounded-xl font-bold text-xs border border-slate-200 transition-all active:scale-95 shadow-sm">
+                    Private
+                  </button>
+                </div>
+              </div>
+
+              <!-- Style Selection -->
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1">Avatar Style</p>
+                <div class="grid grid-cols-2 gap-3">
+                  <button (click)="selectedStyle.set('avataaars')" 
+                          [class.bg-indigo-600]="selectedStyle() === 'avataaars'"
+                          [class.text-white]="selectedStyle() === 'avataaars'"
+                          [class.bg-white]="selectedStyle() !== 'avataaars'"
+                          class="flex flex-col items-center gap-2 p-3 rounded-xl font-bold text-[10px] border border-slate-200 transition-all active:scale-95 shadow-sm">
+                    <img [src]="authService.getAvatarUrl(authService.currentUser()?.uid || '1', selectedGender(), 'avataaars')" alt="Classic" class="w-10 h-10 rounded-lg">
+                    <span>Classic</span>
+                  </button>
+                  <button (click)="selectedStyle.set('adventurer')" 
+                          [class.bg-indigo-600]="selectedStyle() === 'adventurer'"
+                          [class.text-white]="selectedStyle() === 'adventurer'"
+                          [class.bg-white]="selectedStyle() !== 'adventurer'"
+                          class="flex flex-col items-center gap-2 p-3 rounded-xl font-bold text-[10px] border border-slate-200 transition-all active:scale-95 shadow-sm">
+                    <img [src]="authService.getAvatarUrl(authService.currentUser()?.uid || '1', selectedGender(), 'adventurer')" alt="Adventurer" class="w-10 h-10 rounded-lg">
+                    <span>Adventurer</span>
+                  </button>
+                  <button (click)="selectedStyle.set('notionists')" 
+                          [class.bg-indigo-600]="selectedStyle() === 'notionists'"
+                          [class.text-white]="selectedStyle() === 'notionists'"
+                          [class.bg-white]="selectedStyle() !== 'notionists'"
+                          class="flex flex-col items-center gap-2 p-3 rounded-xl font-bold text-[10px] border border-slate-200 transition-all active:scale-95 shadow-sm">
+                    <img [src]="authService.getAvatarUrl(authService.currentUser()?.uid || '1', selectedGender(), 'notionists')" alt="Modern" class="w-10 h-10 rounded-lg">
+                    <span>Modern</span>
+                  </button>
+                  <button (click)="selectedStyle.set('bottts')" 
+                          [class.bg-indigo-600]="selectedStyle() === 'bottts'"
+                          [class.text-white]="selectedStyle() === 'bottts'"
+                          [class.bg-white]="selectedStyle() !== 'bottts'"
+                          class="flex flex-col items-center gap-2 p-3 rounded-xl font-bold text-[10px] border border-slate-200 transition-all active:scale-95 shadow-sm">
+                    <img [src]="authService.getAvatarUrl(authService.currentUser()?.uid || '1', selectedGender(), 'bottts')" alt="Robot" class="w-10 h-10 rounded-lg">
+                    <span>Robot</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button (click)="updateAvatarPrefs()" [disabled]="isUpdating()" 
+                    class="w-full py-4 bg-indigo-600 text-white rounded-xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2 text-sm">
+              <mat-icon class="text-sm">auto_fix_high</mat-icon>
+              Apply Avatar Settings
+            </button>
           </div>
         </section>
 
@@ -164,9 +281,9 @@ import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/comm
             <div class="flex justify-between items-center p-3.5 bg-slate-50 rounded-xl">
               <div>
                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Subscription</p>
-                <p class="font-black text-slate-900 text-sm">{{ authService.currentUser()?.isPro ? 'Pro Member' : 'Free Tier' }}</p>
+                <p class="font-black text-slate-900 text-sm">{{ authService.currentUser()?.isPro ? 'Pro Member' : 'Free Student' }}</p>
               </div>
-              @if (!authService.currentUser()?.isPro) {
+              @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
                 <button (click)="router.navigate(['/upgrade'])" class="px-3 py-1.5 bg-amber-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg shadow-amber-100">
                   Upgrade
                 </button>
@@ -280,8 +397,11 @@ export class SettingsComponent {
   platformId = inject(PLATFORM_ID);
   
   newUsername = signal('');
+  selectedGender = signal<'boy' | 'girl' | 'prefer-not-to-say'>('prefer-not-to-say');
+  selectedStyle = signal<'adventurer' | 'notionists' | 'bottts' | 'avataaars'>('avataaars');
   isUpdating = signal(false);
   updateMsg = signal('');
+  showReward = signal(false);
 
   ans1 = signal('');
   ans2 = signal('');
@@ -294,6 +414,8 @@ export class SettingsComponent {
     const user = this.authService.currentUser();
     if (user) {
       this.newUsername.set(user.displayName || '');
+      this.selectedGender.set(user.gender || 'prefer-not-to-say');
+      this.selectedStyle.set(user.avatarStyle || 'avataaars');
       if (user.securityQuestions && user.securityQuestions.length >= 2) {
         this.ans1.set(user.securityQuestions[0].answer);
         this.ans2.set(user.securityQuestions[1].answer);
@@ -358,6 +480,21 @@ export class SettingsComponent {
     }
   }
 
+  async updateAvatarPrefs() {
+    this.isUpdating.set(true);
+    this.updateMsg.set('');
+    try {
+      await this.authService.updateAvatarPreferences(this.selectedGender(), this.selectedStyle());
+      this.updateMsg.set('Avatar updated successfully!');
+      setTimeout(() => this.updateMsg.set(''), 3000);
+    } catch (error) {
+      console.error('Failed to update avatar', error);
+      this.updateMsg.set('Failed to update avatar.');
+    } finally {
+      this.isUpdating.set(false);
+    }
+  }
+
   async saveSecurityQuestions() {
     const a1 = this.ans1().trim();
     const a2 = this.ans2().trim();
@@ -389,22 +526,32 @@ export class SettingsComponent {
   async onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    if (!file) {
-      console.log('No file selected');
+    if (!file) return;
+
+    // Limit to 2MB
+    const maxSize = 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.updateMsg.set('File is too large! Please use a photo smaller than 2MB.');
+      setTimeout(() => this.updateMsg.set(''), 5000);
       return;
     }
-    console.log('File selected:', file.name, file.type, file.size);
 
     this.isUpdating.set(true);
-    this.updateMsg.set('Uploading...');
+    this.updateMsg.set('Uploading picture...');
     try {
       await this.authService.uploadProfilePicture(file);
-      console.log('Profile picture uploaded successfully');
-      // Do not clear isUpdating here; let onImageDone() do it when the image actually renders
+      this.updateMsg.set('Profile picture updated successfully! 🎁');
+      this.showReward.set(true);
+      setTimeout(() => {
+        this.updateMsg.set('');
+        this.showReward.set(false);
+      }, 5000);
     } catch (error) {
       console.error('Failed to upload profile picture', error);
-      this.updateMsg.set('Failed to upload profile picture: ' + (error as Error).message);
-      this.isUpdating.set(false);
+      this.updateMsg.set('Failed to upload: ' + (error as Error).message);
+    } finally {
+      // isUpdating is handled by the <img> load event in the template
+      // but if it fails to start upload, we should clear it
     }
   }
 

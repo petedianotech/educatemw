@@ -69,6 +69,14 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
+    @keyframes pump {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.6; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pump {
+      animation: pump 2s infinite ease-in-out;
+    }
   `],
   template: `
     <div class="flex flex-col h-full bg-slate-50 relative">
@@ -80,17 +88,13 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
           </a>
           <div class="relative">
             <div class="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200 overflow-hidden">
-              <mat-icon class="scale-110 animate-pulse">auto_awesome</mat-icon>
+              <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
             </div>
-            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full shadow-sm"></div>
           </div>
           <div>
-            <h2 class="text-lg font-black tracking-tight leading-tight text-slate-900">Cleo AI</h2>
+            <h2 class="text-lg font-black tracking-tight leading-tight text-slate-900">emi AI</h2>
             <div class="flex items-center gap-1.5">
-              <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
+              <div class="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pump"></div>
               <p class="text-[10px] text-emerald-600 font-black uppercase tracking-widest">Intelligent Tutor</p>
             </div>
           </div>
@@ -105,7 +109,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
             <div class="flex flex-col items-end">
               <div class="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-xl shadow-xl shadow-slate-200 border border-slate-800">
                 <mat-icon class="!w-4 !h-4 !text-[16px] text-amber-400">stars</mat-icon>
-                <span class="text-[11px] font-black tracking-wider">{{authService.currentUser()?.aiCredits || 0}} CREDITS</span>
+                <span class="text-[11px] font-black tracking-wider">{{ authService.currentUser()?.isPro || authService.currentUser()?.role === 'admin' ? 'UNLIMITED' : ((authService.currentUser()?.aiCredits || 0) + ' CREDITS') }}</span>
               </div>
               <p class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Daily Balance</p>
             </div>
@@ -120,19 +124,19 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
       <div class="flex-1 overflow-y-auto p-4 space-y-8 scroll-smooth" #scrollContainer>
         @if (gemini.messages().length === 0) {
           <div class="flex flex-col items-center justify-center text-center max-w-md mx-auto px-6 py-12 mt-8">
-            <div class="w-16 h-16 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl flex items-center justify-center mb-6 border border-indigo-100 text-indigo-600 shadow-sm">
-              <mat-icon class="!w-8 !h-8 !text-[32px] animate-pulse">auto_awesome</mat-icon>
+            <div class="w-20 h-20 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[2rem] flex items-center justify-center mb-6 border border-indigo-100 shadow-xl overflow-hidden group">
+              <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerpolicy="no-referrer">
             </div>
             <h3 class="text-2xl font-black text-slate-900 mb-3 tracking-tight">How can I help you today?</h3>
-            <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">I'm Cleo, your AI tutor. Ask me anything about your MSCE subjects.</p>
+            <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">I'm emi, your AI tutor. Ask me anything about your MSCE subjects.</p>
             
             <div class="grid grid-cols-1 gap-3 w-full">
-              <button (click)="inputText.set('Explain the Nitrogen Cycle clearly (Biology)')" class="group p-4 bg-white rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 border border-slate-200 text-left shadow-sm flex items-center justify-between">
-                <span>"Explain the Nitrogen Cycle"</span>
+              <button (click)="inputText.set('Nthondo anabadwa nthawi yanji? (Chichewa Literature)')" class="group p-4 bg-white rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 border border-slate-200 text-left shadow-sm flex items-center justify-between">
+                <span>"Nthondo anabadwa nthawi yanji?"</span>
                 <mat-icon class="text-slate-300 group-hover:text-indigo-600 transition-colors">arrow_forward</mat-icon>
               </button>
-              <button (click)="inputText.set('What are the causes of the Chilembwe Uprising? (History)')" class="group p-4 bg-white rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 border border-slate-200 text-left shadow-sm flex items-center justify-between">
-                <span>"Chilembwe Uprising causes"</span>
+              <button (click)="inputText.set('What lesson do we learn from Nthondo childhood? (Social Studies/Life Skills)')" class="group p-4 bg-white rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 border border-slate-200 text-left shadow-sm flex items-center justify-between">
+                <span>"Lessons from Nthondo's childhood"</span>
                 <mat-icon class="text-slate-300 group-hover:text-indigo-600 transition-colors">arrow_forward</mat-icon>
               </button>
             </div>
@@ -144,8 +148,8 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
             <!-- Icon/Avatar -->
             <div class="shrink-0 mt-1">
               @if (msg.role === 'model') {
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-100">
-                  <mat-icon class="!w-5 !h-5 !text-[20px]">auto_awesome</mat-icon>
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-100 overflow-hidden">
+                  <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                 </div>
               } @else {
                 <img ngSrc="{{authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid}}" 
@@ -161,7 +165,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1.5">
                 <span class="text-[11px] font-black text-slate-900 uppercase tracking-widest">
-                  {{msg.role === 'model' ? 'Cleo AI' : 'You'}}
+                  {{msg.role === 'model' ? 'emi AI' : 'You'}}
                 </span>
                 <span class="text-[9px] font-bold text-slate-400">{{msg.timestamp | date:'shortTime'}}</span>
               </div>
@@ -182,8 +186,8 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
         @if (gemini.isLoading()) {
           <div class="flex w-full animate-in fade-in duration-300 gap-4 max-w-4xl mx-auto px-2">
             <div class="shrink-0 mt-1">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-100">
-                <mat-icon class="!w-5 !h-5 !text-[20px]">auto_awesome</mat-icon>
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-100 overflow-hidden">
+                <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover animate-pulse" referrerpolicy="no-referrer">
               </div>
             </div>
             <div class="flex items-center gap-1.5">
@@ -262,7 +266,7 @@ export class ChatComponent {
     // Schedule a reminder to come back in 2 hours if they haven't been notified recently
     this.notificationService.scheduleReminder(
       'Ready for more learning? 📚',
-      'Cleo AI is waiting to help you with your next subject!',
+      'emi AI is waiting to help you with your next subject!',
       2 * 60 * 60 * 1000 // 2 hours
     );
   }

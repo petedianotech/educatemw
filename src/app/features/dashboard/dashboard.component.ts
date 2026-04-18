@@ -47,12 +47,25 @@ interface Notification {
             <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-sm hover:bg-white/20 transition-all active:scale-95">
               <mat-icon class="!w-6 !h-6 !text-[24px]">arrow_back</mat-icon>
             </a>
-            <div>
-              <h1 class="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-                <mat-icon class="text-indigo-400">school</mat-icon>
-                Educate MW
-              </h1>
-              <p class="text-xs font-medium text-indigo-200 mt-1">Welcome back, {{authService.currentUser()?.displayName?.split(' ')?.[0] || 'Student'}}</p>
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2.5">
+                <h1 class="text-2xl font-black text-white tracking-tight flex items-center gap-2.5 drop-shadow-md">
+                  <span class="bg-indigo-600 p-1.5 rounded-xl border border-indigo-400/30 flex items-center justify-center shadow-lg shadow-indigo-900/40">
+                    <mat-icon class="!w-5 !h-5 !text-[20px] text-white">school</mat-icon>
+                  </span>
+                  <span class="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">Educate MW</span>
+                </h1>
+                @if (authService.currentUser()?.isPro || authService.currentUser()?.role === 'admin') {
+                  <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 border border-amber-300/50 shadow-[0_0_20px_rgba(251,191,36,0.3)] animate-pulse-once">
+                    <mat-icon class="!w-3.5 !h-3.5 !text-[14px] text-amber-900 font-black">workspace_premium</mat-icon>
+                    <span class="text-[9px] font-black text-amber-950 uppercase tracking-[0.1em] leading-none">PRO</span>
+                  </div>
+                }
+              </div>
+              <p class="text-xs font-semibold text-indigo-200/80 mt-1.5 pl-1.5 flex items-center gap-1.5 font-heading uppercase tracking-widest">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]"></span>
+                Welcome, {{authService.currentUser()?.displayName?.split(' ')?.[0] || 'Student'}}
+              </p>
             </div>
           </div>
           <button aria-label="Notifications" class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-sm hover:bg-white/20 transition-all hover:scale-105 active:scale-95">
@@ -134,18 +147,18 @@ interface Notification {
         } @else {
           <div class="grid grid-cols-2 gap-3 mb-4 shrink-0">
             
-            <!-- Cleo AI Tutor -->
+            <!-- emi AI Tutor -->
             <a routerLink="/chat" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
               <div class="absolute inset-0 bg-gradient-to-br from-transparent to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md shadow-blue-500/30 relative z-10 group-hover:scale-105 transition-transform">
-                <mat-icon class="!w-6 !h-6 !text-[24px]">auto_awesome</mat-icon>
+              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md shadow-blue-500/30 relative z-10 group-hover:scale-105 transition-transform overflow-hidden">
+                <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                 @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 5) <= 0) {
                   <div class="absolute -top-1.5 -right-1.5 bg-slate-900 text-amber-400 p-1 rounded-lg border-2 border-white shadow-sm">
                     <mat-icon class="!w-3 !h-3 !text-[12px]">lock</mat-icon>
                   </div>
                 }
               </div>
-              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Cleo AI Tutor</h3>
+              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">emi AI Tutor</h3>
               <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Interactive learning</p>
             </a>
 

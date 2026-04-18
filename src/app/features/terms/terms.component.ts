@@ -26,7 +26,7 @@ import { RouterLink } from '@angular/router';
 
           <section>
             <h2 class="text-xl font-bold text-slate-900 mb-3">2. Description of Service</h2>
-            <p>Educate MW provides educational resources, including AI tutoring (Cleo), past papers, video lessons, and community forums, specifically designed for MSCE students in Malawi.</p>
+            <p>Educate MW provides educational resources, including AI tutoring (emi), past papers, video lessons, and community forums, specifically designed for MSCE students in Malawi.</p>
           </section>
 
           <section>

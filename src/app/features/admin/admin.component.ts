@@ -858,18 +858,18 @@ interface ChartData {
                 <h3 class="text-xl font-black text-slate-900">Add Video Lesson</h3>
                 
                 <div>
-                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Video Title</label>
-                  <input [ngModel]="videoTitle()" (ngModelChange)="videoTitle.set($event)" placeholder="E.g., Intro to Algebra" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 mt-1">
+                  <label for="videoTitle" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Video Title</label>
+                  <input id="videoTitle" [ngModel]="videoTitle()" (ngModelChange)="videoTitle.set($event)" placeholder="E.g., Intro to Algebra" class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 mt-1">
                 </div>
 
                 <div>
-                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Description</label>
-                  <textarea [ngModel]="videoDescription()" (ngModelChange)="videoDescription.set($event)" rows="3" placeholder="Briefly describe this lesson..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 mt-1 resize-none"></textarea>
+                  <label for="videoDescription" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Description</label>
+                  <textarea id="videoDescription" [ngModel]="videoDescription()" (ngModelChange)="videoDescription.set($event)" rows="3" placeholder="Briefly describe this lesson..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 mt-1 resize-none"></textarea>
                 </div>
 
                 <div>
-                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">YouTube URL</label>
-                  <input [ngModel]="videoUrl()" (ngModelChange)="videoUrl.set($event)" placeholder="https://youtube.com/watch?v=..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 mt-1">
+                  <label for="videoUrl" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">YouTube URL</label>
+                  <input id="videoUrl" [ngModel]="videoUrl()" (ngModelChange)="videoUrl.set($event)" placeholder="https://youtube.com/watch?v=..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 mt-1">
                   <p class="text-[10px] font-medium text-slate-400 mt-2 ml-1">Paste a standard YouTube link, short, or list URL.</p>
                 </div>
                 

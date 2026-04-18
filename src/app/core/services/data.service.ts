@@ -117,6 +117,7 @@ export interface ChatMessage {
   authorName: string;
   authorPhoto?: string;
   content: string;
+  type?: 'text' | 'audio';
   createdAt: Date | Timestamp;
 }
 
@@ -807,13 +808,14 @@ export class DataService {
     }
   }
 
-  async sendMessage(authorId: string, authorName: string, authorPhoto: string, content: string) {
+  async sendMessage(authorId: string, authorName: string, authorPhoto: string, content: string, type: 'text' | 'audio' = 'text') {
     try {
       await addDoc(collection(db, 'messages'), {
         authorId,
         authorName,
         authorPhoto,
         content,
+        type,
         createdAt: serverTimestamp()
       });
     } catch (error) {

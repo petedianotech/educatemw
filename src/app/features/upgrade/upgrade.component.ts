@@ -216,7 +216,7 @@ import { PaymentService } from '../../core/services/payment.service';
           <div class="bg-indigo-50 rounded-[2.5rem] p-8 border border-indigo-100 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-200/20 rounded-full -mr-12 -mt-12 blur-xl"></div>
             <h3 class="text-xl font-black text-indigo-900 mb-4 uppercase tracking-tight">Refer & Earn</h3>
-            <p class="text-indigo-800 mb-6 font-medium">Invite 5 friends, get 25 Cleo AI Points FREE! Help your friends succeed too.</p>
+            <p class="text-indigo-800 mb-6 font-medium">Invite 5 friends, get 25 emi AI Points FREE! Help your friends succeed too.</p>
             <button (click)="inviteFriends()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">Invite Friends</button>
           </div>
         </div>

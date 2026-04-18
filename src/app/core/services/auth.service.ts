@@ -1,6 +1,6 @@
 import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { auth, storage } from '../../../firebase';
+import { auth } from '../../../firebase';
 import { 
   GoogleAuthProvider, 
   signInWithPopup, 
@@ -18,7 +18,6 @@ import {
   browserLocalPersistence
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, handleFirestoreError, OperationType } from '../../../firebase';
 
 export interface SecurityQuestion {
@@ -45,6 +44,8 @@ export interface UserProfile {
   referredBy?: string;
   referralsCount?: number;
   createdAt: Date;
+  gender?: 'boy' | 'girl' | 'prefer-not-to-say';
+  avatarStyle?: 'adventurer' | 'notionists' | 'bottts' | 'avataaars';
   securityQuestions?: SecurityQuestion[];
 }
 
@@ -264,7 +265,7 @@ export class AuthService {
       uid: user.uid,
       email: user.email || '',
       displayName: username || 'Student',
-      photoURL: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+      photoURL: user.photoURL || this.getAvatarUrl(user.uid, 'boy', 'avataaars'), 
       role: 'student',
       isPro: false,
       isGuest: user.isAnonymous,
@@ -276,6 +277,8 @@ export class AuthService {
       referralCode: user.uid.substring(0, 8).toUpperCase(),
       referralsCount: 0,
       createdAt: new Date(),
+      gender: 'prefer-not-to-say',
+      avatarStyle: 'avataaars',
       securityQuestions: securityQuestions || []
     };
     
@@ -382,18 +385,128 @@ export class AuthService {
     this.currentUser.set({ ...user, displayName: newUsername });
   }
 
-  async uploadProfilePicture(file: File): Promise<string> {
+  async updateAvatarPreferences(gender: 'boy' | 'girl' | 'prefer-not-to-say', style: 'adventurer' | 'notionists' | 'bottts' | 'avataaars') {
+    const user = this.currentUser();
+    if (!user) return;
+    
+    const photoURL = this.getAvatarUrl(user.uid, gender, style);
+    const userRef = doc(db, 'users', user.uid);
+    const updates = { 
+      gender, 
+      avatarStyle: style, 
+      photoURL 
+    };
+    
+    await updateDoc(userRef, updates);
+    this.currentUser.set({ ...user, ...updates });
+  }
+
+  getAvatarUrl(seed: string, gender = 'prefer-not-to-say', style = 'avataaars'): string {
+    // Style mapping
+    const styleMap: Record<string, string> = {
+      'adventurer': 'adventurer',
+      'notionists': 'notionists',
+      'bottts': 'bottts',
+      'avataaars': 'avataaars'
+    };
+
+    const diceStyle = styleMap[style] || 'avataaars';
+    
+    // Educational Defaults seeds
+    let finalSeed = seed;
+    if (gender === 'boy' && style === 'avataaars') finalSeed = 'Felix';
+    if (gender === 'girl' && style === 'avataaars') finalSeed = 'Aneka';
+
+    let url = `https://api.dicebear.com/7.x/${diceStyle}/svg?seed=${finalSeed}`;
+
+    // Add some variation based on gender preference for styles that support it
+    if (diceStyle === 'adventurer' || diceStyle === 'avataaars') {
+      if (gender === 'boy') {
+        url += '&mood[]=happy&hair[]=short&clothingColor[]=3c4fd2'; // Indigo uniform-like color
+      } else if (gender === 'girl') {
+        url += '&mood[]=happy&hair[]=long&clothingColor[]=3c4fd2'; // Indigo uniform-like color
+      }
+    }
+
+    return url;
+  }
+
+  /**
+   * Cloudinary Upload Logic (Professional Alternative to Firebase Storage)
+   * Note: You need to set CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET in .env
+   */
+  async uploadToCloudinary(file: File): Promise<string> {
     const user = this.currentUser();
     if (!user) throw new Error('User not authenticated');
 
-    const storageRef = ref(storage, `profilePictures/${user.uid}/profile.jpg`);
-    await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(storageRef);
+    // These should be set in your Cloudinary Dashboard under Settings > Upload
+    // You need to create an "Unsigned Upload Preset"
+    const cloudName = 'dor5twyep'; 
+    const uploadPreset = 'profile_pics'; 
 
-    const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { photoURL: downloadURL });
-    this.currentUser.set({ ...user, photoURL: downloadURL });
-    return downloadURL;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+    formData.append('folder', 'profile_pictures');
+    formData.append('public_id', user.uid);
+
+    try {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Upload to Cloudinary failed');
+      }
+
+      const data = await response.json();
+      const downloadURL = data.secure_url;
+
+      // Update user profile with new photo URL
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { photoURL: downloadURL });
+      this.currentUser.set({ ...user, photoURL: downloadURL });
+
+      return downloadURL;
+    } catch (error) {
+      console.error('Cloudinary upload error:', error);
+      throw error;
+    }
+  }
+
+  async uploadProfilePicture(file: File): Promise<string> {
+    return this.uploadToCloudinary(file);
+  }
+
+  async uploadAudio(file: Blob, folder = 'chat_audio'): Promise<string> {
+    const cloudName = 'dor5twyep'; 
+    const uploadPreset = 'profile_pics'; 
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+    formData.append('folder', folder);
+    formData.append('resource_type', 'video'); // Cloudinary treats audio as video
+
+    try {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Upload to Cloudinary failed');
+      }
+
+      const data = await response.json();
+      return data.secure_url;
+    } catch (error) {
+      console.error('Cloudinary audio upload error:', error);
+      throw error;
+    }
   }
 
   async getUserByPhone(phone: string): Promise<UserProfile | null> {

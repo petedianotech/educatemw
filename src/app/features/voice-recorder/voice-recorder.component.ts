@@ -53,7 +53,7 @@ export class VoiceRecorderComponent implements OnDestroy {
   
   private mediaRecorder: MediaRecorder | null = null;
   private stream: MediaStream | null = null;
-  private timerInterval: any = null;
+  private timerInterval: ReturnType<typeof setInterval> | null = null;
   private audioPlayer: HTMLAudioElement | null = null;
 
   async toggleRecording() {
@@ -95,7 +95,9 @@ export class VoiceRecorderComponent implements OnDestroy {
       this.mediaRecorder.stop();
       this.stream?.getTracks().forEach(track => track.stop());
       this.isRecording.set(false);
-      clearInterval(this.timerInterval);
+      if (this.timerInterval) {
+        clearInterval(this.timerInterval);
+      }
     }
   }
 

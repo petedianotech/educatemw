@@ -51,7 +51,9 @@ import { RouterLink } from '@angular/router';
               <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 animate-in zoom-in duration-300">
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-xl font-black text-slate-900 flex items-center gap-2">
-                    <mat-icon class="text-indigo-600">auto_awesome</mat-icon>
+                    <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center overflow-hidden">
+                      <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                    </div>
                     AI Quiz Generator
                   </h3>
                   <button (click)="showAiGenerator.set(false)" class="text-slate-400 hover:text-slate-600">
@@ -59,7 +61,7 @@ import { RouterLink } from '@angular/router';
                   </button>
                 </div>
                 
-                <p class="text-sm text-slate-500 font-medium mb-6">Enter a topic from the MSCE curriculum and Cleo will generate a custom quiz for you.</p>
+                <p class="text-sm text-slate-500 font-medium mb-6">Enter a topic from the MSCE curriculum and emi will generate a custom quiz for you.</p>
                 
                 <div class="space-y-4">
                   <div>
@@ -82,7 +84,9 @@ import { RouterLink } from '@angular/router';
                       <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                       Generating...
                     } @else {
-                      <mat-icon>auto_awesome</mat-icon>
+                      <div class="w-6 h-6 rounded-lg overflow-hidden">
+                        <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                      </div>
                       Generate Quiz
                     }
                   </button>
