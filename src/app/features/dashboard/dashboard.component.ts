@@ -153,8 +153,8 @@ interface Notification {
               <div class="absolute inset-0 bg-gradient-to-br from-transparent to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md shadow-blue-500/30 relative z-10 group-hover:scale-105 transition-transform overflow-hidden">
                 <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
-                @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 2) <= 0) {
-                  <div class="absolute -top-1.5 -right-1.5 bg-slate-900 text-amber-400 p-1 rounded-lg border-2 border-white shadow-sm">
+                @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 10) <= 0) {
+                  <div class="absolute -top-1.5 -right-1.5 bg-slate-900 text-sky-400 p-1 rounded-lg border-2 border-white shadow-sm">
                     <mat-icon class="!w-3 !h-3 !text-[12px]">lock</mat-icon>
                   </div>
                 }

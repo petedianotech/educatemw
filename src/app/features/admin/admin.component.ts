@@ -792,18 +792,36 @@ interface ChartData {
           }
 
           @if (activeTab() === 'students') {
-            <div class="mb-6 bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm flex items-center gap-4">
-              <mat-icon class="text-slate-400">search</mat-icon>
-              <input type="text" 
-                     [ngModel]="studentSearchQuery()" 
-                     (ngModelChange)="studentSearchQuery.set($event)"
-                     placeholder="Search students by name, email or UID..." 
-                     class="flex-1 bg-transparent border-none outline-none font-bold text-slate-900 placeholder:text-slate-300">
-              @if (studentSearchQuery()) {
-                <button (click)="studentSearchQuery.set('')" class="text-slate-400 hover:text-slate-600">
-                  <mat-icon class="!w-5 !h-5 !text-[20px]">close</mat-icon>
+            <div class="mb-6 bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-4 justify-between">
+              <div class="flex items-center gap-4 flex-1 w-full relative">
+                <mat-icon class="text-slate-400 absolute left-4 pointer-events-none">search</mat-icon>
+                <input type="text" 
+                       [ngModel]="studentSearchQuery()" 
+                       (ngModelChange)="studentSearchQuery.set($event)"
+                       placeholder="Search students by name, email or UID..." 
+                       class="w-full pl-12 pr-10 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-900 placeholder:text-slate-400 transition-all">
+                @if (studentSearchQuery()) {
+                  <button (click)="studentSearchQuery.set('')" class="absolute right-4 text-slate-400 hover:text-slate-600">
+                    <mat-icon class="!w-5 !h-5 !text-[20px]">close</mat-icon>
+                  </button>
+                }
+              </div>
+              
+              <div class="flex items-center gap-2 shrink-0">
+                <button 
+                  (click)="studentFilter.set('all')"
+                  [class]="studentFilter() === 'all' ? 'bg-slate-900 text-white shadow-md border-slate-900' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
+                  class="px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                  All Students
                 </button>
-              }
+                <button 
+                  (click)="studentFilter.set('pro')"
+                  [class]="studentFilter() === 'pro' ? 'bg-sky-500 text-white shadow-md border-sky-500' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
+                  class="px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                  <mat-icon class="!w-4 !h-4 !text-[16px]">workspace_premium</mat-icon>
+                  Paid (Pro)
+                </button>
+              </div>
             </div>
 
             <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-x-auto">
@@ -1241,6 +1259,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   examDate = signal('');
 
   studentSearchQuery = signal('');
+  studentFilter = signal<'all' | 'pro'>('all');
 
   quizFilter = signal<'all' | 'AI' | 'Teacher'>('all');
   
@@ -1256,15 +1275,21 @@ export class AdminComponent implements OnInit, OnDestroy {
   });
 
   filteredStudents = computed(() => {
-    const users = this.dataService.users();
-    const baseFiltered = users.filter(u => u.role !== 'admin' && !u.isGuest);
+    let users = this.dataService.users().filter(u => u.role !== 'admin' && !u.isGuest);
+    
+    if (this.studentFilter() === 'pro') {
+      users = users.filter(u => u.isPro);
+    }
+    
     const query = this.studentSearchQuery().toLowerCase().trim();
-    if (!query) return baseFiltered;
-    return baseFiltered.filter(u => 
-      u.displayName?.toLowerCase().includes(query) || 
-      u.email?.toLowerCase().includes(query) ||
-      u.uid.toLowerCase().includes(query)
-    );
+    if (query) {
+      users = users.filter(u => 
+        u.displayName?.toLowerCase().includes(query) || 
+        u.email?.toLowerCase().includes(query) ||
+        u.uid.toLowerCase().includes(query)
+      );
+    }
+    return users;
   });
 
   totalStudents = computed(() => this.dataService.totalUserCount() || this.dataService.users().length);

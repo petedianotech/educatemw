@@ -108,7 +108,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
           @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
             <div class="flex flex-col items-end">
               <div class="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-xl shadow-xl shadow-slate-200 border border-slate-800">
-                <mat-icon class="!w-4 !h-4 !text-[16px] text-amber-400">stars</mat-icon>
+                <mat-icon class="!w-4 !h-4 !text-[16px] text-sky-400">stars</mat-icon>
                 <span class="text-[11px] font-black tracking-wider">{{ authService.currentUser()?.isPro || authService.currentUser()?.role === 'admin' ? 'UNLIMITED' : ((authService.currentUser()?.aiCredits || 0) + ' CREDITS') }}</span>
               </div>
               <p class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Daily Balance</p>
@@ -131,12 +131,12 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
             <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">I'm emi, your AI tutor. Ask me anything about your MSCE subjects.</p>
             
             <div class="grid grid-cols-1 gap-3 w-full">
-              <button (click)="inputText.set('Nthondo anabadwa nthawi yanji? (Chichewa Literature)')" class="group p-4 bg-white rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 border border-slate-200 text-left shadow-sm flex items-center justify-between">
-                <span>"Nthondo anabadwa nthawi yanji?"</span>
+              <button (click)="inputText.set('Explain the difference between plant and animal cells. (Biology)')" class="group p-4 bg-white rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 border border-slate-200 text-left shadow-sm flex items-center justify-between">
+                <span>"Difference between plant and animal cells"</span>
                 <mat-icon class="text-slate-300 group-hover:text-indigo-600 transition-colors">arrow_forward</mat-icon>
               </button>
-              <button (click)="inputText.set('What lesson do we learn from Nthondo childhood? (Social Studies/Life Skills)')" class="group p-4 bg-white rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 border border-slate-200 text-left shadow-sm flex items-center justify-between">
-                <span>"Lessons from Nthondo's childhood"</span>
+              <button (click)="inputText.set('What is Newton\\'s second law of motion? (Physics)')" class="group p-4 bg-white rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 border border-slate-200 text-left shadow-sm flex items-center justify-between">
+                <span>"Newton's second law of motion"</span>
                 <mat-icon class="text-slate-300 group-hover:text-indigo-600 transition-colors">arrow_forward</mat-icon>
               </button>
             </div>

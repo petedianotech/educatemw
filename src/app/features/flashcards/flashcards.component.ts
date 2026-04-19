@@ -186,7 +186,7 @@ import { Router } from '@angular/router';
                   </div>
                   <div>
                     <h3 class="text-xl font-black text-slate-900">AI Generator</h3>
-                    <p class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Powered by Gemini AI</p>
+                    <p class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Powered by Cerebras AI</p>
                   </div>
                 </div>
                 <button (click)="showGenerateModal.set(false)" class="text-slate-300 hover:text-slate-500 transition-colors">

@@ -275,7 +275,7 @@ export class AuthService {
       role: 'student',
       isPro: false,
       isGuest: user.isAnonymous,
-      aiCredits: user.isAnonymous ? 1 : 2,
+      aiCredits: user.isAnonymous ? 5 : 10,
       streak: 0,
       coins: 0,
       lastCreditReset: new Date().toISOString(),
@@ -309,30 +309,19 @@ export class AuthService {
         const data = userSnap.data();
         let profile = {
           ...data,
-          aiCredits: data['aiCredits'] !== undefined ? data['aiCredits'] : 2,
+          aiCredits: data['aiCredits'] !== undefined ? data['aiCredits'] : 10,
           createdAt: data['createdAt']?.toDate() || new Date()
         } as UserProfile;
 
-        // Daily Credit Reset Logic (12 PM Malawi Time / CAT)
-        // CAT is UTC+2. 12 PM CAT = 10 AM UTC.
+        // Daily Credit Reset Logic (UTC Midnight)
         const now = new Date();
-        const malawiNow = new Date(now.getTime() + (2 * 60 * 60 * 1000)); // Current time in CAT
-        
-        // Determine the last reset threshold (the most recent 12 PM CAT)
-        const resetThreshold = new Date(malawiNow);
-        resetThreshold.setHours(12, 0, 0, 0);
-        
-        // If current time is before 12 PM today, the threshold was 12 PM yesterday
-        if (malawiNow.getTime() < resetThreshold.getTime()) {
-          resetThreshold.setDate(resetThreshold.getDate() - 1);
-        }
+        const startOfTodayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
         const lastReset = profile.lastCreditReset ? new Date(profile.lastCreditReset) : new Date(0);
-        const lastResetInCAT = new Date(lastReset.getTime() + (2 * 60 * 60 * 1000));
 
-        if (lastResetInCAT.getTime() < resetThreshold.getTime()) {
+        if (lastReset.getTime() < startOfTodayUTC.getTime()) {
           // Reset credits
-          const dailyAllowance = profile.isGuest ? 1 : 2;
+          const dailyAllowance = profile.isGuest ? 5 : 10;
           const newCredits = (profile.aiCredits || 0) < dailyAllowance ? dailyAllowance : profile.aiCredits;
           
           await updateDoc(userRef, {
