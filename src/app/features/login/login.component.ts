@@ -359,13 +359,18 @@ export class LoginComponent implements OnInit {
         await this.authService.loginWithEmail(this.email, this.password);
       }
       this.router.navigate(['/dashboard']);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Auth error', error);
-      const err = error as { code?: string; message?: string };
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+      const code = error?.code || '';
+      const message = error?.message || 'Authentication failed';
+      
+      if (code === 'auth/invalid-credential' || 
+          code === 'auth/wrong-password' || 
+          code === 'auth/user-not-found' || 
+          message.includes('auth/invalid-credential')) {
         this.errorMsg.set('Invalid credentials. Please try again.');
       } else {
-        this.errorMsg.set(err.message || 'Authentication failed');
+        this.errorMsg.set(message);
       }
     } finally {
       this.isLoading.set(false);
