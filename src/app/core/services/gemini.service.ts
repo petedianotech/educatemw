@@ -315,55 +315,61 @@ ${this.dataService.notes().map(n => `- ${n.title}`).join('\n')}
         
         // Check if we have an OpenRouter key
         const openRouterKey = typeof OPENROUTER_API_KEY !== 'undefined' ? OPENROUTER_API_KEY : '';
-        if (!openRouterKey) throw geminiError; // Rethrow if no fallback available
+        if (!openRouterKey) {
+          console.error('OpenRouter fallback failed: OPENROUTER_API_KEY is missing or undefined.');
+          throw new Error('Both Gemini and OpenRouter fallback failed (OpenRouter key missing)');
+        }
 
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${openRouterKey}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "model": "meta-llama/llama-3.1-8b-instruct:free",
-            "messages": [
-              { "role": "system", "content": this.systemInstruction },
-              ...this.messages().map(msg => ({
-                "role": msg.role === 'model' ? 'assistant' : 'user',
-                "content": msg.content
-              }))
-            ]
-          })
-        });
+        try {
+          const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${openRouterKey}`,
+              "Content-Type": "application/json",
+              "HTTP-Referer": window.location.origin,
+              "X-Title": "Emi AI Educational Tutor"
+            },
+            body: JSON.stringify({
+              "model": "meta-llama/llama-3.1-8b-instruct:free",
+              "messages": [
+                { "role": "system", "content": this.systemInstruction },
+                ...this.messages().map(msg => ({
+                  "role": msg.role === 'model' ? 'assistant' : 'user',
+                  "content": msg.content
+                }))
+              ]
+            })
+          });
 
-        if (!response.ok) throw new Error('OpenRouter API failed');
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('OpenRouter API error details:', errorData);
+            throw new Error(`OpenRouter API failed with status ${response.status}`);
+          }
 
-        const data = await response.json();
-        const aiText = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.';
-        await this.processResponse(aiText);
+          const data = await response.json();
+          const aiText = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.';
+          await this.processResponse(aiText);
+        } catch (fallbackError) {
+          console.error('Critical: OpenRouter fallback also failed:', fallbackError);
+          throw fallbackError;
+        }
       }
     } catch (error: unknown) {
-      console.error('Error communicating with Gemini:', error);
+      console.error('Critical AI Communication Failure:', error);
       
-      let errorMessage = '⚠️ An error occurred. Your message was saved, and you can try again soon.';
+      let errorMessage = '⚠️ I\'m having trouble connecting to my brain. Please check your internet or try again later.';
       
       const err = error as { message?: string };
       if (!navigator.onLine) {
         errorMessage = '⚠️ You seem to be offline. Try again when you have a connection.';
-      } else if (err?.message?.includes('quota')) {
-        // This is the actual API quota error
-        errorMessage = '⚠️ I\'m having trouble connecting to the servers. Please try again.';
-      } else {
-        // Fallback for general issues
-        errorMessage = '⚠️ I\'m having trouble connecting to the servers. Please try again.';
+      } else if (err?.message?.includes('OPENROUTER_API_KEY')) {
+        errorMessage = '⚠️ Configuration error: OpenRouter key is missing. Please contact support.';
+      } else if (err?.message?.includes('quota') || err?.message?.includes('429')) {
+        errorMessage = '⚠️ Both primary and fallback limits reached. Please wait a moment and try again.';
       }
 
-      const errorMsg: ChatMessage = {
-        id: this.generateId(),
-        role: 'model',
-        content: errorMessage,
-        timestamp: Date.now()
-      };
-      this.messages.update(msgs => [...msgs, errorMsg]);
+      this.processResponse(errorMessage);
     } finally {
       this.isLoading.set(false);
     }
@@ -441,7 +447,9 @@ ${this.dataService.notes().map(n => `- ${n.title}`).join('\n')}
           method: "POST",
           headers: {
             "Authorization": `Bearer ${openRouterKey}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "HTTP-Referer": window.location.origin,
+            "X-Title": "Emi AI Educational Tutor"
           },
           body: JSON.stringify({
             "model": "meta-llama/llama-3.1-8b-instruct:free",
@@ -507,7 +515,9 @@ Return ONLY valid JSON matching this schema:
           method: "POST",
           headers: {
             "Authorization": `Bearer ${openRouterKey}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "HTTP-Referer": window.location.origin,
+            "X-Title": "Emi AI Educational Tutor"
           },
           body: JSON.stringify({
             "model": "meta-llama/llama-3.1-8b-instruct:free",

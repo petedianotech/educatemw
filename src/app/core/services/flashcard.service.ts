@@ -74,7 +74,9 @@ export class FlashcardService {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${openRouterKey}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "HTTP-Referer": window.location.origin,
+            "X-Title": "Emi AI Educational Tutor"
           },
           body: JSON.stringify({
             "model": "meta-llama/llama-3.1-8b-instruct:free",

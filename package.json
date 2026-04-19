@@ -6,8 +6,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "dev": "cross-env ng serve --port=3000 --host=0.0.0.0 --define=\"GEMINI_API_KEY=\\'${GEMINI_API_KEY}\\'\" ${DISABLE_HMR:+--live-reload=false}",
-    "build": "cross-env ng build --define=\"GEMINI_API_KEY=\\'${GEMINI_API_KEY}\\'\"",
+    "dev": "cross-env ng serve --port=3000 --host=0.0.0.0 --define=\"GEMINI_API_KEY=\\'${GEMINI_API_KEY}\\'\" --define=\"OPENROUTER_API_KEY=\\'${OPENROUTER_API_KEY}\\'\" --define=\"ADMIN_TEAM_PASSWORD=\\'${ADMIN_TEAM_PASSWORD}\\'\" --define=\"PRODUCTION_API_URL=\\'${PRODUCTION_API_URL}\\'\" ${DISABLE_HMR:+--live-reload=false}",
+    "build": "cross-env ng build --define=\"GEMINI_API_KEY=\\'${GEMINI_API_KEY}\\'\" --define=\"OPENROUTER_API_KEY=\\'${OPENROUTER_API_KEY}\\'\" --define=\"ADMIN_TEAM_PASSWORD=\\'${ADMIN_TEAM_PASSWORD}\\'\" --define=\"PRODUCTION_API_URL=\\'${PRODUCTION_API_URL}\\'\"",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
