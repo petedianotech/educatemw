@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { GeminiService } from '../../core/services/gemini.service';
+import { GeminiService, ChatMessage } from '../../core/services/gemini.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { MatIconModule } from '@angular/material/icon';
@@ -255,6 +255,14 @@ export class ChatComponent {
     
     if (!user.isPro && user.role !== 'admin') {
       if ((user.aiCredits || 0) <= 0) {
+        // Show message to user
+        const limitMsg: ChatMessage = {
+          id: this.gemini.generateId(),
+          role: 'model',
+          content: '⚠️ You have finished your credits for today. Please wait until tomorrow.',
+          timestamp: Date.now()
+        };
+        this.gemini.messages.update(msgs => [...msgs, limitMsg]);
         return; // Out of credits
       }
       await this.authService.decrementAiCredits();

@@ -62,94 +62,8 @@ export class GeminiService {
   messages = signal<ChatMessage[]>([]);
   isLoading = signal<boolean>(false);
 
-  constructor() {
-    if (isPlatformBrowser(this._platformId)) {
-      this.loadHistory();
-      this.dataService.subscribeToNotes();
-    }
-  }
-
-  private async getAI() {
-    if (!this.ai) {
-      const { GoogleGenAI } = await import('@google/genai');
-      const apiKey = typeof GEMINI_API_KEY !== 'undefined' ? GEMINI_API_KEY : '';
-      if (!apiKey) {
-        console.error('GEMINI_API_KEY is not defined. AI features will not work.');
-      }
-      this.ai = new GoogleGenAI({ apiKey });
-    }
-    return this.ai;
-  }
-
-  private async getDB() {
-    if (!isPlatformBrowser(this._platformId)) {
-      throw new Error('IndexedDB is not available on the server.');
-    }
-    if (!this.dbPromise) {
-      const { openDB } = await import('idb');
-      this.dbPromise = openDB<ChatDB>('edu-chat-db', 1, {
-        upgrade(db) {
-          const store = db.createObjectStore('messages', { keyPath: 'id' });
-          store.createIndex('by-timestamp', 'timestamp');
-        },
-      });
-    }
-    return this.dbPromise;
-  }
-
-  private generateId(): string {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-      return crypto.randomUUID();
-    }
-    return Math.random().toString(36).substring(2) + Date.now().toString(36);
-  }
-
-  private async loadHistory() {
-    try {
-      const db = await this.getDB();
-      const allMessages = await db.getAllFromIndex('messages', 'by-timestamp');
-      this.messages.set(allMessages);
-    } catch (e) {
-      console.warn('Could not load chat history:', e);
-    }
-  }
-
-  async sendMessage(content: string) {
-    if (!content.trim()) return;
-
-    const userMessage: ChatMessage = {
-      id: this.generateId(),
-      role: 'user',
-      content,
-      timestamp: Date.now()
-    };
-
-    // Optimistically add to UI and DB
-    this.messages.update(msgs => [...msgs, userMessage]);
-    
-    try {
-      const db = await this.getDB();
-      await db.put('messages', userMessage);
-    } catch (e) {
-      console.warn('Could not save message to history:', e);
-    }
-
-    this.isLoading.set(true);
-
-    try {
-      const ai = await this.getAI();
-      // Format history for Gemini
-      const history = this.messages().slice(0, -1).map(msg => ({
-        role: msg.role,
-        parts: [{ text: msg.content }]
-      }));
-
-      const chat = ai.chats.create({
-        model: 'gemini-flash-latest',
-        history,
-        config: {
-          tools: [{ googleSearch: {} }],
-          systemInstruction: `You are EMI AI, an educational tutor for MANEB secondary school students (Form 1–4, MSCE, JCE).
+  private get systemInstruction(): string {
+    return `You are EMI AI, an educational tutor for MANEB secondary school students (Form 1–4, MSCE, JCE).
 
 Your goal is to give answers exactly in the format required by Malawi teachers and examiners.
 
@@ -299,29 +213,134 @@ ${NTHONDO_KNOWLEDGE}
 
 **Available Library Materials Titles:**
 ${this.dataService.notes().map(n => `- ${n.title}`).join('\n')}
-`,
-        }
-      });
+`;
+  }
 
-      // Send message
-      const response = await chat.sendMessage({ message: content });
-      
-      const modelMessage: ChatMessage = {
-        id: this.generateId(),
-        role: 'model',
-        content: response.text || 'Sorry, I could not generate a response.',
-        timestamp: Date.now()
-      };
+  constructor() {
+    if (isPlatformBrowser(this._platformId)) {
+      this.loadHistory();
+      this.dataService.subscribeToNotes();
+    }
+  }
 
-      this.messages.update(msgs => [...msgs, modelMessage]);
-      
-      try {
-        const db = await this.getDB();
-        await db.put('messages', modelMessage);
-      } catch (e) {
-        console.warn('Could not save model response to history:', e);
+  private async getAI() {
+    if (!this.ai) {
+      const { GoogleGenAI } = await import('@google/genai');
+      const apiKey = typeof GEMINI_API_KEY !== 'undefined' ? GEMINI_API_KEY : '';
+      if (!apiKey) {
+        console.error('GEMINI_API_KEY is not defined. AI features will not work.');
       }
-      
+      this.ai = new GoogleGenAI({ apiKey });
+    }
+    return this.ai;
+  }
+
+  private async getDB() {
+    if (!isPlatformBrowser(this._platformId)) {
+      throw new Error('IndexedDB is not available on the server.');
+    }
+    if (!this.dbPromise) {
+      const { openDB } = await import('idb');
+      this.dbPromise = openDB<ChatDB>('edu-chat-db', 1, {
+        upgrade(db) {
+          const store = db.createObjectStore('messages', { keyPath: 'id' });
+          store.createIndex('by-timestamp', 'timestamp');
+        },
+      });
+    }
+    return this.dbPromise;
+  }
+
+  public generateId(): string {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+
+  private async loadHistory() {
+    try {
+      const db = await this.getDB();
+      const allMessages = await db.getAllFromIndex('messages', 'by-timestamp');
+      this.messages.set(allMessages);
+    } catch (e) {
+      console.warn('Could not load chat history:', e);
+    }
+  }
+
+  async sendMessage(content: string) {
+    if (!content.trim()) return;
+
+    const userMessage: ChatMessage = {
+      id: this.generateId(),
+      role: 'user',
+      content,
+      timestamp: Date.now()
+    };
+
+    // Optimistically add to UI and DB
+    this.messages.update(msgs => [...msgs, userMessage]);
+    
+    try {
+      const db = await this.getDB();
+      await db.put('messages', userMessage);
+    } catch (e) {
+      console.warn('Could not save message to history:', e);
+    }
+
+    this.isLoading.set(true);
+
+    try {
+      try {
+        const ai = await this.getAI();
+        // Format history for Gemini
+        const history = this.messages().slice(0, -1).map(msg => ({
+          role: msg.role,
+          parts: [{ text: msg.content }]
+        }));
+
+        const chat = ai.chats.create({
+          model: 'gemini-flash-latest',
+          history,
+          config: {
+            tools: [{ googleSearch: {} }],
+            systemInstruction: this.systemInstruction,
+          }
+        });
+
+        const response = await chat.sendMessage({ message: content });
+        await this.processResponse(response.text || 'Sorry, I could not generate a response.');
+      } catch (geminiError: unknown) {
+        console.warn('Gemini error, attempting fallback to OpenRouter:', geminiError);
+        
+        // Check if we have an OpenRouter key
+        const openRouterKey = typeof OPENROUTER_API_KEY !== 'undefined' ? OPENROUTER_API_KEY : '';
+        if (!openRouterKey) throw geminiError; // Rethrow if no fallback available
+
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${openRouterKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "model": "meta-llama/llama-3.1-8b-instruct:free",
+            "messages": [
+              { "role": "system", "content": this.systemInstruction },
+              ...this.messages().map(msg => ({
+                "role": msg.role === 'model' ? 'assistant' : 'user',
+                "content": msg.content
+              }))
+            ]
+          })
+        });
+
+        if (!response.ok) throw new Error('OpenRouter API failed');
+
+        const data = await response.json();
+        const aiText = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.';
+        await this.processResponse(aiText);
+      }
     } catch (error: unknown) {
       console.error('Error communicating with Gemini:', error);
       
@@ -329,11 +348,13 @@ ${this.dataService.notes().map(n => `- ${n.title}`).join('\n')}
       
       const err = error as { message?: string };
       if (!navigator.onLine) {
-        errorMessage = '⚠️ You seem to be offline. Your message was saved, and you can try again when you have a connection.';
-      } else if (err?.message?.includes('API key not valid')) {
-        errorMessage = '⚠️ AI configuration error. Please contact support or check your API key.';
+        errorMessage = '⚠️ You seem to be offline. Try again when you have a connection.';
       } else if (err?.message?.includes('quota')) {
-        errorMessage = '⚠️ AI daily limit reached for the system. Please try again later.';
+        // This is the actual API quota error
+        errorMessage = '⚠️ I\'m having trouble connecting to the servers. Please try again.';
+      } else {
+        // Fallback for general issues
+        errorMessage = '⚠️ I\'m having trouble connecting to the servers. Please try again.';
       }
 
       const errorMsg: ChatMessage = {
@@ -345,6 +366,24 @@ ${this.dataService.notes().map(n => `- ${n.title}`).join('\n')}
       this.messages.update(msgs => [...msgs, errorMsg]);
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  private async processResponse(text: string) {
+    const modelMessage: ChatMessage = {
+      id: this.generateId(),
+      role: 'model',
+      content: text,
+      timestamp: Date.now()
+    };
+
+    this.messages.update(msgs => [...msgs, modelMessage]);
+    
+    try {
+      const db = await this.getDB();
+      await db.put('messages', modelMessage);
+    } catch (e) {
+      console.warn('Could not save model response to history:', e);
     }
   }
 
@@ -380,18 +419,45 @@ ${this.dataService.notes().map(n => `- ${n.title}`).join('\n')}
     Generate 5 challenging questions. Do not include any other text or markdown formatting.`;
 
     try {
-      const ai = await this.getAI();
-      const response = await ai.models.generateContent({
-        model: 'gemini-flash-latest',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json'
-        }
-      });
-      const text = response.text || '';
-      // Clean up potential markdown code blocks
-      const jsonStr = text.replace(/```json|```/g, '').trim();
-      return JSON.parse(jsonStr) as GeneratedQuiz;
+      try {
+        const ai = await this.getAI();
+        const response = await ai.models.generateContent({
+          model: 'gemini-flash-latest',
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json'
+          }
+        });
+        const text = response.text || '';
+        // Clean up potential markdown code blocks
+        const jsonStr = text.replace(/```json|```/g, '').trim();
+        return JSON.parse(jsonStr) as GeneratedQuiz;
+      } catch (geminiError) {
+        console.warn('Gemini error generating quiz, attempting fallback to OpenRouter:', geminiError);
+        const openRouterKey = typeof OPENROUTER_API_KEY !== 'undefined' ? OPENROUTER_API_KEY : '';
+        if (!openRouterKey) throw geminiError;
+
+        const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${openRouterKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "model": "meta-llama/llama-3.1-8b-instruct:free",
+            "messages": [
+              { "role": "system", "content": "You are an MSCE curriculum expert." },
+              { "role": "user", "content": prompt }
+            ],
+            "response_format": { "type": "json_object" }
+          })
+        });
+
+        if (!openRouterResponse.ok) throw new Error('OpenRouter API failed');
+        const data = await openRouterResponse.json();
+        const aiText = data.choices?.[0]?.message?.content || '{}';
+        return JSON.parse(aiText) as GeneratedQuiz;
+      }
     } catch (error) {
       console.error('Error generating quiz:', error);
       throw error;
@@ -399,9 +465,7 @@ ${this.dataService.notes().map(n => `- ${n.title}`).join('\n')}
   }
 
   async generateSEO(title: string, category: string, content: string): Promise<GeneratedSEO | null> {
-    try {
-      const ai = await this.getAI();
-      const prompt = `You are an expert SEO strategist specializing in the Malawian education market. Your goal is to rewrite the provided content (Book or Past Paper details) into high-ranking SEO Metadata.
+    const prompt = `You are an expert SEO strategist specializing in the Malawian education market. Your goal is to rewrite the provided content (Book or Past Paper details) into high-ranking SEO Metadata.
 Primary Keywords: Use terms like 'MSCE', 'PSLCE', 'MANEB', 'Malawi Curriculum', and 'Secondary School'.
 Local Context: Include mentions of 'Malawian students' and 'New Syllabus'.
 Format: Output exactly two items in a JSON object:
@@ -419,18 +483,47 @@ Return ONLY valid JSON matching this schema:
   "seoDescription": "string"
 }`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-flash-latest',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-        }
-      });
+    try {
+      try {
+        const ai = await this.getAI();
+        const response = await ai.models.generateContent({
+          model: 'gemini-flash-latest',
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+          }
+        });
 
-      if (response.text) {
-        return JSON.parse(response.text) as GeneratedSEO;
+        if (response.text) {
+          return JSON.parse(response.text) as GeneratedSEO;
+        }
+        return null;
+      } catch (geminiError) {
+        console.warn('Gemini error generating SEO, attempting fallback to OpenRouter:', geminiError);
+        const openRouterKey = typeof OPENROUTER_API_KEY !== 'undefined' ? OPENROUTER_API_KEY : '';
+        if (!openRouterKey) throw geminiError;
+
+        const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${openRouterKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "model": "meta-llama/llama-3.1-8b-instruct:free",
+            "messages": [
+              { "role": "system", "content": "You are an expert SEO strategist." },
+              { "role": "user", "content": prompt }
+            ],
+            "response_format": { "type": "json_object" }
+          })
+        });
+
+        if (!openRouterResponse.ok) throw new Error('OpenRouter API failed');
+        const data = await openRouterResponse.json();
+        const aiText = data.choices?.[0]?.message?.content || null;
+        return aiText ? JSON.parse(aiText) as GeneratedSEO : null;
       }
-      return null;
     } catch (error) {
       console.error('Error generating SEO:', error);
       return null;

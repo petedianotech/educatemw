@@ -25,10 +25,21 @@ let performance: FirebasePerformance | null = null;
 if (typeof window !== 'undefined') {
   isAnalyticsSupported().then(supported => {
     if (supported) {
-      analytics = getAnalytics(app);
+      try {
+        analytics = getAnalytics(app);
+      } catch (err) {
+        console.warn('Firebase Analytics failed to initialize:', err);
+      }
     }
+  }).catch(err => {
+    console.warn('isAnalyticsSupported check failed:', err);
   });
-  performance = getPerformance(app);
+  
+  try {
+    performance = getPerformance(app);
+  } catch (err) {
+    console.warn('Firebase Performance failed to initialize:', err);
+  }
 }
 
 export { analytics, performance };

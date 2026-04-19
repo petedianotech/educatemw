@@ -35,60 +35,92 @@ export class FlashcardService {
     }`;
 
     try {
-      const response = await this.genAI.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              title: { type: Type.STRING },
-              description: { type: Type.STRING },
-              flashcards: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    front: { type: Type.STRING },
-                    back: { type: Type.STRING }
-                  },
-                  required: ['front', 'back']
+      try {
+        const response = await this.genAI.models.generateContent({
+          model: 'gemini-3-flash-preview',
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                title: { type: Type.STRING },
+                description: { type: Type.STRING },
+                flashcards: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      front: { type: Type.STRING },
+                      back: { type: Type.STRING }
+                    },
+                    required: ['front', 'back']
+                  }
                 }
-              }
-            },
-            required: ['title', 'description', 'flashcards']
+              },
+              required: ['title', 'description', 'flashcards']
+            }
           }
-        }
-      });
+        });
 
-      const result = JSON.parse(response.text || '{}');
-      
-      // Create the set in Firestore
-      const setId = await this.dataService.createFlashcardSet({
-        title: result.title,
-        description: result.description,
-        category: category,
-        authorId: user.uid,
-        authorName: user.displayName || 'Anonymous',
-        isProOnly: false
-      });
+        const result = JSON.parse(response.text || '{}');
+        return await this.saveFlashcards(result, category, user);
+      } catch (geminiError) {
+        console.warn('Gemini error generating flashcards, attempting fallback to OpenRouter:', geminiError);
+        const openRouterKey = typeof OPENROUTER_API_KEY !== 'undefined' ? OPENROUTER_API_KEY : '';
+        if (!openRouterKey) throw geminiError;
 
-      if (setId) {
-        // Create individual cards
-        for (const card of result.flashcards) {
-          await this.dataService.createFlashcard({
-            setId: setId,
-            front: card.front,
-            back: card.back
-          });
-        }
+        const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${openRouterKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "model": "meta-llama/llama-3.1-8b-instruct:free",
+            "messages": [
+              { "role": "system", "content": "You are a specialized MSCE curriculum expert for Malawi." },
+              { "role": "user", "content": prompt }
+            ],
+            "response_format": { "type": "json_object" }
+          })
+        });
+
+        if (!openRouterResponse.ok) throw new Error('OpenRouter API failed');
+
+        const data = await openRouterResponse.json();
+        const aiText = data.choices?.[0]?.message?.content || '{}';
+        const result = JSON.parse(aiText);
+        return await this.saveFlashcards(result, category, user);
       }
-
-      return setId;
     } catch (error) {
       console.error('Error generating flashcards:', error);
       throw error;
     }
+  }
+
+  private async saveFlashcards(result: { title: string; description: string; flashcards: { front: string; back: string }[] }, category: string, user: { uid: string; displayName?: string }) {
+    // Create the set in Firestore
+    const setId = await this.dataService.createFlashcardSet({
+      title: result.title,
+      description: result.description,
+      category: category,
+      authorId: user.uid,
+      authorName: user.displayName || 'Anonymous',
+      isProOnly: false
+    });
+
+    if (setId) {
+      // Create individual cards
+      for (const card of result.flashcards) {
+        await this.dataService.createFlashcard({
+          setId: setId,
+          front: card.front,
+          back: card.back
+        });
+      }
+    }
+
+    return setId;
   }
 }

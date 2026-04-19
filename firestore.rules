@@ -45,7 +45,7 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'isGuest', 'aiCredits', 'streak', 'coins', 'lastCreditReset', 'lastLoginDate', 'pwaInstalled', 'hasClaimedAppInstallReward', 'referralCode', 'referredBy', 'referralsCount', 'createdAt', 'securityQuestions', 'gender', 'avatarStyle']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'isGuest', 'aiCredits', 'streak', 'coins', 'lastCreditReset', 'lastLoginDate', 'pwaInstalled', 'hasClaimedAppInstallReward', 'referralCode', 'referredBy', 'referralsCount', 'createdAt', 'securityQuestions', 'gender', 'avatarStyle', 'deviceId']) &&
              hasRequiredFields(['uid', 'email', 'role', 'isPro', 'createdAt']) &&
              data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
              data.email is string && data.email.size() >= 0 && data.email.size() < 100 &&
@@ -67,7 +67,8 @@ service cloud.firestore {
              (!('referralsCount' in data) || data.referralsCount is number) &&
              (!('securityQuestions' in data) || data.securityQuestions is list) &&
              isValidOptionalString('gender', 1, 50) &&
-             isValidOptionalString('avatarStyle', 1, 50);
+             isValidOptionalString('avatarStyle', 1, 50) &&
+             isValidOptionalString('deviceId', 1, 100);
     }
 
     function isValidChatMessage(data) {
@@ -210,7 +211,8 @@ service cloud.firestore {
                     ((isOwner(userId) && request.resource.data.uid == resource.data.uid && 
                       request.resource.data.role == resource.data.role && 
                       request.resource.data.isPro == resource.data.isPro &&
-                      request.resource.data.createdAt == resource.data.createdAt) || isAdmin());
+                      request.resource.data.createdAt == resource.data.createdAt &&
+                      (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'gender', 'avatarStyle', 'lastLoginDate', 'pwaInstalled', 'hasClaimedAppInstallReward', 'referralsCount', 'streak', 'coins', 'aiCredits', 'lastCreditReset']))) || isAdmin());
     }
 
     match /recovery/{identifier} {

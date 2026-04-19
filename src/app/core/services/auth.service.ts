@@ -47,6 +47,7 @@ export interface UserProfile {
   gender?: 'boy' | 'girl' | 'prefer-not-to-say';
   avatarStyle?: 'adventurer' | 'notionists' | 'bottts' | 'avataaars';
   securityQuestions?: SecurityQuestion[];
+  deviceId?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -223,6 +224,11 @@ export class AuthService {
 
   private async createNewUserProfile(user: FirebaseUser, username: string, securityQuestions?: SecurityQuestion[]) {
     const userRef = doc(db, 'users', user.uid);
+    let deviceId = '';
+    if (isPlatformBrowser(this.platformId)) {
+        deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
+        localStorage.setItem('deviceId', deviceId);
+    }
     
     // Save security questions to a separate collection for recovery
     if (securityQuestions && securityQuestions.length > 0) {
@@ -279,7 +285,8 @@ export class AuthService {
       createdAt: new Date(),
       gender: 'prefer-not-to-say',
       avatarStyle: 'avataaars',
-      securityQuestions: securityQuestions || []
+      securityQuestions: securityQuestions || [],
+      deviceId: deviceId
     };
     
     // Only add referredBy if it has a valid value
@@ -363,6 +370,18 @@ export class AuthService {
           await updateDoc(userRef, { streak: profile.streak, lastLoginDate: now.toISOString() });
         } else if (diffDays === 0) {
           // Logged in today, do nothing
+        }
+
+        // Device limit check
+        if (!profile.isPro && profile.deviceId) {
+          const q = query(collection(db, 'users'), where('deviceId', '==', profile.deviceId));
+          const querySnapshot = await getDocs(q);
+          const isDeviceLimited = querySnapshot.docs.some(doc => (doc.data()['aiCredits'] || 0) <= 0);
+          
+          if (isDeviceLimited && (profile.aiCredits || 0) > 0) {
+            await updateDoc(userRef, { aiCredits: 0 });
+            profile.aiCredits = 0;
+          }
         }
 
         this.currentUser.set(profile);

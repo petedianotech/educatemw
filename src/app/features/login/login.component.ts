@@ -39,7 +39,7 @@ import { FormsModule } from '@angular/forms';
                   <button (click)="toggleSignup()" type="button" 
                           class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-100 active:scale-95 transition-all w-full justify-center sm:w-auto">
                     <mat-icon class="text-sm">{{ isSignup() ? 'login' : 'person_add' }}</mat-icon>
-                    {{ isSignup() ? 'Already have an account? Sign in' : 'Need an account? Sign up' }}
+                    {{ isSignup() ? 'Already have an account? Sign in' : 'Need an account? Create Account' }}
                   </button>
                 </div>
               </div>
@@ -152,7 +152,6 @@ import { FormsModule } from '@angular/forms';
                       </div>
                     </div>
                   }
-
                   @if (authMode() === 'username') {
                     <div class="animate-in fade-in slide-in-from-top-2 duration-300">
                       <label for="username-login" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Student Name</label>
@@ -229,17 +228,17 @@ import { FormsModule } from '@angular/forms';
                   <div class="pt-2 sm:pt-4 space-y-3">
                     <button type="submit" [disabled]="isLoading()" 
                             class="btn-primary w-full py-3.5 sm:py-4 text-sm sm:text-[15px] shadow-xl shadow-indigo-200 active:scale-[0.98] transition-all">
-                      {{ isLoading() ? 'Processing...' : (isSignup() ? 'Create Free Account' : 'Sign In to Dashboard') }}
+                      {{ isLoading() ? 'Processing...' : (isSignup() ? 'Create Account' : 'Sign In to Dashboard') }}
                     </button>
                     
                     @if (!isSignup()) {
-                      <button (click)="loginAsGuest()" type="button" [disabled]="isLoading()"
+                      <button (click)="toggleSignup()" type="button" [disabled]="isLoading()"
                               class="w-full py-3.5 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                        <mat-icon class="text-sm">person_outline</mat-icon>
-                        Sign in as Guest
+                        <mat-icon class="text-sm">person_add</mat-icon>
+                        Create Account
                       </button>
                       <p class="text-[9px] text-center text-slate-400 font-bold px-4">
-                        Guest accounts have 2 AI credits. Create an account for 5 credits per day!
+                        Create an account to save your progress and get free AI credits!
                       </p>
                     }
                   </div>
