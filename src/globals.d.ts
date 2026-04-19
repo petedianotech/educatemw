@@ -1,5 +1,4 @@
-declare const GEMINI_API_KEY: string;
-declare const OPENROUTER_API_KEY: string;
+declare const CEREBRAS_API_KEY: string;
 declare const PRODUCTION_API_URL: string;
 declare const ADMIN_TEAM_PASSWORD: string;
 

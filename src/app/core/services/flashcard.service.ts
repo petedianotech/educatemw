@@ -1,5 +1,4 @@
 import { inject, Injectable } from '@angular/core';
-import { GoogleGenAI, Type } from '@google/genai';
 import { AuthService } from './auth.service';
 import { DataService } from './data.service';
 
@@ -9,12 +8,6 @@ import { DataService } from './data.service';
 export class FlashcardService {
   private dataService = inject(DataService);
   private authService = inject(AuthService);
-  private genAI: GoogleGenAI;
-
-  constructor() {
-    const apiKey = typeof GEMINI_API_KEY !== 'undefined' ? GEMINI_API_KEY : '';
-    this.genAI = new GoogleGenAI({ apiKey });
-  }
 
   async generateFlashcards(topic: string, category: string, count = 5) {
     const user = this.authService.currentUser();
@@ -35,66 +28,41 @@ export class FlashcardService {
     }`;
 
     try {
-      try {
-        const response = await this.genAI.models.generateContent({
-          model: 'gemini-3-flash-preview',
-          contents: prompt,
-          config: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                title: { type: Type.STRING },
-                description: { type: Type.STRING },
-                flashcards: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      front: { type: Type.STRING },
-                      back: { type: Type.STRING }
-                    },
-                    required: ['front', 'back']
-                  }
-                }
-              },
-              required: ['title', 'description', 'flashcards']
-            }
-          }
-        });
-
-        const result = JSON.parse(response.text || '{}');
-        return await this.saveFlashcards(result, category, user);
-      } catch (geminiError) {
-        console.warn('Gemini error generating flashcards, attempting fallback to OpenRouter:', geminiError);
-        const openRouterKey = typeof OPENROUTER_API_KEY !== 'undefined' ? OPENROUTER_API_KEY : '';
-        if (!openRouterKey) throw geminiError;
-
-        const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${openRouterKey}`,
-            "Content-Type": "application/json",
-            "HTTP-Referer": window.location.origin,
-            "X-Title": "Emi AI Educational Tutor"
-          },
-          body: JSON.stringify({
-            "model": "meta-llama/llama-3.1-8b-instruct:free",
-            "messages": [
-              { "role": "system", "content": "You are a specialized MSCE curriculum expert for Malawi." },
-              { "role": "user", "content": prompt }
-            ],
-            "response_format": { "type": "json_object" }
-          })
-        });
-
-        if (!openRouterResponse.ok) throw new Error('OpenRouter API failed');
-
-        const data = await openRouterResponse.json();
-        const aiText = data.choices?.[0]?.message?.content || '{}';
-        const result = JSON.parse(aiText);
-        return await this.saveFlashcards(result, category, user);
+      const cerebrasKey = typeof CEREBRAS_API_KEY !== 'undefined' ? CEREBRAS_API_KEY : '';
+      if (!cerebrasKey) {
+        throw new Error('CEREBRAS_API_KEY is missing');
       }
+
+      const cerebrasResponse = await fetch("https://api.cerebras.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${cerebrasKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "model": "llama3.1-8b",
+          "messages": [
+            { "role": "system", "content": "You are a specialized MSCE curriculum expert for Malawi." },
+            { "role": "user", "content": prompt }
+          ],
+          "max_completion_tokens": 1024,
+          "temperature": 0.2,
+          "top_p": 1,
+          "stream": false,
+          "response_format": { "type": "json_object" }
+        })
+      });
+
+      if (!cerebrasResponse.ok) {
+        const errorData = await cerebrasResponse.json().catch(() => ({}));
+        console.error('Cerebras API error details:', errorData);
+        throw new Error(`Cerebras API failed with status ${cerebrasResponse.status}`);
+      }
+
+      const data = await cerebrasResponse.json();
+      const aiText = data.choices?.[0]?.message?.content || '{}';
+      const result = JSON.parse(aiText);
+      return await this.saveFlashcards(result, category, user);
     } catch (error) {
       console.error('Error generating flashcards:', error);
       throw error;

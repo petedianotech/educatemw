@@ -1,12 +1,8 @@
 import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import type { GoogleGenAI } from '@google/genai';
 import type { DBSchema, IDBPDatabase } from 'idb';
 import { DataService } from './data.service';
 import { AuthService } from './auth.service';
-
-import { NTHONDO_KNOWLEDGE } from '../knowledge/curriculum';
-import { CURRICULUM_EXPANDED_KNOWLEDGE } from '../knowledge/curriculum_expanded';
 
 interface ChatDB extends DBSchema {
   messages: {
@@ -55,7 +51,6 @@ export class GeminiService {
 
   readonly EMI_AVATAR = '/emi-avatar.png';
   
-  private ai: GoogleGenAI | null = null;
   private dbPromise: Promise<IDBPDatabase<ChatDB>> | null = null;
   private dataService = inject(DataService);
   
@@ -63,157 +58,14 @@ export class GeminiService {
   isLoading = signal<boolean>(false);
 
   private get systemInstruction(): string {
-    return `You are EMI AI, an educational tutor for MANEB secondary school students (Form 1–4, MSCE, JCE).
+    return `You are EMI AI, a Malawi secondary school tutor.
+Answer in MANEB exam format:
+- Physics/Chem/Agri: Points/Steps.
+- Biology: 1-3 lines max.
+- Humanities: Title, Intro, 5 paragraphs, Conclusion.
+- Chichewa Lit: Title, Intro, 5 paragraphs (4-5 points each), Conclusion.
 
-Your goal is to give answers exactly in the format required by Malawi teachers and examiners.
-
-----------------------------------
-GENERAL RULE
-----------------------------------
-- Always follow subject-specific answering formats strictly
-- Do not mix formats between subjects
-- Do not add introductions or conclusions where not required
-- Match the number of points to marks when possible
-- Keep answers exam-focused and structured
-
-----------------------------------
-SUBJECT-SPECIFIC RULES
-----------------------------------
-
-[PHYSICS / CHEMISTRY / AGRICULTURE]
-
-1. Experiments (e.g. "Describe an experiment"):
-- Use bullet points labeled: a, b, c, d...
-- No introduction
-- No conclusion
-- Include: apparatus, setup, procedure, observation, conclusion (as a point, not a section)
-
-2. Explanations (e.g. "Explain how hydraulic brakes work"):
-- Write in ONE paragraph (not bullet points)
-- Use 4–5 clear points depending on marks
-- Separate points using full stops
-- Each sentence = one marking point
-
-----------------------------------
-
-[BIOLOGY]
-
-1. Essay / descriptive questions:
-- No title
-- No introduction
-- No conclusion
-- Answer must be 1–2–3 lines only (very concise)
-- Include about 5 key points within the lines
-
-----------------------------------
-
-[HISTORY / SOCIAL STUDIES / LIFE SKILLS]
-
-Essay structure must be:
-
-- Title
-- Introduction (1 paragraph)
-- Main body:
-  - 5 points
-  - Each point in its own paragraph
-  - Each paragraph = 2–4 lines
-- Conclusion (1 paragraph)
-
-----------------------------------
-
-[ENGLISH & CHICHEWA — COMPOSITION WRITING]
-
-Applies to:
-- Letter
-- Composition
-- Report
-- Speech
-- Short story
-
-Rules:
-- 350–500 words
-- Follow correct format depending on type
-
-STRUCTURE GUIDELINES:
-
-[Formal Letter / Report / Speech]
-- Introduction
-- Location (except speech)
-- Evidence of the problem
-- Causes
-- Effects
-- Solutions
-- Measures (include government support)
-- Conclusion
-
-[Speech Special Rule]
-- Start with:
-  "Guest of Honour, distinguished guests, ladies and gentlemen..."
-- Do NOT include location
-
-----------------------------------
-
-[ENGLISH LITERATURE (e.g. Macbeth, The Pearl)]
-
-- Use 8 points
-- Each point = 3–5 lines
-- Title: optional
-- Introduction: optional
-- Conclusion: optional
-- Focus on content quality (no strict marks format)
-
-----------------------------------
-
-[CHICHEWA LITERATURE (e.g. NTHONDO, CHAMDOTHE)]
-
-- Title required
-- Introduction required
-- Conclusion required
-- 5 paragraphs total
-- Each paragraph:
-  - 4–6 lines
-  - Contains 4–5 points
-
-----------------------------------
-
-[STRAIGHTFORWARD QUESTIONS]
-
-- Answer normally using:
-  - Definitions (1 sentence)
-  - Short explanations
-  - Equations or steps where needed
-
-----------------------------------
-
-FINAL INSTRUCTION
-----------------------------------
-Always format answers exactly as required by the subject.
-
-Do not explain your formatting choices.
-
-Focus on helping the student score maximum marks.
-
-========================
-CORE KNOWLEDGE BASE
-========================
-**Buku la Nthondo (Chichewa Literature):**
-${NTHONDO_KNOWLEDGE}
-
-**Expanded Curriculum Knowledge:**
-- Literature in English: ${CURRICULUM_EXPANDED_KNOWLEDGE.englishLiterature}
-- Geography (Map Reading): ${CURRICULUM_EXPANDED_KNOWLEDGE.geography}
-- Social & Development Studies: ${CURRICULUM_EXPANDED_KNOWLEDGE.socialStudies}
-- Life Skills: ${CURRICULUM_EXPANDED_KNOWLEDGE.lifeSkills}
-- Chemistry: ${CURRICULUM_EXPANDED_KNOWLEDGE.chemistry}
-- Biology: ${CURRICULUM_EXPANDED_KNOWLEDGE.biology}
-- Agriculture: ${CURRICULUM_EXPANDED_KNOWLEDGE.agriculture}
-- English Grammar: ${CURRICULUM_EXPANDED_KNOWLEDGE.englishGrammar}
-- Chichewa Grammar: ${CURRICULUM_EXPANDED_KNOWLEDGE.chichewaGrammar}
-- Zisudzo (Chichewa Literature): ${CURRICULUM_EXPANDED_KNOWLEDGE.chichewaLiterature}
-
-**Available Library Materials Titles:**
-${this.dataService.notes().map(n => `- ${n.title}`).join('\n')}
-`;
+Be accurate and concise relative to the MSCE Syllabus.`;
   }
 
   constructor() {
@@ -223,16 +75,55 @@ ${this.dataService.notes().map(n => `- ${n.title}`).join('\n')}
     }
   }
 
-  private async getAI() {
-    if (!this.ai) {
-      const { GoogleGenAI } = await import('@google/genai');
-      const apiKey = typeof GEMINI_API_KEY !== 'undefined' ? GEMINI_API_KEY : '';
-      if (!apiKey) {
-        console.error('GEMINI_API_KEY is not defined. AI features will not work.');
-      }
-      this.ai = new GoogleGenAI({ apiKey });
+  private getCerebrasKey(): string {
+    return typeof CEREBRAS_API_KEY !== 'undefined' ? CEREBRAS_API_KEY : '';
+  }
+
+  private async callCerebras(prompt: string, role = 'user', isJson = false) {
+    const cerebrasKey = this.getCerebrasKey();
+    if (!cerebrasKey) {
+      throw new Error('CEREBRAS_API_KEY is missing');
     }
-    return this.ai;
+
+    const messages = [
+      { role: 'system', content: this.systemInstruction }
+    ];
+
+    if (role === 'chat') {
+      // Add history
+      messages.push(...this.messages().map(msg => ({
+        role: msg.role === 'model' ? 'assistant' : 'user',
+        content: msg.content
+      })));
+    } else {
+      messages.push({ role: 'user', content: prompt });
+    }
+
+    const response = await fetch("https://api.cerebras.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${cerebrasKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "model": "llama3.1-8b",
+        "messages": messages,
+        "max_completion_tokens": 1024,
+        "temperature": 0.2,
+        "top_p": 1,
+        "stream": false,
+        ...(isJson ? { "response_format": { "type": "json_object" } } : {})
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Cerebras API error details:', errorData);
+      throw new Error(`Cerebras API failed with status ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || (isJson ? '{}' : 'Sorry, I could not generate a response.');
   }
 
   private async getDB() {
@@ -291,82 +182,25 @@ ${this.dataService.notes().map(n => `- ${n.title}`).join('\n')}
     this.isLoading.set(true);
 
     try {
-      try {
-        const ai = await this.getAI();
-        // Format history for Gemini
-        const history = this.messages().slice(0, -1).map(msg => ({
-          role: msg.role,
-          parts: [{ text: msg.content }]
-        }));
-
-        const chat = ai.chats.create({
-          model: 'gemini-flash-latest',
-          history,
-          config: {
-            tools: [{ googleSearch: {} }],
-            systemInstruction: this.systemInstruction,
-          }
-        });
-
-        const response = await chat.sendMessage({ message: content });
-        await this.processResponse(response.text || 'Sorry, I could not generate a response.');
-      } catch (geminiError: unknown) {
-        console.warn('Gemini error, attempting fallback to OpenRouter:', geminiError);
-        
-        // Check if we have an OpenRouter key
-        const openRouterKey = typeof OPENROUTER_API_KEY !== 'undefined' ? OPENROUTER_API_KEY : '';
-        if (!openRouterKey) {
-          console.error('OpenRouter fallback failed: OPENROUTER_API_KEY is missing or undefined.');
-          throw new Error('Both Gemini and OpenRouter fallback failed (OpenRouter key missing)');
-        }
-
-        try {
-          const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${openRouterKey}`,
-              "Content-Type": "application/json",
-              "HTTP-Referer": window.location.origin,
-              "X-Title": "Emi AI Educational Tutor"
-            },
-            body: JSON.stringify({
-              "model": "meta-llama/llama-3.1-8b-instruct:free",
-              "messages": [
-                { "role": "system", "content": this.systemInstruction },
-                ...this.messages().map(msg => ({
-                  "role": msg.role === 'model' ? 'assistant' : 'user',
-                  "content": msg.content
-                }))
-              ]
-            })
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('OpenRouter API error details:', errorData);
-            throw new Error(`OpenRouter API failed with status ${response.status}`);
-          }
-
-          const data = await response.json();
-          const aiText = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.';
-          await this.processResponse(aiText);
-        } catch (fallbackError) {
-          console.error('Critical: OpenRouter fallback also failed:', fallbackError);
-          throw fallbackError;
-        }
-      }
+      const aiText = await this.callCerebras(content, 'chat');
+      await this.processResponse(aiText);
     } catch (error: unknown) {
       console.error('Critical AI Communication Failure:', error);
       
       let errorMessage = '⚠️ I\'m having trouble connecting to my brain. Please check your internet or try again later.';
       
-      const err = error as { message?: string };
+      const err = error as { message?: string; name?: string };
+      
       if (!navigator.onLine) {
         errorMessage = '⚠️ You seem to be offline. Try again when you have a connection.';
-      } else if (err?.message?.includes('OPENROUTER_API_KEY')) {
-        errorMessage = '⚠️ Configuration error: OpenRouter key is missing. Please contact support.';
+      } else if (err?.message?.includes('CEREBRAS_API_KEY')) {
+        errorMessage = '⚠️ Configuration error: Cerebras key is missing. Please contact support.';
       } else if (err?.message?.includes('quota') || err?.message?.includes('429')) {
-        errorMessage = '⚠️ Both primary and fallback limits reached. Please wait a moment and try again.';
+        errorMessage = '⚠️ AI usage limits reached for today. Please try again later.';
+      } else if (err?.name === 'TypeError' && err?.message?.includes('fetch')) {
+        errorMessage = '⚠️ Connection blocked. Please check your network connection.';
+      } else if (err?.message) {
+        errorMessage = `⚠️ AI Error: ${err.message}`;
       }
 
       this.processResponse(errorMessage);
@@ -425,47 +259,8 @@ ${this.dataService.notes().map(n => `- ${n.title}`).join('\n')}
     Generate 5 challenging questions. Do not include any other text or markdown formatting.`;
 
     try {
-      try {
-        const ai = await this.getAI();
-        const response = await ai.models.generateContent({
-          model: 'gemini-flash-latest',
-          contents: prompt,
-          config: {
-            responseMimeType: 'application/json'
-          }
-        });
-        const text = response.text || '';
-        // Clean up potential markdown code blocks
-        const jsonStr = text.replace(/```json|```/g, '').trim();
-        return JSON.parse(jsonStr) as GeneratedQuiz;
-      } catch (geminiError) {
-        console.warn('Gemini error generating quiz, attempting fallback to OpenRouter:', geminiError);
-        const openRouterKey = typeof OPENROUTER_API_KEY !== 'undefined' ? OPENROUTER_API_KEY : '';
-        if (!openRouterKey) throw geminiError;
-
-        const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${openRouterKey}`,
-            "Content-Type": "application/json",
-            "HTTP-Referer": window.location.origin,
-            "X-Title": "Emi AI Educational Tutor"
-          },
-          body: JSON.stringify({
-            "model": "meta-llama/llama-3.1-8b-instruct:free",
-            "messages": [
-              { "role": "system", "content": "You are an MSCE curriculum expert." },
-              { "role": "user", "content": prompt }
-            ],
-            "response_format": { "type": "json_object" }
-          })
-        });
-
-        if (!openRouterResponse.ok) throw new Error('OpenRouter API failed');
-        const data = await openRouterResponse.json();
-        const aiText = data.choices?.[0]?.message?.content || '{}';
-        return JSON.parse(aiText) as GeneratedQuiz;
-      }
+      const aiText = await this.callCerebras(prompt, 'user', true);
+      return JSON.parse(aiText) as GeneratedQuiz;
     } catch (error) {
       console.error('Error generating quiz:', error);
       throw error;
@@ -492,48 +287,8 @@ Return ONLY valid JSON matching this schema:
 }`;
 
     try {
-      try {
-        const ai = await this.getAI();
-        const response = await ai.models.generateContent({
-          model: 'gemini-flash-latest',
-          contents: prompt,
-          config: {
-            responseMimeType: 'application/json',
-          }
-        });
-
-        if (response.text) {
-          return JSON.parse(response.text) as GeneratedSEO;
-        }
-        return null;
-      } catch (geminiError) {
-        console.warn('Gemini error generating SEO, attempting fallback to OpenRouter:', geminiError);
-        const openRouterKey = typeof OPENROUTER_API_KEY !== 'undefined' ? OPENROUTER_API_KEY : '';
-        if (!openRouterKey) throw geminiError;
-
-        const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${openRouterKey}`,
-            "Content-Type": "application/json",
-            "HTTP-Referer": window.location.origin,
-            "X-Title": "Emi AI Educational Tutor"
-          },
-          body: JSON.stringify({
-            "model": "meta-llama/llama-3.1-8b-instruct:free",
-            "messages": [
-              { "role": "system", "content": "You are an expert SEO strategist." },
-              { "role": "user", "content": prompt }
-            ],
-            "response_format": { "type": "json_object" }
-          })
-        });
-
-        if (!openRouterResponse.ok) throw new Error('OpenRouter API failed');
-        const data = await openRouterResponse.json();
-        const aiText = data.choices?.[0]?.message?.content || null;
-        return aiText ? JSON.parse(aiText) as GeneratedSEO : null;
-      }
+      const aiText = await this.callCerebras(prompt, 'user', true);
+      return aiText ? JSON.parse(aiText) as GeneratedSEO : null;
     } catch (error) {
       console.error('Error generating SEO:', error);
       return null;

@@ -13,6 +13,15 @@ import { getFirestore, doc, updateDoc, collection, addDoc } from 'firebase/fires
 
 // Safely resolve the config path
 const getFirebaseConfig = () => {
+  const envConfig = process.env['FIREBASE_CONFIG'];
+  if (envConfig) {
+    try {
+      return JSON.parse(envConfig);
+    } catch {
+      console.error('Failed to parse FIREBASE_CONFIG env var');
+    }
+  }
+
   try {
     const configPath = join(process.cwd(), 'firebase-applet-config.json');
     if (existsSync(configPath)) {
@@ -24,14 +33,24 @@ const getFirebaseConfig = () => {
       return JSON.parse(readFileSync(buildConfigPath, 'utf8'));
     }
   } catch (err) {
-    console.error('Failed to load firebase config:', err);
+    console.warn('Failed to load firebase config file:', err);
   }
-  return {};
+  return null;
 };
 
 const firebaseConfig = getFirebaseConfig();
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
+let db: any = null;
+
+if (firebaseConfig && Object.keys(firebaseConfig).length > 0) {
+  try {
+    const firebaseApp = initializeApp(firebaseConfig);
+    db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
+  } catch (err) {
+    console.error('Firebase initialization failed:', err);
+  }
+} else {
+  console.warn('Firebase configuration missing. Database features will be unavailable.');
+}
 
 let serverDistFolder = '';
 try {

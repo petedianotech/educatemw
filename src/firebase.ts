@@ -23,22 +23,26 @@ let analytics: Analytics | null = null;
 let performance: FirebasePerformance | null = null;
 
 if (typeof window !== 'undefined') {
-  isAnalyticsSupported().then(supported => {
-    if (supported) {
-      try {
+  const initAnalytics = async () => {
+    if (!navigator.onLine) return; // Don't even try if offline
+    try {
+      const supported = await isAnalyticsSupported();
+      if (supported) {
         analytics = getAnalytics(app);
-      } catch (err) {
-        console.warn('Firebase Analytics failed to initialize:', err);
       }
+    } catch {
+      // Be completely silent here to avoid global error bubbles
     }
-  }).catch(err => {
-    console.warn('isAnalyticsSupported check failed:', err);
-  });
+  };
+
+  initAnalytics();
   
   try {
-    performance = getPerformance(app);
-  } catch (err) {
-    console.warn('Firebase Performance failed to initialize:', err);
+    if (navigator.onLine) {
+      performance = getPerformance(app);
+    }
+  } catch {
+    // Be silent here
   }
 }
 

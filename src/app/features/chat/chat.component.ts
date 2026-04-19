@@ -201,24 +201,39 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
 
       <!-- Input Area -->
       <div class="p-4 bg-white border-t border-slate-200 pb-safe">
-        <div class="max-w-4xl mx-auto flex items-end gap-3">
-          <div class="flex-1 bg-slate-100 rounded-xl focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500 transition-all shadow-inner overflow-hidden">
-            <textarea 
-              [ngModel]="inputText()"                
-              (ngModelChange)="inputText.set($event)"
-              (keydown.enter)="handleEnter($event)"
-              placeholder="Message..."
-              class="w-full py-3 px-4 bg-transparent border-none focus:ring-0 resize-none outline-none text-[15px] font-medium text-slate-900 placeholder-slate-500"
-              rows="1"
-              style="min-height: 48px; max-height: 120px; display: block;"
-            ></textarea>
-          </div>
-          <button 
-            (click)="sendMessage()"
-            [disabled]="!inputText().trim() || gemini.isLoading()"
-            class="flex-shrink-0 w-12 h-12 flex items-center justify-center text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-all">
-            <mat-icon class="scale-100">send</mat-icon>
-          </button>
+        <div class="max-w-4xl mx-auto">
+          @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits || 0) <= 0) {
+            <div class="bg-slate-900 rounded-[2rem] p-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500 relative overflow-hidden">
+              <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+              <mat-icon class="text-amber-400 mb-3 !w-10 !h-10 !text-[40px]">workspace_premium</mat-icon>
+              <h4 class="font-black text-white text-xl mb-2 tracking-tight">Daily Limit Reached</h4>
+              <p class="text-sm text-slate-400 font-medium mb-6">You have finished your credits for today. Please wait until tomorrow.</p>
+              <a routerLink="/upgrade" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-500 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/30 hover:scale-105 transition-transform">
+                <span>Upgrade Now to have Unlimited Access</span>
+                <mat-icon>arrow_forward</mat-icon>
+              </a>
+            </div>
+          } @else {
+            <div class="flex items-end gap-3">
+              <div class="flex-1 bg-slate-100 rounded-xl focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500 transition-all shadow-inner overflow-hidden">
+                <textarea 
+                  [ngModel]="inputText()"                
+                  (ngModelChange)="inputText.set($event)"
+                  (keydown.enter)="handleEnter($event)"
+                  placeholder="Message..."
+                  class="w-full py-3 px-4 bg-transparent border-none focus:ring-0 resize-none outline-none text-[15px] font-medium text-slate-900 placeholder-slate-500"
+                  rows="1"
+                  style="min-height: 48px; max-height: 120px; display: block;"
+                ></textarea>
+              </div>
+              <button 
+                (click)="sendMessage()"
+                [disabled]="!inputText().trim() || gemini.isLoading()"
+                class="flex-shrink-0 w-12 h-12 flex items-center justify-center text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-all">
+                <mat-icon class="scale-100">send</mat-icon>
+              </button>
+            </div>
+          }
         </div>
       </div>
     </div>

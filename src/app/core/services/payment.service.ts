@@ -52,7 +52,8 @@ export class PaymentService {
     if (!contentType || !contentType.includes('application/json')) {
       const text = await response.text();
       console.error('Non-JSON response received:', text);
-      throw new Error('Server returned an invalid response. This usually happens if the payment service is temporarily unavailable or misconfigured.');
+      const snippet = text.substring(0, 100).replace(/<[^>]*>/g, '').trim();
+      throw new Error(`Server returned an invalid response (${response.status} ${response.statusText}). ${snippet ? 'Response start: ' + snippet : ''}`);
     }
 
     const data = await response.json();
