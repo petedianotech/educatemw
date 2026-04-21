@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, 
 import { DataService, Quiz, QuizResult } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
 import { GeminiService, GeneratedQuiz } from '../../core/services/gemini.service';
+import { UnityAdsService } from '../../core/services/unity-ads.service';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -53,7 +54,7 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-xl font-black text-slate-900 flex items-center gap-2">
                     <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center overflow-hidden">
-                      <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                      <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                     </div>
                     AI Quiz Generator
                   </h3>
@@ -86,7 +87,7 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
                       Generating...
                     } @else {
                       <div class="w-6 h-6 rounded-lg overflow-hidden">
-                        <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                        <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                       </div>
                       Generate Quiz
                     }
@@ -405,14 +406,31 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
                 </div>
 
                 <!-- Ad Reward Option -->
-                <div class="mt-8 pt-8 border-t border-slate-100 italic text-slate-400 text-xs">
-                  <p>Ad rewards are currently unavailable.</p>
+                <div class="mt-8 pt-8 border-t border-slate-100 flex flex-col items-center">
+                  @if (unityAdsService.isReady && !rewardClaimed()) {
+                    <div class="text-center">
+                       <button (click)="watchRewardAd()" [disabled]="watchingAd()" class="btn-primary w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-orange-500/30">
+                         <mat-icon>{{ watchingAd() ? 'hourglass_empty' : 'play_circle_filled' }}</mat-icon>
+                         {{ watchingAd() ? 'Loading Video...' : 'Watch Video (+50 Coins)' }}
+                       </button>
+                       <p class="text-[10px] text-slate-400 mt-2 uppercase tracking-wide">Sponsored by Unity Ads</p>
+                    </div>
+                  } @else if (rewardClaimed()) {
+                    <div class="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-full flex items-center gap-2 font-bold text-sm">
+                      <mat-icon class="text-emerald-500">check_circle</mat-icon>
+                      Reward Claimed! 
+                    </div>
+                  } @else {
+                    <div class="italic text-slate-400 text-xs">
+                      <p>Ad rewards are currently unavailable.</p>
+                    </div>
+                  }
                 </div>
 
               </div>
               
               <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <button (click)="view.set('list')" class="btn-primary px-8 py-3.5">
+                <button (click)="goBackToList()" class="btn-primary px-8 py-3.5">
                   Back to Quizzes
                 </button>
                 <button (click)="startQuiz(activeQuiz()!)" class="btn-secondary px-8 py-3.5">
@@ -431,6 +449,7 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   authService = inject(AuthService);
   gemini = inject(GeminiService);
+  unityAdsService = inject(UnityAdsService);
   String = String;
 
   view = signal<'list' | 'taking' | 'result'>('list');
@@ -445,6 +464,10 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   timerInterval: ReturnType<typeof setInterval> | undefined;
   
   lastResult = signal<QuizResult | null>(null);
+  
+  // Ad state
+  watchingAd = signal(false);
+  rewardClaimed = signal(false);
 
   // AI Generator state
   showAiGenerator = signal(false);
@@ -485,6 +508,32 @@ export class QuizzesComponent implements OnInit, OnDestroy {
     this.stopTimer();
   }
 
+  async goBackToList() {
+    this.view.set('list');
+    // Show interstitial ad when returning to list if user didn't watch a rewarded ad
+    if (!this.rewardClaimed()) {
+      await this.unityAdsService.showInterstitial();
+    }
+  }
+
+  async watchRewardAd() {
+    if (this.watchingAd() || this.rewardClaimed()) return;
+    this.watchingAd.set(true);
+    
+    const success = await this.unityAdsService.showRewarded();
+    
+    if (success) {
+      // Award the user 50 coins using the DataService
+      const user = this.authService.currentUser();
+      if (user) {
+        await this.dataService.addCoins(user.uid, 50);
+      }
+      this.rewardClaimed.set(true);
+    }
+    
+    this.watchingAd.set(false);
+  }
+
   getQuizDate(createdAt: Date | Timestamp | string | null): Date | null {
     if (!createdAt) return null;
     if (createdAt instanceof Timestamp) return createdAt.toDate();
@@ -496,6 +545,8 @@ export class QuizzesComponent implements OnInit, OnDestroy {
     this.activeQuiz.set(quiz);
     this.currentQuestionIndex.set(0);
     this.userAnswers.set({});
+    this.rewardClaimed.set(false);
+    this.watchingAd.set(false);
     this.view.set('taking');
     this.timeLeft.set(quiz.timeLimit * 60);
     this.startTimer();

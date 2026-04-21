@@ -49,7 +49,7 @@ export class GeminiService {
 
   private _platformId = inject(PLATFORM_ID);
 
-  readonly EMI_AVATAR = 'https://picsum.photos/seed/emi/200/200'; // Fallback until user uploads /emi-avatar.png
+  readonly EMI_AVATAR = 'https://i.ibb.co/8DVmYDn3/emi-avatar.png';
   
   private dbPromise: Promise<IDBPDatabase<ChatDB>> | null = null;
   private dataService = inject(DataService);
@@ -57,8 +57,7 @@ export class GeminiService {
   messages = signal<ChatMessage[]>([]);
   isLoading = signal<boolean>(false);
 
-  private get systemInstruction(): string {
-    return `You are EMI AI, an expert Malawi secondary school tutor for the MSCE syllabus. 
+  private readonly systemInstruction = `You are EMI AI, an expert Malawi secondary school tutor for the MSCE syllabus. 
 
 SUBJECT MASTERY: You thoroughly understand Biology, Physics, Chemistry, Agriculture, Mathematics, Geography, History, Social Studies, and English (including grammar, essays, and formal letter writing). You MUST help students with these educational topics.
 
@@ -72,13 +71,59 @@ MANEB EXAM FORMATTING:
 - TONE & VOCABULARY: Explain everything in simple, clear English suitable for 15-20 year old students. Avoid overly complex jargon and long paragraphs.
 
 Be accurate, encouraging, and concise.`;
-  }
+
+  private readonly supportInstruction = `You are the Official Support AI for "Educate MW", Malawi's #1 digital learning platform for MSCE students. 
+
+APP OVERVIEW: 
+Educate MW provides:
+1. emi AI Tutor: An AI that helps with MSCE subjects (Biology, Physics, Math, etc.).
+2. Study Library: PDF downloads for past papers and notes.
+3. Video Lessons: Expert-led tutorials.
+4. Practice Quizzes: MANEB-style practice with rewards.
+5. Leaderboard: Rank against other students.
+6. Forum: Discussion community.
+7. Premium (Pro): Unlimited AI credits, no ads, exclusive books. Costs 5,000 MWK per year via PayChangu (Airtel/TNM).
+
+COMMON ISSUES:
+- Payment not working: Use the "Upgrade" page. If redirect fails, report to Peter on WhatsApp.
+- Missing AI Credits: Free users get limited daily credits. Refer friends (Settings > Refer & Earn) to get more, or go Pro.
+- Reset Password: Use the security questions in the login screen.
+- Inappropriate Ads: Report them via the "Ad Feedback" link in Settings or Dashboard.
+
+YOUR TONE: Reliable, helpful, and concise. 
+URGENT ISSUES: For account recovery or billing failures that you cannot solve, tell users to contact Peter Damiano at +265 987 066 051 on WhatsApp.`;
 
   constructor() {
     if (isPlatformBrowser(this._platformId)) {
       this.loadHistory();
       this.dataService.subscribeToNotes();
     }
+  }
+
+  async getSupportResponse(userQuery: string): Promise<string> {
+    const cerebrasKey = this.getCerebrasKey();
+    if (!cerebrasKey) return "I can't answer right now. Please contact Peter on WhatsApp: +265 987 066 051";
+
+    const response = await fetch("https://api.cerebras.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${cerebrasKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "model": "llama3.1-8b",
+        "messages": [
+          { role: 'system', content: this.supportInstruction },
+          { role: 'user', content: userQuery }
+        ],
+        "max_completion_tokens": 512,
+        "temperature": 0.3
+      })
+    });
+
+    if (!response.ok) return "Sorry, I'm having trouble connecting. Reach out on WhatsApp: +265 987 066 051";
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || "I didn't catch that. Try asking about Pro, Credits, or Exams.";
   }
 
   private getCerebrasKey(): string {

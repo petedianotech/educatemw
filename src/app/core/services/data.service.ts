@@ -324,6 +324,17 @@ export class DataService {
     }
   }
 
+  async addCoins(userId: string, amount: number) {
+    if (!userId) return;
+    try {
+      await updateDoc(doc(db, 'users', userId), {
+        coins: increment(amount)
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `users/${userId}`);
+    }
+  }
+
   // --- Community Posts ---
   subscribeToPosts(limitCount = 20) {
     if (this.postsUnsubscribe) return;

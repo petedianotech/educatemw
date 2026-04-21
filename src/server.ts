@@ -122,6 +122,52 @@ app.post('/api/paychangu/initialize', async (req, res) => {
   }
 });
 
+app.get('/api/paychangu/verify', async (req, res) => {
+  try {
+    const { tx_ref } = req.query;
+    const secretKey = process.env['PAYCHANGU_SECRET_KEY'];
+
+    if (!secretKey) {
+      return res.status(500).json({ error: 'PayChangu Secret Key not configured' });
+    }
+
+    if (!tx_ref) {
+      return res.status(400).json({ error: 'Missing tx_ref' });
+    }
+
+    // Verify with PayChangu API
+    const response = await fetch(`https://api.paychangu.com/payment-verification/${tx_ref}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${secretKey}`
+      }
+    });
+
+    const data = await response.json();
+    
+    if (response.ok && data.status === 'success' && data.data?.status === 'success') {
+      // Transaction is successful, update user in background if not already done by webhook
+      const txRef = tx_ref as string;
+      if (txRef.startsWith('upg-')) {
+        const userId = txRef.split('-')[1];
+        if (db) {
+          const userRef = doc(db, 'users', userId);
+          await updateDoc(userRef, { 
+            isPro: true,
+            premiumUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+          }).catch(err => console.error('Error updating user in verify:', err));
+        }
+      }
+    }
+
+    return res.json(data);
+  } catch (error) {
+    console.error('PayChangu Verification Error:', error);
+    return res.status(500).json({ error: 'Failed to verify payment' });
+  }
+});
+
 app.post('/api/paychangu-webhook', async (req, res) => {
   try {
     const payload = req.body;

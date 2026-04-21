@@ -3,6 +3,7 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { DataService } from '../../core/services/data.service';
 import { GeminiService } from '../../core/services/gemini.service';
+import { UnityAdsService } from '../../core/services/unity-ads.service';
 import { MatIconModule } from '@angular/material/icon';
 import { Timestamp } from 'firebase/firestore';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
@@ -279,6 +280,16 @@ interface Notification {
             </div>
           </div>
         }
+
+        <!-- Ad Report Link -->
+        <div class="mt-4 pb-8 flex justify-center">
+          <a href="https://wa.me/265987066051?text=Hello%20Peter,%20I%20am%20reporting%20an%20ad%20I%20saw%20in%20Educate%20MW." 
+             target="_blank"
+             class="flex items-center gap-2 group transition-all">
+            <mat-icon class="text-slate-300 group-hover:text-amber-500 !w-4 !h-4 !text-[16px] transition-colors">info_outline</mat-icon>
+            <span class="text-[9px] font-black text-slate-400 group-hover:text-slate-600 uppercase tracking-[0.15em] transition-colors">See an inappropriate ad? Report it</span>
+          </a>
+        </div>
       </div>
 
       <!-- Notification Detail Modal -->
@@ -332,6 +343,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   gemini = inject(GeminiService);
   dataService = inject(DataService);
+  unityAdsService = inject(UnityAdsService);
   route = inject(ActivatedRoute);
   
   updateDismissed = signal(false);
@@ -356,6 +368,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
+    this.unityAdsService.showBanner();
     this.dataService.subscribeToAppUpdates();
     this.dataService.subscribeToExamDates();
     this.dataService.subscribeToNotes();
@@ -423,6 +436,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.unityAdsService.hideBanner();
     this.dataService.unsubscribeFromAppUpdates();
     this.dataService.unsubscribeFromExamDates();
     this.dataService.unsubscribeFromNotes();

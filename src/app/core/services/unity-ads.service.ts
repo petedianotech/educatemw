@@ -27,14 +27,36 @@ export class UnityAdsService {
       try {
         await UnityAds.initialize({
           gameId: this.gameId,
-          testMode: true // TEST MODE ENABLED so you can safely verify build on Codemagic!
+          testMode: false // REAL ADS ENABLED - Production Mode
         });
         
-        console.log('Unity Ads Initialized Successfully for Platform:', Capacitor.getPlatform());
+        console.log('Unity Ads Initialized Successfully in PRODUCTION for Platform:', Capacitor.getPlatform());
         this.isReady = true;
+
+        // Auto-load banner on init if it's dashboard
+        // Note: Actual showing is handled by components that want it
       } catch (error) {
         console.error('Failed to initialize Unity Ads:', error);
       }
+    }
+  }
+
+  async showBanner() {
+    if (!this.isReady || !Capacitor.isNativePlatform()) return;
+    try {
+      await (UnityAds as any).loadBanner({ placementId: this.bannerAdUnitId });
+      await (UnityAds as any).showBanner();
+    } catch (error) {
+      console.error('Failed to load/show Banner Ad:', error);
+    }
+  }
+
+  async hideBanner() {
+    if (!this.isReady || !Capacitor.isNativePlatform()) return;
+    try {
+      await (UnityAds as any).hideBanner();
+    } catch (error) {
+      console.error('Failed to hide Banner Ad:', error);
     }
   }
 
@@ -50,13 +72,15 @@ export class UnityAdsService {
     }
   }
 
-  async showRewarded() {
-    if (!this.isReady || !Capacitor.isNativePlatform()) return;
+  async showRewarded(): Promise<boolean> {
+    if (!this.isReady || !Capacitor.isNativePlatform()) return false;
     try {
       await UnityAds.loadRewardedVideo({ placementId: this.rewardedAdUnitId });
-      await UnityAds.showRewardedVideo();
+      const result = await UnityAds.showRewardedVideo();
+      return result.success;
     } catch (error) {
       console.error('Failed to load/show Rewarded Ad:', error);
+      return false;
     }
   }
 }

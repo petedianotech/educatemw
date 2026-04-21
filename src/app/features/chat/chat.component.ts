@@ -135,7 +135,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
                 <span>"Difference between plant and animal cells"</span>
                 <mat-icon class="text-slate-300 group-hover:text-indigo-600 transition-colors">arrow_forward</mat-icon>
               </button>
-              <button (click)="inputText.set('What is Newton\\'s second law of motion? (Physics)')" class="group p-4 bg-white rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 border border-slate-200 text-left shadow-sm flex items-center justify-between">
+              <button (click)="inputText.set('What is the second law of motion by Newton? (Physics)')" class="group p-4 bg-white rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 border border-slate-200 text-left shadow-sm flex items-center justify-between">
                 <span>"Newton's second law of motion"</span>
                 <mat-icon class="text-slate-300 group-hover:text-indigo-600 transition-colors">arrow_forward</mat-icon>
               </button>

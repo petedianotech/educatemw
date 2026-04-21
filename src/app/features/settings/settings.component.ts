@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal, PLATFORM_ID } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
+import { GeminiService } from '../../core/services/gemini.service';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -234,6 +235,29 @@ import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/comm
           </div>
         </section>
 
+        <!-- Ad Feedback Section -->
+        <section class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
+          <div class="p-5 border-b border-slate-50 flex items-center justify-between">
+            <h3 class="font-black text-slate-900 text-sm flex items-center gap-2">
+              <mat-icon class="text-indigo-600 text-sm">ad_units</mat-icon>
+              Ad Feedback
+            </h3>
+            <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Help us improve</span>
+          </div>
+          <div class="p-5 space-y-4">
+            <p class="text-[10px] text-slate-500 font-medium leading-relaxed px-1">
+              Are you seeing ads that are not educational or concern you? We want to keep this app safe for all students. Report any issues directly to us.
+            </p>
+            
+            <a href="https://wa.me/265987066051?text=Hello%20Peter,%20I%20am%20reporting%20an%20ad%20I%20saw%20in%20Educate%20MW%20that%20seems%20inappropriate." 
+               target="_blank"
+               class="w-full py-4 bg-emerald-500 text-white rounded-xl font-black shadow-lg shadow-emerald-100 hover:bg-emerald-600 transition-all active:scale-[0.98] flex items-center justify-center gap-3">
+              <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.005 0C5.37 0 .002 5.368.002 12.006c0 2.093.548 4.136 1.594 5.932L.007 24l6.337-1.663a11.815 11.815 0 005.661 1.442h.005c6.635 0 12.003-5.368 12.003-12.006 0-3.205-1.248-6.22-3.518-8.49z"/></svg>
+              Report Ads to Peter
+            </a>
+          </div>
+        </section>
+
         <!-- Referral System -->
         <section class="bg-slate-950 rounded-[2rem] p-6 text-white shadow-2xl shadow-indigo-900/20 relative overflow-hidden border border-white/5">
           <!-- Decorative background -->
@@ -349,32 +373,104 @@ import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/comm
           </button>
         </section>
 
-        <!-- FAQ Section -->
+        <!-- Help Centre Section -->
         <section class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
           <div class="p-5 border-b border-slate-50">
             <h3 class="font-black text-slate-900 text-sm flex items-center gap-2">
-              <mat-icon class="text-indigo-600 text-sm">help_outline</mat-icon>
-              Frequently Asked Questions
+              <mat-icon class="text-indigo-600 text-sm">contact_support</mat-icon>
+              Help Centre
             </h3>
           </div>
-          <div class="p-5 space-y-4">
-            <div class="space-y-2">
-              <p class="text-xs font-black text-slate-900">How do I upgrade to PRO?</p>
-              <p class="text-[10px] text-slate-500 font-medium">Go to the dashboard and click the "Upgrade" banner, or use the manual payment methods listed there.</p>
+          
+          <div class="p-5 space-y-6">
+            <!-- AI Support Quick Chat -->
+            <div class="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100 shadow-sm">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white">
+                  <mat-icon>smart_toy</mat-icon>
+                </div>
+                <div>
+                  <h4 class="text-sm font-black text-slate-900 leading-none">Support AI</h4>
+                  <p class="text-[9px] font-bold text-indigo-500 uppercase tracking-widest mt-1">Faster response</p>
+                </div>
+              </div>
+              
+              @if (aiSupportMessage()) {
+                <div class="mb-4 p-4 bg-white rounded-2xl border border-indigo-100 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <p class="text-xs text-slate-700 leading-relaxed font-medium">{{ aiSupportMessage() }}</p>
+                  <button (click)="aiSupportMessage.set(null)" class="mt-3 text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-700">Clear</button>
+                </div>
+              }
+
+              <div class="flex gap-2">
+                <input type="text" 
+                       [(ngModel)]="helpQuery" 
+                       placeholder="Ask about Pro, Credits, Exams..." 
+                       class="flex-1 px-4 py-3 bg-white border border-indigo-100 rounded-xl font-bold placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all outline-none text-xs text-slate-700 shadow-sm">
+                <button (click)="askSupportAi()" 
+                        [disabled]="!helpQuery().trim() || aiSupportLoading()"
+                        class="px-4 bg-indigo-600 text-white rounded-xl font-black shadow-md shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center">
+                  @if (aiSupportLoading()) {
+                    <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  } @else {
+                    <mat-icon class="!w-5 !h-5 !text-[20px]">send</mat-icon>
+                  }
+                </button>
+              </div>
             </div>
-            <div class="space-y-2">
-              <p class="text-xs font-black text-slate-900">What if I forget my password?</p>
-              <p class="text-[10px] text-slate-500 font-medium">On the login screen, click "Forgot?" to reset your password via email or security questions.</p>
-            </div>
-            <div class="space-y-2">
-              <p class="text-xs font-black text-slate-900">How do I get more AI credits?</p>
-              <p class="text-[10px] text-slate-500 font-medium">Upgrade to PRO for unlimited credits, or refer friends to earn extra points!</p>
-            </div>
-            <a href="https://wa.me/265987066051?text=Hello,%20I%20have%20a%20question%20about%20Educate%20MW." target="_blank"
-               class="w-full py-4 bg-emerald-500 text-white rounded-xl font-black text-xs flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200">
-              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.005 0C5.37 0 .002 5.368.002 12.006c0 2.093.548 4.136 1.594 5.932L.007 24l6.337-1.663a11.815 11.815 0 005.661 1.442h.005c6.635 0 12.003-5.368 12.003-12.006 0-3.205-1.248-6.22-3.518-8.49z"/></svg>
-              Ask a Question
+
+            <!-- WhatsApp Support -->
+            <a href="https://wa.me/265987066051?text=Hello%20Peter,%20I%20need%20help%20with%20Educate%20MW.%20My%20email%20is:%20{{authService.currentUser()?.email}}" 
+               target="_blank"
+               class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black shadow-lg shadow-emerald-100 hover:bg-emerald-600 transition-all active:scale-[0.98] flex items-center justify-center gap-3">
+              <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.005 0C5.37 0 .002 5.368.002 12.006c0 2.093.548 4.136 1.594 5.932L.007 24l6.337-1.663a11.815 11.815 0 005.661 1.442h.005c6.635 0 12.003-5.368 12.003-12.006 0-3.205-1.248-6.22-3.518-8.49z"/></svg>
+              Contact Peter on WhatsApp
             </a>
+
+            <!-- FAQs -->
+            <div class="space-y-4 pt-2">
+              <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1 mb-2">Extended FAQs</h4>
+              
+              <details class="group bg-slate-50 rounded-2xl border border-slate-100 transition-all overflow-hidden">
+                <summary class="list-none p-4 font-bold text-xs text-slate-900 cursor-pointer flex items-center justify-between group-open:bg-slate-100 transition-colors">
+                  How do I upgrade to PRO?
+                  <mat-icon class="transition-transform group-open:rotate-180">expand_more</mat-icon>
+                </summary>
+                <div class="p-4 pt-0 text-[10px] text-slate-600 font-medium leading-relaxed">
+                  Go to the Upgrade page. You can pay 5,000 MWK per year using PayChangu (Airtel Money or TNM Mpamba). Once paid, your account upgrades instantly.
+                </div>
+              </details>
+
+              <details class="group bg-slate-50 rounded-2xl border border-slate-100 transition-all overflow-hidden">
+                <summary class="list-none p-4 font-bold text-xs text-slate-900 cursor-pointer flex items-center justify-between group-open:bg-slate-100 transition-colors">
+                  AI Credits & Referrals
+                  <mat-icon class="transition-transform group-open:rotate-180">expand_more</mat-icon>
+                </summary>
+                <div class="p-4 pt-0 text-[10px] text-slate-600 font-medium leading-relaxed">
+                  Free users get limited AI credits daily. To get more without paying, go to "Refer & Earn" above, share your link, and get 10 extra credits for every friend who joins!
+                </div>
+              </details>
+
+              <details class="group bg-slate-50 rounded-2xl border border-slate-100 transition-all overflow-hidden">
+                <summary class="list-none p-4 font-bold text-xs text-slate-900 cursor-pointer flex items-center justify-between group-open:bg-slate-100 transition-colors">
+                  Account Recovery
+                  <mat-icon class="transition-transform group-open:rotate-180">expand_more</mat-icon>
+                </summary>
+                <div class="p-4 pt-0 text-[10px] text-slate-600 font-medium leading-relaxed">
+                  If you forget your password, you can reset it using the "Security Questions" you set in this profile. Always keep your security answers safe!
+                </div>
+              </details>
+
+              <details class="group bg-slate-50 rounded-2xl border border-slate-100 transition-all overflow-hidden">
+                <summary class="list-none p-4 font-bold text-xs text-slate-900 cursor-pointer flex items-center justify-between group-open:bg-slate-100 transition-colors">
+                  Offline Access
+                  <mat-icon class="transition-transform group-open:rotate-180">expand_more</mat-icon>
+                </summary>
+                <div class="p-4 pt-0 text-[10px] text-slate-600 font-medium leading-relaxed">
+                  Books and Past Papers you download are saved to your phone for offline study. AI features require an internet connection.
+                </div>
+              </details>
+            </div>
           </div>
         </section>
 
@@ -395,6 +491,7 @@ export class SettingsComponent {
   router = inject(Router);
   dataService = inject(DataService);
   platformId = inject(PLATFORM_ID);
+  gemini = inject(GeminiService);
   
   newUsername = signal('');
   selectedGender = signal<'boy' | 'girl' | 'prefer-not-to-say'>('prefer-not-to-say');
@@ -409,6 +506,11 @@ export class SettingsComponent {
   adminPassword = signal('');
   adminErrorMsg = signal('');
   adminSuccessMsg = signal('');
+
+  // Help Centre signals
+  helpQuery = signal('');
+  aiSupportLoading = signal(false);
+  aiSupportMessage = signal<string | null>(null);
 
   constructor() {
     const user = this.authService.currentUser();
@@ -459,6 +561,25 @@ export class SettingsComponent {
       this.adminErrorMsg.set(err.message || 'Failed to send magic link');
     } finally {
       this.isUpdating.set(false);
+    }
+  }
+
+  async askSupportAi() {
+    const query = this.helpQuery().trim();
+    if (!query) return;
+
+    this.aiSupportLoading.set(true);
+    this.aiSupportMessage.set(null);
+    
+    try {
+      const response = await this.gemini.getSupportResponse(query);
+      this.aiSupportMessage.set(response);
+      this.helpQuery.set('');
+    } catch (error) {
+      console.error('Support AI failed:', error);
+      this.aiSupportMessage.set('Sorry, the support AI is currently offline. Please use WhatsApp instead.');
+    } finally {
+      this.aiSupportLoading.set(false);
     }
   }
 

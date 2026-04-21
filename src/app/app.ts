@@ -151,10 +151,10 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
                 <span class="text-[10px] font-bold tracking-wide" routerLinkActive="text-white">Quizzes</span>
               </a>
 
-              <!-- Profile -->
+              <!-- Settings -->
               <a routerLink="/settings" routerLinkActive="text-white" class="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-slate-300 transition-all active:scale-90 group">
-                <mat-icon class="!w-6 !h-6 !text-[24px]" routerLinkActive="text-white">person</mat-icon>
-                <span class="text-[10px] font-bold tracking-wide" routerLinkActive="text-white">Profile</span>
+                <mat-icon class="!w-6 !h-6 !text-[24px]" routerLinkActive="text-white">settings</mat-icon>
+                <span class="text-[10px] font-bold tracking-wide" routerLinkActive="text-white">Settings</span>
               </a>
 
             </nav>
