@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, PLATFORM_ID, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { DataService, FlashcardSet } from '../../core/services/data.service';
@@ -6,11 +6,13 @@ import { FlashcardService } from '../../core/services/flashcard.service';
 import { AuthService } from '../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AdsService } from '../../core/services/ads.service';
+import { WebAdComponent } from '../../core/components/web-ad';
 
 @Component({
   selector: 'app-flashcards',
   standalone: true,
-  imports: [MatIconModule, CommonModule, FormsModule],
+  imports: [MatIconModule, CommonModule, FormsModule, WebAdComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-slate-50">
@@ -29,20 +31,30 @@ import { Router } from '@angular/router';
           </div>
         </div>
         
-        <button (click)="showGenerateModal.set(true)" 
-                class="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all">
-          <mat-icon>auto_awesome</mat-icon>
-          Generate with AI
-        </button>
+        <div class="flex items-center gap-2">
+          @if (!isNative()) {
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white px-3 py-1 rounded-full border border-slate-100">Web Version</span>
+          }
+          <button (click)="showGenerateModal.set(true)" 
+                  class="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all">
+            <mat-icon>auto_awesome</mat-icon>
+            Generate with AI
+          </button>
+        </div>
       </header>
 
       <div class="flex-1 overflow-y-auto p-4 md:p-8">
         <div class="max-w-6xl mx-auto">
           
+          <!-- Web Ad (Always show one at top on home) -->
+          @if (!selectedSet() && !isNative()) {
+            <app-web-ad />
+          }
+
           @if (selectedSet()) {
             <!-- Flashcard View -->
             <div class="mb-8 flex items-center justify-between">
-              <button (click)="selectedSet.set(null)" class="flex items-center gap-2 px-5 py-2.5 bg-white rounded-2xl shadow-sm border border-slate-200 text-slate-700 font-black hover:bg-indigo-50 hover:text-indigo-600 transition-all active:scale-95">
+              <button (click)="exitSet()" class="flex items-center gap-2 px-5 py-2.5 bg-white rounded-2xl shadow-sm border border-slate-200 text-slate-700 font-black hover:bg-indigo-50 hover:text-indigo-600 transition-all active:scale-95">
                 <mat-icon>arrow_back</mat-icon>
                 Back
               </button>
@@ -54,6 +66,13 @@ import { Router } from '@angular/router';
 
             @if (dataService.flashcards().length > 0) {
               <div class="flex flex-col items-center gap-12 py-8">
+                <!-- Ad break inside cards for Web -->
+                @if (!isNative() && currentIndex() === 5) {
+                   <div class="w-full max-w-xl">
+                     <app-web-ad />
+                   </div>
+                }
+
                 <!-- Card Container -->
                 <div class="w-full max-w-xl h-96 [perspective:1000px] cursor-pointer group" 
                      (click)="isFlipped.set(!isFlipped())"
@@ -245,10 +264,11 @@ import { Router } from '@angular/router';
     </div>
   `
 })
-export class FlashcardsComponent {
+export class FlashcardsComponent implements OnInit {
   dataService = inject(DataService);
   flashcardService = inject(FlashcardService);
   authService = inject(AuthService);
+  adsService = inject(AdsService);
   platformId = inject(PLATFORM_ID);
   router = inject(Router);
 
@@ -261,21 +281,46 @@ export class FlashcardsComponent {
   genTopic = '';
   genCategory = 'Biology';
 
+  isNative = signal(false);
+
   constructor() {
     this.dataService.subscribeToFlashcardSets();
   }
 
+  ngOnInit() {
+    this.isNative.set(isPlatformBrowser(this.platformId) && (window as any).Capacitor?.isNativePlatform);
+  }
+
   selectSet(set: FlashcardSet) {
+    // Show interstitial on entry if native
+    if (this.isNative()) {
+      this.adsService.showInterstitial();
+    }
+
     this.selectedSet.set(set);
     this.currentIndex.set(0);
     this.isFlipped.set(false);
     this.dataService.subscribeToFlashcards(set.id);
   }
 
+  exitSet() {
+    // Show interstitial on exit if native
+    if (this.isNative()) {
+      this.adsService.showInterstitial();
+    }
+    this.selectedSet.set(null);
+  }
+
   nextCard(event: MouseEvent) {
     event.stopPropagation();
     if (this.currentIndex() < this.dataService.flashcards().length - 1) {
       this.isFlipped.set(false);
+
+      // Ad logic for native: show interstitial every 10 cards
+      if (this.isNative() && (this.currentIndex() + 1) % 10 === 0) {
+        this.adsService.showInterstitial();
+      }
+
       setTimeout(() => {
         this.currentIndex.update(i => i + 1);
       }, 150);

@@ -49,7 +49,7 @@ export class GeminiService {
 
   private _platformId = inject(PLATFORM_ID);
 
-  readonly EMI_AVATAR = '/emi-avatar.png';
+  readonly EMI_AVATAR = 'https://picsum.photos/seed/emi/200/200'; // Fallback until user uploads /emi-avatar.png
   
   private dbPromise: Promise<IDBPDatabase<ChatDB>> | null = null;
   private dataService = inject(DataService);

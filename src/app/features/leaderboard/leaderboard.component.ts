@@ -1,15 +1,17 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { DataService } from '../../core/services/data.service';
-import { UserProfile } from '../../core/services/auth.service';
+import { AuthService, UserProfile } from '../../core/services/auth.service';
 import { signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AdsService } from '../../core/services/ads.service';
+import { WebAdComponent } from '../../core/components/web-ad';
 
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
-  imports: [CommonModule, MatIconModule, RouterLink, NgOptimizedImage],
+  imports: [CommonModule, MatIconModule, RouterLink, NgOptimizedImage, WebAdComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-slate-50 pb-safe">
@@ -23,6 +25,29 @@ import { RouterLink } from '@angular/router';
 
       <div class="p-4 max-w-3xl mx-auto space-y-6">
         
+        <!-- Reward Ad for Coins -->
+        @if (!hasClaimedAdReward()) {
+          <div class="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 flex items-center justify-between gap-4 overflow-hidden relative group">
+            <div class="relative z-10">
+              <h3 class="text-lg font-black mb-1">Boost Your Ranking!</h3>
+              <p class="text-xs text-white/80 font-bold">Watch a quick ad to claim <span class="text-amber-300">+20 Bonus Coins</span></p>
+              <button 
+                (click)="watchAdForReward()"
+                [disabled]="isWatchingAd()"
+                class="mt-4 px-6 py-2 bg-white text-indigo-600 rounded-xl font-black text-xs shadow-lg hover:bg-indigo-50 active:scale-95 transition-all flex items-center gap-2">
+                <mat-icon class="text-sm">{{ isWatchingAd() ? 'hourglass_empty' : 'play_circle' }}</mat-icon>
+                {{ isWatchingAd() ? 'Loading...' : 'Watch Now' }}
+              </button>
+            </div>
+            <mat-icon class="!w-24 !h-24 !text-[96px] text-white/10 absolute -right-4 -bottom-4 translate-y-4 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-700">stars</mat-icon>
+          </div>
+        }
+
+        <!-- Web Adsterra Banner -->
+        @if (!isNative()) {
+          <app-web-ad />
+        }
+
         <!-- Top 3 Podium -->
         <div class="flex items-end justify-center gap-2 pt-8 pb-4">
           <!-- 2nd Place -->
@@ -157,13 +182,62 @@ import { RouterLink } from '@angular/router';
 })
 export class LeaderboardComponent implements OnInit {
   dataService = inject(DataService);
+  authService = inject(AuthService);
+  adsService = inject(AdsService);
+  private platformId = inject(PLATFORM_ID);
+
   topStudents = signal<UserProfile[]>([]);
   lastDoc = signal<unknown>(null);
   hasMore = signal(true);
   isLoading = signal(false);
 
+  isWatchingAd = signal(false);
+  hasClaimedAdReward = signal(false);
+
+  isNative = signal(false);
+
   async ngOnInit() {
+    this.isNative.set(isPlatformBrowser(this.platformId) && (window as any).Capacitor?.isNativePlatform);
+    
+    // Show interstitial on entry if native
+    if (this.isNative()) {
+      this.adsService.showInterstitial();
+    }
+    
     await this.loadMore();
+  }
+
+  async watchAdForReward() {
+    if (this.isWatchingAd() || this.hasClaimedAdReward()) return;
+    
+    this.isWatchingAd.set(true);
+    
+    try {
+      if (!this.isNative()) {
+        // Mock reward for web
+        await new Promise(r => setTimeout(r, 2000));
+        await this.claimReward();
+      } else {
+        const success = await this.adsService.showRewarded();
+        if (success) {
+          await this.claimReward();
+        }
+      }
+    } catch (error) {
+      console.error('Leaderboard Ad Failed', error);
+    } finally {
+      this.isWatchingAd.set(false);
+    }
+  }
+
+  private async claimReward() {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    
+    const newCoins = (user.coins || 0) + 20;
+    await this.dataService.updateUserProfile(user.uid, { coins: newCoins });
+    this.authService.currentUser.set({ ...user, coins: newCoins });
+    this.hasClaimedAdReward.set(true);
   }
 
   async loadMore() {

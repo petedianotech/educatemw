@@ -10,10 +10,12 @@ import { Timestamp } from 'firebase/firestore';
 import { RouterLink } from '@angular/router';
 import { PLATFORM_ID } from '@angular/core';
 
+import { WebAdComponent } from '../../core/components/web-ad';
+
 @Component({
   selector: 'app-quizzes',
   standalone: true,
-  imports: [MatIconModule, DatePipe, CommonModule, FormsModule, RouterLink],
+  imports: [MatIconModule, DatePipe, CommonModule, FormsModule, RouterLink, WebAdComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-slate-50 relative">
@@ -25,6 +27,13 @@ import { PLATFORM_ID } from '@angular/core';
       <div class="relative z-10 p-6 md:p-8 flex-1 overflow-y-auto">
         <div class="max-w-5xl mx-auto">
           
+          <!-- Web Adsterra Banner -->
+          @if (!isNative() && view() !== 'taking') {
+            <div class="mb-4 relative z-20">
+              <app-web-ad />
+            </div>
+          }
+
           <div class="flex items-center justify-between mb-10 mt-2">
             <div class="flex items-center gap-4">
               <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white active:scale-90 transition-all backdrop-blur-md">
@@ -46,6 +55,11 @@ import { PLATFORM_ID } from '@angular/core';
               </button>
             }
           </div>
+          
+          <!-- Web Adbreak in Results -->
+          @if (!isNative() && view() === 'result') {
+            <app-web-ad />
+          }
 
           <!-- AI Generator Modal -->
           @if (showAiGenerator()) {
@@ -465,7 +479,8 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   hasClaimedAdReward = signal(false);
   
   filter = signal<'all' | 'AI' | 'Teacher'>('all');
-
+  isNative = signal(false);
+  
   filteredQuizzes = computed(() => {
     const list = this.dataService.quizzes();
     if (this.filter() === 'all') return list;
@@ -484,6 +499,7 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
+    this.isNative.set(isPlatformBrowser(this.platformId) && (window as any).Capacitor?.isNativePlatform);
     this.dataService.subscribeToQuizzes();
     const user = this.authService.currentUser();
     if (user) {

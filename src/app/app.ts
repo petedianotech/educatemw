@@ -5,6 +5,7 @@ import {AuthService} from './core/services/auth.service';
 import {LoadingService} from './core/services/loading.service';
 import {DataService} from './core/services/data.service';
 import {GeminiService} from './core/services/gemini.service';
+import {AdsService} from './core/services/ads.service';
 import {MatIconModule} from '@angular/material/icon';
 import { ErrorToastComponent } from './shared/components/error-toast/error-toast.component';
 
@@ -349,6 +350,7 @@ export class App implements OnInit {
   gemini = inject(GeminiService);
   loadingService = inject(LoadingService);
   dataService = inject(DataService);
+  adsService = inject(AdsService);
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
   isMobileMenuOpen = signal(false);
