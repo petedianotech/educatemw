@@ -5,13 +5,12 @@ import { DataService } from '../../core/services/data.service';
 import { AuthService, UserProfile } from '../../core/services/auth.service';
 import { signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { AdsService } from '../../core/services/ads.service';
-import { WebAdComponent } from '../../core/components/web-ad';
+import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.component';
 
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
-  imports: [CommonModule, MatIconModule, RouterLink, NgOptimizedImage, WebAdComponent],
+  imports: [CommonModule, MatIconModule, RouterLink, NgOptimizedImage, AdPlaceholderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-slate-50 pb-safe">
@@ -24,29 +23,19 @@ import { WebAdComponent } from '../../core/components/web-ad';
       </header>
 
       <div class="p-4 max-w-3xl mx-auto space-y-6">
-        
-        <!-- Reward Ad for Coins -->
-        @if (!hasClaimedAdReward()) {
-          <div class="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 flex items-center justify-between gap-4 overflow-hidden relative group">
-            <div class="relative z-10">
-              <h3 class="text-lg font-black mb-1">Boost Your Ranking!</h3>
-              <p class="text-xs text-white/80 font-bold">Watch a quick ad to claim <span class="text-amber-300">+20 Bonus Coins</span></p>
-              <button 
-                (click)="watchAdForReward()"
-                [disabled]="isWatchingAd()"
-                class="mt-4 px-6 py-2 bg-white text-indigo-600 rounded-xl font-black text-xs shadow-lg hover:bg-indigo-50 active:scale-95 transition-all flex items-center gap-2">
-                <mat-icon class="text-sm">{{ isWatchingAd() ? 'hourglass_empty' : 'play_circle' }}</mat-icon>
-                {{ isWatchingAd() ? 'Loading...' : 'Watch Now' }}
-              </button>
-            </div>
-            <mat-icon class="!w-24 !h-24 !text-[96px] text-white/10 absolute -right-4 -bottom-4 translate-y-4 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-700">stars</mat-icon>
-          </div>
+
+        @if (!isNative()) {
+          <app-ad-placeholder type="banner" size="320x50" />
         }
 
-        <!-- Web Adsterra Banner -->
-        @if (!isNative()) {
-          <app-web-ad />
-        }
+        <!-- Info Card -->
+        <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 flex items-center justify-between gap-4 overflow-hidden relative group">
+          <div class="relative z-10">
+            <h3 class="text-lg font-black mb-1">Climb the Ranks!</h3>
+            <p class="text-xs text-white/80 font-bold">Earn coins by completing quizzes to reach the top.</p>
+          </div>
+          <mat-icon class="!w-24 !h-24 !text-[96px] text-white/10 absolute -right-4 -bottom-4 translate-y-4 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-700">stars</mat-icon>
+        </div>
 
         <!-- Top 3 Podium -->
         <div class="flex items-end justify-center gap-2 pt-8 pb-4">
@@ -130,6 +119,13 @@ import { WebAdComponent } from '../../core/components/web-ad';
           <div class="divide-y divide-slate-50">
             @for (student of topStudents(); track student.uid; let i = $index) {
               @if (i >= 3) {
+                <!-- Ad Placeholder within leaderboard list -->
+                @if (!isNative() && i > 3 && i % 10 === 0) {
+                  <div class="p-2 border-b border-slate-50">
+                    <app-ad-placeholder type="native-banner" />
+                  </div>
+                }
+
                 <div class="flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors group">
                   <div class="w-8 font-black text-slate-300 group-hover:text-indigo-400 transition-colors text-center text-sm">{{i + 1}}</div>
                   <img ngSrc="{{student.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + student.uid}}" 
@@ -183,7 +179,6 @@ import { WebAdComponent } from '../../core/components/web-ad';
 export class LeaderboardComponent implements OnInit {
   dataService = inject(DataService);
   authService = inject(AuthService);
-  adsService = inject(AdsService);
   private platformId = inject(PLATFORM_ID);
 
   topStudents = signal<UserProfile[]>([]);
@@ -191,53 +186,12 @@ export class LeaderboardComponent implements OnInit {
   hasMore = signal(true);
   isLoading = signal(false);
 
-  isWatchingAd = signal(false);
-  hasClaimedAdReward = signal(false);
-
   isNative = signal(false);
 
   async ngOnInit() {
     this.isNative.set(isPlatformBrowser(this.platformId) && (window as any).Capacitor?.isNativePlatform);
     
-    // Show interstitial on entry if native
-    if (this.isNative()) {
-      this.adsService.showInterstitial();
-    }
-    
     await this.loadMore();
-  }
-
-  async watchAdForReward() {
-    if (this.isWatchingAd() || this.hasClaimedAdReward()) return;
-    
-    this.isWatchingAd.set(true);
-    
-    try {
-      if (!this.isNative()) {
-        // Mock reward for web
-        await new Promise(r => setTimeout(r, 2000));
-        await this.claimReward();
-      } else {
-        const success = await this.adsService.showRewarded();
-        if (success) {
-          await this.claimReward();
-        }
-      }
-    } catch (error) {
-      console.error('Leaderboard Ad Failed', error);
-    } finally {
-      this.isWatchingAd.set(false);
-    }
-  }
-
-  private async claimReward() {
-    const user = this.authService.currentUser();
-    if (!user) return;
-    
-    const newCoins = (user.coins || 0) + 20;
-    await this.dataService.updateUserProfile(user.uid, { coins: newCoins });
-    this.authService.currentUser.set({ ...user, coins: newCoins });
-    this.hasClaimedAdReward.set(true);
   }
 
   async loadMore() {

@@ -6,13 +6,12 @@ import { FlashcardService } from '../../core/services/flashcard.service';
 import { AuthService } from '../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AdsService } from '../../core/services/ads.service';
-import { WebAdComponent } from '../../core/components/web-ad';
+import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.component';
 
 @Component({
   selector: 'app-flashcards',
   standalone: true,
-  imports: [MatIconModule, CommonModule, FormsModule, WebAdComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, AdPlaceholderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-slate-50">
@@ -46,9 +45,9 @@ import { WebAdComponent } from '../../core/components/web-ad';
       <div class="flex-1 overflow-y-auto p-4 md:p-8">
         <div class="max-w-6xl mx-auto">
           
-          <!-- Web Ad (Always show one at top on home) -->
           @if (!selectedSet() && !isNative()) {
-            <app-web-ad />
+            <app-ad-placeholder type="banner" size="728x90" />
+            <div class="mb-4"></div>
           }
 
           @if (selectedSet()) {
@@ -66,13 +65,6 @@ import { WebAdComponent } from '../../core/components/web-ad';
 
             @if (dataService.flashcards().length > 0) {
               <div class="flex flex-col items-center gap-12 py-8">
-                <!-- Ad break inside cards for Web -->
-                @if (!isNative() && currentIndex() === 5) {
-                   <div class="w-full max-w-xl">
-                     <app-web-ad />
-                   </div>
-                }
-
                 <!-- Card Container -->
                 <div class="w-full max-w-xl h-96 [perspective:1000px] cursor-pointer group" 
                      (click)="isFlipped.set(!isFlipped())"
@@ -136,7 +128,15 @@ import { WebAdComponent } from '../../core/components/web-ad';
           } @else {
             <!-- Sets Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              @for (set of dataService.flashcardSets(); track set.id) {
+              @for (set of dataService.flashcardSets(); track set.id; let i = $index) {
+                
+                <!-- Ad Placeholder within grid -->
+                @if (!isNative() && i > 0 && i % 3 === 0) {
+                  <div class="col-span-1 md:col-span-2 lg:col-span-3">
+                    <app-ad-placeholder type="native-banner" />
+                  </div>
+                }
+
                 <div (click)="selectSet(set)" 
                      (keydown.enter)="selectSet(set)"
                      tabindex="0"
@@ -268,7 +268,6 @@ export class FlashcardsComponent implements OnInit {
   dataService = inject(DataService);
   flashcardService = inject(FlashcardService);
   authService = inject(AuthService);
-  adsService = inject(AdsService);
   platformId = inject(PLATFORM_ID);
   router = inject(Router);
 
@@ -292,11 +291,6 @@ export class FlashcardsComponent implements OnInit {
   }
 
   selectSet(set: FlashcardSet) {
-    // Show interstitial on entry if native
-    if (this.isNative()) {
-      this.adsService.showInterstitial();
-    }
-
     this.selectedSet.set(set);
     this.currentIndex.set(0);
     this.isFlipped.set(false);
@@ -304,10 +298,6 @@ export class FlashcardsComponent implements OnInit {
   }
 
   exitSet() {
-    // Show interstitial on exit if native
-    if (this.isNative()) {
-      this.adsService.showInterstitial();
-    }
     this.selectedSet.set(null);
   }
 
@@ -315,11 +305,6 @@ export class FlashcardsComponent implements OnInit {
     event.stopPropagation();
     if (this.currentIndex() < this.dataService.flashcards().length - 1) {
       this.isFlipped.set(false);
-
-      // Ad logic for native: show interstitial every 10 cards
-      if (this.isNative() && (this.currentIndex() + 1) % 10 === 0) {
-        this.adsService.showInterstitial();
-      }
 
       setTimeout(() => {
         this.currentIndex.update(i => i + 1);

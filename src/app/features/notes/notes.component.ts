@@ -6,12 +6,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { Timestamp } from 'firebase/firestore';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { WebAdComponent } from '../../core/components/web-ad';
+import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.component';
 
 @Component({
   selector: 'app-notes',
   standalone: true,
-  imports: [MatIconModule, RouterLink, CommonModule, FormsModule, WebAdComponent],
+  imports: [MatIconModule, RouterLink, CommonModule, FormsModule, AdPlaceholderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-screen bg-slate-50 overflow-hidden relative">
@@ -81,9 +81,9 @@ import { WebAdComponent } from '../../core/components/web-ad';
           <div class="flex flex-col gap-4">
             @for (note of paginatedNotes(); track note.id; let i = $index) {
               
-              <!-- Web Adsterra Banner Every 4 Items -->
+              <!-- Adsterra Native Banner Placeholder -->
               @if (!isNative() && i > 0 && i % 4 === 0) {
-                <app-web-ad />
+                <app-ad-placeholder type="native-banner" />
               }
 
               <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center gap-6 hover:shadow-xl hover:shadow-indigo-200/30 transition-all duration-300 group relative overflow-hidden">

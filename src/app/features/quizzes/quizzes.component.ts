@@ -2,20 +2,17 @@ import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, 
 import { DataService, Quiz, QuizResult } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
 import { GeminiService, GeneratedQuiz } from '../../core/services/gemini.service';
-import { AdsService } from '../../core/services/ads.service';
 import { MatIconModule } from '@angular/material/icon';
-import { DatePipe, CommonModule, isPlatformBrowser } from '@angular/common';
+import { DatePipe, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Timestamp } from 'firebase/firestore';
 import { RouterLink } from '@angular/router';
-import { PLATFORM_ID } from '@angular/core';
-
-import { WebAdComponent } from '../../core/components/web-ad';
+import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.component';
 
 @Component({
   selector: 'app-quizzes',
   standalone: true,
-  imports: [MatIconModule, DatePipe, CommonModule, FormsModule, RouterLink, WebAdComponent],
+  imports: [MatIconModule, DatePipe, CommonModule, FormsModule, RouterLink, AdPlaceholderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-slate-50 relative">
@@ -27,13 +24,6 @@ import { WebAdComponent } from '../../core/components/web-ad';
       <div class="relative z-10 p-6 md:p-8 flex-1 overflow-y-auto">
         <div class="max-w-5xl mx-auto">
           
-          <!-- Web Adsterra Banner -->
-          @if (!isNative() && view() !== 'taking') {
-            <div class="mb-4 relative z-20">
-              <app-web-ad />
-            </div>
-          }
-
           <div class="flex items-center justify-between mb-10 mt-2">
             <div class="flex items-center gap-4">
               <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white active:scale-90 transition-all backdrop-blur-md">
@@ -56,11 +46,6 @@ import { WebAdComponent } from '../../core/components/web-ad';
             }
           </div>
           
-          <!-- Web Adbreak in Results -->
-          @if (!isNative() && view() === 'result') {
-            <app-web-ad />
-          }
-
           <!-- AI Generator Modal -->
           @if (showAiGenerator()) {
             <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
@@ -68,7 +53,7 @@ import { WebAdComponent } from '../../core/components/web-ad';
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-xl font-black text-slate-900 flex items-center gap-2">
                     <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center overflow-hidden">
-                      <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                      <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                     </div>
                     AI Quiz Generator
                   </h3>
@@ -101,7 +86,7 @@ import { WebAdComponent } from '../../core/components/web-ad';
                       Generating...
                     } @else {
                       <div class="w-6 h-6 rounded-lg overflow-hidden">
-                        <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                        <img src="/emi-avatar.png" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                       </div>
                       Generate Quiz
                     }
@@ -139,9 +124,9 @@ import { WebAdComponent } from '../../core/components/web-ad';
             <div class="flex flex-col gap-4 max-w-2xl mx-auto">
               @for (quiz of filteredQuizzes(); track quiz.id; let i = $index) {
                 
-                <!-- Web Adsterra Banner Right After First Quiz -->
-                @if (!isNative() && i === 1) {
-                  <app-web-ad />
+                <!-- Adsterra Native Banner Placeholder -->
+                @if (i === 1 || (i > 1 && i % 4 === 0)) {
+                  <app-ad-placeholder type="native-banner" />
                 }
 
                 <div class="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200/80 flex items-center gap-4 active:scale-[0.98] transition-all relative overflow-hidden group">
@@ -233,6 +218,8 @@ import { WebAdComponent } from '../../core/components/web-ad';
               </div>
             }
           }
+          
+
 
           <!-- Taking Quiz View -->
           @if (view() === 'taking' && activeQuiz()) {
@@ -418,25 +405,10 @@ import { WebAdComponent } from '../../core/components/web-ad';
                 </div>
 
                 <!-- Ad Reward Option -->
-                @if (!hasClaimedAdReward()) {
-                  <div class="mt-8 pt-8 border-t border-slate-100">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Want more coins?</p>
-                    <button 
-                      (click)="watchAdForReward()"
-                      [disabled]="isWatchingAd()"
-                      class="w-full py-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-2xl font-black shadow-lg shadow-amber-200 flex items-center justify-center gap-3 active:scale-95 transition-all">
-                      <mat-icon>{{ isWatchingAd() ? 'hourglass_empty' : 'play_circle' }}</mat-icon>
-                      {{ isWatchingAd() ? 'Loading Ad...' : 'Watch Ad for +50 Coins' }}
-                    </button>
-                  </div>
-                } @else {
-                  <div class="mt-8 pt-8 border-t border-slate-100 animate-in fade-in duration-500">
-                    <div class="flex items-center justify-center gap-2 text-emerald-600 font-bold">
-                      <mat-icon>verified</mat-icon>
-                      <span>+50 Ad Bonus Claimed!</span>
-                    </div>
-                  </div>
-                }
+                <div class="mt-8 pt-8 border-t border-slate-100 italic text-slate-400 text-xs">
+                  <p>Ad rewards are currently unavailable.</p>
+                </div>
+
               </div>
               
               <div class="flex flex-col sm:flex-row gap-3 justify-center">
@@ -459,8 +431,6 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   authService = inject(AuthService);
   gemini = inject(GeminiService);
-  adsService = inject(AdsService);
-  private platformId = inject(PLATFORM_ID);
   String = String;
 
   view = signal<'list' | 'taking' | 'result'>('list');
@@ -481,11 +451,8 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   quizTopic = signal('');
   isGenerating = signal(false);
   isRewarding = signal(false);
-  isWatchingAd = signal(false);
-  hasClaimedAdReward = signal(false);
   
   filter = signal<'all' | 'AI' | 'Teacher'>('all');
-  isNative = signal(false);
   
   filteredQuizzes = computed(() => {
     const list = this.dataService.quizzes();
@@ -505,7 +472,6 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
-    this.isNative.set(isPlatformBrowser(this.platformId) && (window as any).Capacitor?.isNativePlatform);
     this.dataService.subscribeToQuizzes();
     const user = this.authService.currentUser();
     if (user) {
@@ -624,7 +590,6 @@ export class QuizzesComponent implements OnInit, OnDestroy {
     this.authService.currentUser.set({ ...user, coins: newCoins });
     
     this.isRewarding.set(false);
-    this.hasClaimedAdReward.set(false);
 
     // We don't get the ID back immediately from saveQuizResult, so we'll just set a local lastResult
     this.lastResult.set({
@@ -634,45 +599,6 @@ export class QuizzesComponent implements OnInit, OnDestroy {
     } as QuizResult);
     
     this.view.set('result');
-
-    // Show Interstitial ad after quiz finishes
-    this.adsService.showInterstitial();
-  }
-
-  async watchAdForReward() {
-    if (this.isWatchingAd() || this.hasClaimedAdReward()) return;
-    
-    this.isWatchingAd.set(true);
-    
-    try {
-      // Check if we're on a native platform (APK/IPA)
-      const isNative = (window as any).Capacitor?.isNativePlatform;
-
-      if (!isNative) {
-        // Mock reward for development browser version/PWA
-        await new Promise(r => setTimeout(r, 2000));
-        await this.claimReward();
-      } else {
-        const success = await this.adsService.showRewarded();
-        if (success) {
-          await this.claimReward();
-        }
-      }
-    } catch (error) {
-      console.error('Ad Reward Failed', error);
-    } finally {
-      this.isWatchingAd.set(false);
-    }
-  }
-
-  private async claimReward() {
-    const user = this.authService.currentUser();
-    if (!user) return;
-    
-    const newCoins = (user.coins || 0) + 50;
-    await this.dataService.updateUserProfile(user.uid, { coins: newCoins });
-    this.authService.currentUser.set({ ...user, coins: newCoins });
-    this.hasClaimedAdReward.set(true);
   }
 
   async generateAiQuiz() {

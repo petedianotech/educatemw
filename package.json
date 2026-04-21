@@ -5,7 +5,7 @@
   "description": "A premium educational ecosystem for students in Malawi.",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "node dist/app/server/server.mjs",
     "dev": "cross-env ng serve --port=3000 --host=0.0.0.0 --define=\"CEREBRAS_API_KEY=\\'${CEREBRAS_API_KEY}\\'\" --define=\"ADMIN_TEAM_PASSWORD=\\'${ADMIN_TEAM_PASSWORD}\\'\" --define=\"PRODUCTION_API_URL=\\'${PRODUCTION_API_URL}\\'\" ${DISABLE_HMR:+--live-reload=false}",
     "build": "cross-env ng build --define=\"CEREBRAS_API_KEY=\\'${CEREBRAS_API_KEY}\\'\" --define=\"ADMIN_TEAM_PASSWORD=\\'${ADMIN_TEAM_PASSWORD}\\'\" --define=\"PRODUCTION_API_URL=\\'${PRODUCTION_API_URL}\\'\"",
     "watch": "ng build --watch --configuration development",
