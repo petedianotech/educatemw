@@ -1,13 +1,14 @@
 import { Component, Input, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'app-ad-placeholder',
   standalone: true,
   imports: [CommonModule],
   template: `
-    @if (hasAdKey && isBrowser) {
+    @if (hasAdKey && isBrowser && !isNative) {
       <div class="w-full flex justify-center my-4 overflow-hidden relative"
            [ngClass]="{
              'min-h-[50px]': size === '320x50',
@@ -37,6 +38,7 @@ export class AdPlaceholderComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   
   isBrowser = isPlatformBrowser(this.platformId);
+  isNative = Capacitor.isNativePlatform();
   hasAdKey = false;
   adUrl!: SafeResourceUrl;
   
@@ -52,7 +54,8 @@ export class AdPlaceholderComponent implements OnInit {
   };
 
   ngOnInit() {
-    if (!this.isBrowser) return;
+    // If we're on the server OR in native APK, do absolutely nothing with Adsterra
+    if (!this.isBrowser || this.isNative) return;
 
     if (this.size) {
        const dims = this.size.split('x');
