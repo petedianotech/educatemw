@@ -27,12 +27,12 @@
     if (adKey) {
       if (type === 'native-banner') {
         document.write('<div id="container-' + adKey + '"></div>');
-        document.write('<script async="async" data-cfasync="false" src="https://walkingdrunkard.com/' + adKey + '/invoke.js"><\\/script>');
+        document.write('<script async="async" data-cfasync="false" src="https://walkingdrunkard.com/' + adKey + '/invoke.js"><' + '/script>');
       } else {
         document.write('<script type="text/javascript">');
         document.write('atOptions = { "key": "' + adKey + '", "format": "' + format + '", "height": ' + h + ', "width": ' + w + ', "params": {} };');
-        document.write('<\\/script>');
-        document.write('<script type="text/javascript" src="https://walkingdrunkard.com/' + adKey + '/invoke.js"><\\/script>');
+        document.write('<' + '/script>');
+        document.write('<script type="text/javascript" src="https://walkingdrunkard.com/' + adKey + '/invoke.js"><' + '/script>');
       }
     }
   </script>

@@ -23,7 +23,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
           frameborder="0" 
           scrolling="no"
           class="mx-auto block"
-          sandbox="allow-scripts allow-popups allow-forms allow-same-origin allow-top-navigation-by-user-activation">
+          allow="scripts; popups; forms; same-origin">
         </iframe>
       </div>
     }
@@ -68,7 +68,7 @@ export class AdPlaceholderComponent implements OnInit {
     
     if (activeKey && !activeKey.includes('PASTE_KEY')) {
       this.hasAdKey = true;
-      const url = '/ad.html?key=' + activeKey + '&type=' + this.type + '&w=' + this.width + '&h=' + this.height;
+      const url = window.location.origin + '/ad.html?key=' + activeKey + '&type=' + this.type + '&w=' + this.width + '&h=' + this.height;
       this.adUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
     }
   }
