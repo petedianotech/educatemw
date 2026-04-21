@@ -2,11 +2,13 @@ import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, 
 import { DataService, Quiz, QuizResult } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
 import { GeminiService, GeneratedQuiz } from '../../core/services/gemini.service';
+import { AdsService } from '../../core/services/ads.service';
 import { MatIconModule } from '@angular/material/icon';
-import { DatePipe, CommonModule } from '@angular/common';
+import { DatePipe, CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Timestamp } from 'firebase/firestore';
 import { RouterLink } from '@angular/router';
+import { PLATFORM_ID } from '@angular/core';
 
 @Component({
   selector: 'app-quizzes',
@@ -394,6 +396,27 @@ import { RouterLink } from '@angular/router';
                     </p>
                   </div>
                 </div>
+
+                <!-- Ad Reward Option -->
+                @if (!hasClaimedAdReward()) {
+                  <div class="mt-8 pt-8 border-t border-slate-100">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Want more coins?</p>
+                    <button 
+                      (click)="watchAdForReward()"
+                      [disabled]="isWatchingAd()"
+                      class="w-full py-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-2xl font-black shadow-lg shadow-amber-200 flex items-center justify-center gap-3 active:scale-95 transition-all">
+                      <mat-icon>{{ isWatchingAd() ? 'hourglass_empty' : 'play_circle' }}</mat-icon>
+                      {{ isWatchingAd() ? 'Loading Ad...' : 'Watch Ad for +50 Coins' }}
+                    </button>
+                  </div>
+                } @else {
+                  <div class="mt-8 pt-8 border-t border-slate-100 animate-in fade-in duration-500">
+                    <div class="flex items-center justify-center gap-2 text-emerald-600 font-bold">
+                      <mat-icon>verified</mat-icon>
+                      <span>+50 Ad Bonus Claimed!</span>
+                    </div>
+                  </div>
+                }
               </div>
               
               <div class="flex flex-col sm:flex-row gap-3 justify-center">
@@ -416,6 +439,8 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   authService = inject(AuthService);
   gemini = inject(GeminiService);
+  adsService = inject(AdsService);
+  private platformId = inject(PLATFORM_ID);
   String = String;
 
   view = signal<'list' | 'taking' | 'result'>('list');
@@ -436,6 +461,8 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   quizTopic = signal('');
   isGenerating = signal(false);
   isRewarding = signal(false);
+  isWatchingAd = signal(false);
+  hasClaimedAdReward = signal(false);
   
   filter = signal<'all' | 'AI' | 'Teacher'>('all');
 
@@ -575,6 +602,7 @@ export class QuizzesComponent implements OnInit, OnDestroy {
     this.authService.currentUser.set({ ...user, coins: newCoins });
     
     this.isRewarding.set(false);
+    this.hasClaimedAdReward.set(false);
 
     // We don't get the ID back immediately from saveQuizResult, so we'll just set a local lastResult
     this.lastResult.set({
@@ -584,6 +612,45 @@ export class QuizzesComponent implements OnInit, OnDestroy {
     } as QuizResult);
     
     this.view.set('result');
+
+    // Show Interstitial ad after quiz finishes (Only on Android/iOS)
+    if (!isPlatformBrowser(this.platformId)) {
+      this.adsService.showInterstitial();
+    }
+  }
+
+  async watchAdForReward() {
+    if (this.isWatchingAd() || this.hasClaimedAdReward()) return;
+    
+    this.isWatchingAd.set(true);
+    
+    try {
+      // Small check for platform since web won't support native ads
+      if (isPlatformBrowser(this.platformId)) {
+        // Mock reward for development browser version
+        await new Promise(r => setTimeout(r, 2000));
+        await this.claimReward();
+      } else {
+        const success = await this.adsService.showRewarded();
+        if (success) {
+          await this.claimReward();
+        }
+      }
+    } catch (error) {
+      console.error('Ad Reward Failed', error);
+    } finally {
+      this.isWatchingAd.set(false);
+    }
+  }
+
+  private async claimReward() {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    
+    const newCoins = (user.coins || 0) + 50;
+    await this.dataService.updateUserProfile(user.uid, { coins: newCoins });
+    this.authService.currentUser.set({ ...user, coins: newCoins });
+    this.hasClaimedAdReward.set(true);
   }
 
   async generateAiQuiz() {
