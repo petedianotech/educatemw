@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ad</title>
+  <style>
+    body, html { 
+      margin: 0; padding: 0; 
+      width: 100%; height: 100%; 
+      overflow: hidden; 
+      background: transparent; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <script type="text/javascript">
+    var urlParams = new URLSearchParams(window.location.search);
+    var adKey = urlParams.get('key');
+    var format = urlParams.get('format') || 'iframe';
+    var w = parseInt(urlParams.get('w') || '300', 10);
+    var h = parseInt(urlParams.get('h') || '250', 10);
+    var type = urlParams.get('type') || 'banner';
+    
+    if (adKey) {
+      if (type === 'native-banner') {
+        document.write('<div id="container-' + adKey + '"></div>');
+        document.write('<script async="async" data-cfasync="false" src="https://walkingdrunkard.com/' + adKey + '/invoke.js"><\\/script>');
+      } else {
+        document.write('<script type="text/javascript">');
+        document.write('atOptions = { "key": "' + adKey + '", "format": "' + format + '", "height": ' + h + ', "width": ' + w + ', "params": {} };');
+        document.write('<\\/script>');
+        document.write('<script type="text/javascript" src="https://walkingdrunkard.com/' + adKey + '/invoke.js"><\\/script>');
+      }
+    }
+  </script>
+</body>
+</html>
