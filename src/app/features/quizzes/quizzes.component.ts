@@ -613,10 +613,8 @@ export class QuizzesComponent implements OnInit, OnDestroy {
     
     this.view.set('result');
 
-    // Show Interstitial ad after quiz finishes (Only on Android/iOS)
-    if (!isPlatformBrowser(this.platformId)) {
-      this.adsService.showInterstitial();
-    }
+    // Show Interstitial ad after quiz finishes
+    this.adsService.showInterstitial();
   }
 
   async watchAdForReward() {
@@ -625,9 +623,11 @@ export class QuizzesComponent implements OnInit, OnDestroy {
     this.isWatchingAd.set(true);
     
     try {
-      // Small check for platform since web won't support native ads
-      if (isPlatformBrowser(this.platformId)) {
-        // Mock reward for development browser version
+      // Check if we're on a native platform (APK/IPA)
+      const isNative = (window as any).Capacitor?.isNativePlatform;
+
+      if (!isNative) {
+        // Mock reward for development browser version/PWA
         await new Promise(r => setTimeout(r, 2000));
         await this.claimReward();
       } else {
