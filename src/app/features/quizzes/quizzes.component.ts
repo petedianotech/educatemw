@@ -137,7 +137,13 @@ import { WebAdComponent } from '../../core/components/web-ad';
             </div>
 
             <div class="flex flex-col gap-4 max-w-2xl mx-auto">
-              @for (quiz of filteredQuizzes(); track quiz.id) {
+              @for (quiz of filteredQuizzes(); track quiz.id; let i = $index) {
+                
+                <!-- Web Adsterra Banner Right After First Quiz -->
+                @if (!isNative() && i === 1) {
+                  <app-web-ad />
+                }
+
                 <div class="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200/80 flex items-center gap-4 active:scale-[0.98] transition-all relative overflow-hidden group">
                   <div class="absolute inset-0 bg-gradient-to-br from-transparent to-emerald-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   
