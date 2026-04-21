@@ -69,11 +69,22 @@ import { PaymentService } from '../../core/services/payment.service';
               </li>
             </ul>
 
-            <button (click)="startPayment()" [disabled]="isProcessing()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl hover:bg-indigo-700 flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 transition-all active:scale-95 disabled:opacity-50 mb-0">
-              @if (isProcessing()) { <mat-icon class="animate-spin">sync</mat-icon> } @else { <mat-icon>bolt</mat-icon> }
-              {{ isProcessing() ? 'Initializing...' : 'Pay with PayChangu/Card' }}
-            </button>
-          </div>
+              <button (click)="startPayment()" [disabled]="isProcessing()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl hover:bg-indigo-700 flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 transition-all active:scale-95 disabled:opacity-50 mb-4">
+                @if (isProcessing()) { <mat-icon class="animate-spin">sync</mat-icon> } @else { <mat-icon>bolt</mat-icon> }
+                {{ isProcessing() ? 'Starting...' : 'Pay with PayChangu/Card' }}
+              </button>
+
+              <!-- Instruction Text -->
+              <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl flex items-start gap-3">
+                <mat-icon class="text-indigo-600 shrink-0 !w-5 !h-5 !text-[20px]">info</mat-icon>
+                <div class="flex flex-col">
+                  <p class="text-[10px] font-black text-indigo-900 uppercase tracking-widest leading-none mb-1.5">Manual Verification Only</p>
+                  <p class="text-[11px] text-indigo-700 font-bold leading-relaxed">
+                    After successful payment, you MUST take a screenshot of your Airtel/TNM receipt and send it to Peter or Saidi for activation.
+                  </p>
+                </div>
+              </div>
+            </div>
 
           <!-- Free Plan -->
           <div class="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm flex flex-col">
@@ -269,11 +280,15 @@ export class UpgradeComponent {
 
     this.isProcessing.set(true);
     try {
-      await this.paymentService.initializePayment(5000);
+      await this.paymentService.initializePayment();
+      
+      // Show confirmation alert instructing on manual verification
+      setTimeout(() => {
+        alert('PAYMENT STARTED: After you complete your payment on PayChangu, you MUST take a screenshot of your success message and send it to Peter (0987 066 051) or Saidi (0999 136 433) to activate your PRO account.');
+      }, 1000);
     } catch (error: unknown) {
       console.error('Payment Initialization Failed:', error);
-      const msg = (error as Error)?.message || 'Failed to start payment.';
-      alert(`${msg} Please ensure you have a stable internet connection and try again. If the problem persists, use the manual payment method below.`);
+      alert('Failed to open payment link. Please check your internet or use the manual numbers below.');
     } finally {
       this.isProcessing.set(false);
     }

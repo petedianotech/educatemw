@@ -170,9 +170,23 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
                 <span class="text-[9px] font-bold text-slate-400">{{msg.timestamp | date:'shortTime'}}</span>
               </div>
               
-              <div class="relative">
+              <div class="relative group">
                 @if (msg.role === 'model') {
                   <div class="prose prose-slate max-w-none leading-relaxed text-slate-800 no-highlight" [innerHTML]="msg.content | markdown | async"></div>
+                  
+                  <!-- Actions (Copy & TTS) -->
+                  <div class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button (click)="copyText(msg.content)" 
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100 transition-all text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95">
+                      <mat-icon class="!w-3 !h-3 !text-[14px]">content_copy</mat-icon>
+                      <span>Copy</span>
+                    </button>
+                    <button (click)="speakText(msg.content)" 
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100 transition-all text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95">
+                      <mat-icon class="!w-3 !h-3 !text-[14px]">{{ isSpeaking === msg.id ? 'stop' : (isSpeaking && isSpeaking !== msg.id ? 'volume_up' : 'volume_up') }}</mat-icon>
+                      <span>{{ isSpeaking === msg.id ? 'Stop' : 'Listen' }}</span>
+                    </button>
+                  </div>
                 } @else {
                   <div class="bg-white border border-slate-200/80 rounded-2xl rounded-tl-none p-4 shadow-sm">
                     <p class="whitespace-pre-wrap text-[15px] leading-relaxed font-bold text-slate-900">{{msg.content}}</p>
@@ -244,6 +258,8 @@ export class ChatComponent {
   authService = inject(AuthService);
   notificationService = inject(NotificationService);
   inputText = signal('');
+  isSpeaking: string | null = null;
+  private synthesis = typeof window !== 'undefined' ? window.speechSynthesis : null;
   
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
@@ -264,6 +280,9 @@ export class ChatComponent {
 
   async sendMessage() {
     if (!this.inputText().trim() || this.gemini.isLoading()) return;
+
+    // Stop speaking if new message is sent
+    this.stopSpeaking();
     
     const user = this.authService.currentUser();
     if (!user) return;
@@ -298,6 +317,54 @@ export class ChatComponent {
     if (this.scrollContainer) {
       const el = this.scrollContainer.nativeElement;
       el.scrollTop = el.scrollHeight;
+    }
+  }
+
+  copyText(text: string) {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        // Optional: show a temporary toast or change icon
+      });
+    }
+  }
+
+  speakText(text: string) {
+    if (!this.synthesis) return;
+
+    if (this.isSpeaking) {
+      this.stopSpeaking();
+      return;
+    }
+
+    // Clean text from markdown for better speech
+    const cleanText = text.replace(/[#*`_~]/g, '').trim();
+    
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 0.9; // Slightly slower for better clarity
+    utterance.pitch = 1.0;
+    
+    // Attempt to find a natural English voice
+    const voices = this.synthesis.getVoices();
+    const preferredVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Natural')) 
+                        || voices.find(v => v.lang.startsWith('en'));
+    if (preferredVoice) utterance.voice = preferredVoice;
+
+    utterance.onend = () => {
+      this.isSpeaking = null;
+    };
+
+    utterance.onerror = () => {
+      this.isSpeaking = null;
+    };
+
+    this.isSpeaking = 'active'; // Simplified state tracking
+    this.synthesis.speak(utterance);
+  }
+
+  private stopSpeaking() {
+    if (this.synthesis) {
+      this.synthesis.cancel();
+      this.isSpeaking = null;
     }
   }
 }

@@ -151,10 +151,10 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
                 <span class="text-[10px] font-bold tracking-wide" routerLinkActive="text-white">Quizzes</span>
               </a>
 
-              <!-- Settings -->
-              <a routerLink="/settings" routerLinkActive="text-white" class="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-slate-300 transition-all active:scale-90 group">
-                <mat-icon class="!w-6 !h-6 !text-[24px]" routerLinkActive="text-white">settings</mat-icon>
-                <span class="text-[10px] font-bold tracking-wide" routerLinkActive="text-white">Settings</span>
+              <!-- Profile -->
+              <a routerLink="/profile" routerLinkActive="text-white" class="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-slate-300 transition-all active:scale-90 group">
+                <mat-icon class="!w-6 !h-6 !text-[24px]" routerLinkActive="text-white">account_circle</mat-icon>
+                <span class="text-[10px] font-bold tracking-wide" routerLinkActive="text-white">Profile</span>
               </a>
 
             </nav>
@@ -275,10 +275,10 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
               </a>
 
               <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Profile</p>
+                <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">My Account</p>
                 <a routerLink="/settings" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
-                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">person</mat-icon>
-                  <span class="text-sm">My Profile</span>
+                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">settings</mat-icon>
+                  <span class="text-sm">App Settings</span>
                 </a>
                 @if (authService.currentUser()?.role === 'admin') {
                   <a routerLink="/admin" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
@@ -286,22 +286,6 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
                     <span class="text-sm">Admin Dashboard</span>
                   </a>
                 }
-              </div>
-
-              <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Settings</p>
-                <a routerLink="/terms" (click)="closeMenu()" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
-                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">description</mat-icon>
-                  <span class="text-sm">Terms of Service</span>
-                </a>
-                <a routerLink="/privacy" (click)="closeMenu()" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
-                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">privacy_tip</mat-icon>
-                  <span class="text-sm">Privacy Policy</span>
-                </a>
-                <button class="w-full flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
-                  <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">palette</mat-icon>
-                  <span class="text-sm">Theme</span>
-                </button>
                 <button (click)="logout()" class="w-full flex items-center gap-3 px-4 py-3 text-rose-400 font-bold rounded-xl hover:bg-rose-500/10 transition-all group">
                   <mat-icon class="!w-5 !h-5 !text-[20px]">logout</mat-icon>
                   <span class="text-sm">Logout</span>
