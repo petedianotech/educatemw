@@ -213,7 +213,12 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
                 </div>
                 <div class="flex flex-col">
                   <h3 class="text-white font-bold leading-tight">{{authService.currentUser()?.displayName}}</h3>
-                  <span class="text-[10px] text-slate-400 truncate w-32">{{authService.currentUser()?.email}}</span>
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                    <div class="flex items-center gap-1 bg-white/5 px-1.5 py-0.5 rounded-lg border border-white/5">
+                      <mat-icon class="!w-3 !h-3 !text-[12px] text-blue-400">bolt</mat-icon>
+                      <span class="text-[9px] font-black text-white/80 uppercase tracking-tighter">{{authService.currentUser()?.aiCredits || 0}} Credits</span>
+                    </div>
+                  </div>
                 </div>
               </div>
               @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {

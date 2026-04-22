@@ -193,8 +193,8 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
                 @if (msg.role === 'model') {
                   <div class="prose prose-slate max-w-none leading-relaxed text-slate-800 dark:text-slate-200 no-highlight" [innerHTML]="msg.content | markdown | async"></div>
                   
-                    <!-- Actions (Copy & TTS) -->
-                  <div class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100 dark:border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <!-- Actions (Copy & TTS) -->
+                  <div class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100 dark:border-white/5 transition-opacity">
                     <button (click)="copyText(msg.content)" 
                             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95">
                       <mat-icon class="!w-3 !h-3 !text-[14px]">content_copy</mat-icon>

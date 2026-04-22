@@ -258,8 +258,8 @@ interface Notification {
 
             <!-- Dictionary -->
             <a routerLink="/dictionary" class="bg-white dark:bg-slate-900 rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-orange-50/50 dark:to-orange-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-400 to-amber-500 text-white shadow-md shadow-orange-500/30 relative z-10 group-hover:scale-105 transition-transform">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-pink-50/50 dark:to-pink-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-md shadow-pink-500/30 relative z-10 group-hover:scale-105 transition-transform">
                 <mat-icon class="!w-6 !h-6 !text-[24px]">menu_book</mat-icon>
               </div>
               <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">MSCE Dictionary</h3>

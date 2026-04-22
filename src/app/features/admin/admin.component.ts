@@ -279,52 +279,62 @@ interface ChartData {
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenue (k)</span>
                   </div>
                 </div>
-                <div class="h-64 relative flex">
+                <div class="h-64 flex gap-4 overflow-hidden">
                   @let data = chartData();
                   @let max = getMaxValue(data);
                   <!-- Y-Axis Labels -->
-                  <div class="flex flex-col justify-between text-[8px] font-black text-slate-400 w-8 py-2">
-                    <span>{{ max }}</span>
-                    <span>{{ (max * 0.75) | number:'1.0-0' }}</span>
-                    <span>{{ (max * 0.5) | number:'1.0-0' }}</span>
-                    <span>{{ (max * 0.25) | number:'1.0-0' }}</span>
+                  <div class="flex flex-col justify-between text-[8px] font-black text-slate-400 w-10 py-2 shrink-0">
+                    <span>{{ formatAxisValue(max) }}</span>
+                    <span>{{ formatAxisValue(max * 0.75) }}</span>
+                    <span>{{ formatAxisValue(max * 0.5) }}</span>
+                    <span>{{ formatAxisValue(max * 0.25) }}</span>
                     <span>0</span>
                   </div>
 
-                  <div class="flex-1 relative">
-                    <svg class="w-full h-full overflow-visible" viewBox="0 0 400 200" preserveAspectRatio="none">
-                      <!-- Grid Lines -->
-                      <line x1="0" y1="0" x2="400" y2="0" stroke="#f1f5f9" stroke-width="1" />
-                      <line x1="0" y1="50" x2="400" y2="50" stroke="#f1f5f9" stroke-width="1" />
-                      <line x1="0" y1="100" x2="400" y2="100" stroke="#f1f5f9" stroke-width="1" />
-                      <line x1="0" y1="150" x2="400" y2="150" stroke="#f1f5f9" stroke-width="1" />
-                      <line x1="0" y1="200" x2="400" y2="200" stroke="#f1f5f9" stroke-width="1" />
+                  <div class="flex-1 flex flex-col min-w-0">
+                    <div class="flex-1 relative overflow-hidden">
+                      <svg class="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="none">
+                        <!-- Grid Lines -->
+                        <line x1="0" y1="0" x2="400" y2="0" stroke="currentColor" stroke-width="1" class="text-slate-100 dark:text-slate-800" />
+                        <line x1="0" y1="50" x2="400" y2="50" stroke="currentColor" stroke-width="1" class="text-slate-100 dark:text-slate-800" />
+                        <line x1="0" y1="100" x2="400" y2="100" stroke="currentColor" stroke-width="1" class="text-slate-100 dark:text-slate-800" />
+                        <line x1="0" y1="150" x2="400" y2="150" stroke="currentColor" stroke-width="1" class="text-slate-100 dark:text-slate-800" />
+                        <line x1="0" y1="200" x2="400" y2="200" stroke="currentColor" stroke-width="1" class="text-slate-100 dark:text-slate-800" />
 
-                      <!-- Lines -->
-                      <path [attr.d]="getLinePath(data, 'users', 200, 400, max)" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                      <path [attr.d]="getLinePath(data, 'pro', 200, 400, max)" fill="none" stroke="#f43f5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                      <path [attr.d]="getLinePath(data, 'revenue_scaled', 200, 400, max)" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                        <!-- Area Fills (Underneath lines) -->
+                        <path [attr.d]="getAreaPath(data, 'users', 200, 400, max)" fill="url(#grad-blue)" opacity="0.1" />
+
+                        <!-- Lines -->
+                        <path [attr.d]="getLinePath(data, 'users', 200, 400, max)" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-all duration-500" />
+                        <path [attr.d]="getLinePath(data, 'pro', 200, 400, max)" fill="none" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-all duration-500" />
+                        <path [attr.d]="getLinePath(data, 'revenue_scaled', 200, 400, max)" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-all duration-500" />
+                      </svg>
                       
-                      <!-- Area Fills -->
-                      <path [attr.d]="getLinePath(data, 'users', 200, 400, max) + ' L 400,200 L 0,200 Z'" fill="url(#grad-blue)" opacity="0.1" />
-                    </svg>
+                      <svg width="0" height="0" class="absolute">
+                        <defs>
+                          <linearGradient id="grad-blue" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+
+                      <!-- Hover Tooltip Line (Optional but adds polish) -->
+                    </div>
                     
                     <!-- X-Axis Labels -->
-                    <div class="flex justify-between mt-4">
+                    <div class="flex justify-between pt-4 h-8 shrink-0">
                       @for (m of data; track m.name + $index) {
-                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap overflow-hidden text-ellipsis max-w-[40px] text-center">{{ m.name }}</span>
+                        <div class="flex-1 flex justify-center overflow-visible">
+                          @if (shouldShowLabel($index, data.length)) {
+                            <span class="text-[7.5px] font-black text-slate-400 uppercase tracking-tight whitespace-nowrap text-center animate-in fade-in duration-300">
+                              {{ m.name }}
+                            </span>
+                          }
+                        </div>
                       }
                     </div>
                   </div>
-
-                  <svg width="0" height="0" class="absolute">
-                    <defs>
-                      <linearGradient id="grad-blue" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
                 </div>
               </div>
               
@@ -1229,18 +1239,55 @@ export class AdminComponent implements OnInit, OnDestroy {
   // SVG Chart Helpers
   getLinePath(data: ChartData[], key: keyof ChartData, height: number, width: number, maxVal: number): string {
     if (data.length <= 1) return '';
+    
+    // Safety margin to prevent lines from being cut off by the stroke
+    const padding = 5;
+    const innerHeight = height - padding * 2;
+    const innerWidth = width;
+
     const points = data.map((d, i) => {
-      const x = (i / (data.length - 1)) * width;
-      const y = height - ((d[key] as number) / (maxVal || 1)) * height;
-      return `${x},${y}`;
+      const x = (i / (data.length - 1)) * innerWidth;
+      const y = padding + innerHeight - ((d[key] as number) / (maxVal || 1)) * innerHeight;
+      return { x, y };
     });
-    return `M ${points.join(' L ')}`;
+
+    // Use cubic bezier for professional smooth lines
+    let path = `M ${points[0].x},${points[0].y}`;
+    
+    for (let i = 0; i < points.length - 1; i++) {
+      const curr = points[i];
+      const next = points[i + 1];
+      const cp1x = curr.x + (next.x - curr.x) / 3;
+      const cp2x = curr.x + (next.x - curr.x) * 2 / 3;
+      path += ` C ${cp1x},${curr.y} ${cp2x},${next.y} ${next.x},${next.y}`;
+    }
+    
+    return path;
+  }
+
+  getAreaPath(data: ChartData[], key: keyof ChartData, height: number, width: number, maxVal: number): string {
+    const linePath = this.getLinePath(data, key, height, width, maxVal);
+    if (!linePath) return '';
+    return `${linePath} L ${width},${height} L 0,${height} Z`;
   }
 
   getMaxValue(data: ChartData[]): number {
     if (data.length === 0) return 10;
     const vals = data.flatMap(d => [d.users, d.pro, d.revenue_scaled]);
-    return Math.max(...vals, 10);
+    const max = Math.max(...vals, 10);
+    // Add 20% headroom and round to nearest multi-step
+    return Math.ceil((max * 1.2) / 4) * 4;
+  }
+
+  formatAxisValue(val: number): string {
+    if (val >= 1000) return (val / 1000).toFixed(1) + 'k';
+    return Math.round(val).toString();
+  }
+
+  shouldShowLabel(index: number, total: number): boolean {
+    if (total <= 7) return true;
+    if (total <= 12) return index % 2 === 0 || index === total - 1;
+    return index % 3 === 0 || index === total - 1;
   }
   
   title = signal('');

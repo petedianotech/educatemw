@@ -242,6 +242,10 @@ export class AuthService {
       });
       
       this.currentUser.update(u => u ? {...u, referredBy, aiCredits: newCredits} : null);
+      
+      this.rewardMessage.set('🎉 Referral Success! You earned 20 AI Credits immediately! 🚀');
+      setTimeout(() => this.rewardMessage.set(null), 6000);
+      
       return { success: true, message: 'Referral code applied! You received 20 AI credits.' };
     } catch (error) {
       console.error('Error redeeming code:', error);
@@ -374,6 +378,9 @@ export class AuthService {
     if (referredBy) {
       newUser.referredBy = referredBy;
       newUser.aiCredits = (newUser.aiCredits || 0) + 20;
+      
+      this.rewardMessage.set('🎁 Welcome Bonus! You earned 20 AI Credits via referral! 🚀');
+      setTimeout(() => this.rewardMessage.set(null), 6000);
     }
 
     console.log('Creating new user profile:', newUser);

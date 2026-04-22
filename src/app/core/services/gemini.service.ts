@@ -50,6 +50,7 @@ export class GeminiService {
   private _platformId = inject(PLATFORM_ID);
 
   readonly EMI_AVATAR = 'https://i.ibb.co/8DVmYDn3/emi-avatar.png';
+  readonly EMA_AVATAR = 'https://i.ibb.co/ccK3kyLP/ema-avatar.jpg';
   
   private dbPromise: Promise<IDBPDatabase<ChatDB>> | null = null;
   private dataService = inject(DataService);
@@ -72,7 +73,7 @@ MANEB EXAM FORMATTING:
 
 Be accurate, encouraging, and concise.`;
 
-  private readonly supportInstruction = `You are the Official Help Desk AI for "Educate MW", Malawi's #1 digital learning platform for MSCE students. 
+  private readonly supportInstruction = `You are ema, the Official Help Desk AI for "Educate MW", Malawi's #1 digital learning platform for MSCE students. 
 
 STRICT SCOPE RULE: You ONLY answer questions related to the Educate MW app, payments, premium benefits, and how to use the platform. 
 IF A USER ASKS ANYTHING ELSE (e.g., "who is a billionaire?", "help with math", "general news", "scientific facts"), you MUST politely decline by saying: "I am a basic help assistant for this app only. I cannot answer general knowledge or subject-specific questions. Please use the 'emi AI' section in the main menu for your MSCE study questions!"

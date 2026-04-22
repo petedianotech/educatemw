@@ -211,43 +211,47 @@ import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/comm
                   <p class="text-[10px] font-black text-indigo-100/60 uppercase tracking-[0.2em]">Malawi's Biggest Reward</p>
                 </div>
               </div>
-              <div class="flex flex-col items-end">
-                <span class="text-sm font-black text-white/90">20 Bonus</span>
-                <span class="text-[8px] font-black text-white/40 uppercase tracking-widest">per friend</span>
+                <div class="flex flex-col items-end">
+                <span class="text-sm font-black text-white animate-pulse">20 Credits Reward</span>
+                <span class="text-[8px] font-black text-white/40 uppercase tracking-widest">Permanent • No Expiry</span>
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4 mb-8">
-              <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-5 group cursor-pointer active:scale-95 transition-all text-center" 
-                   (click)="copyToClipboard(authService.currentUser()?.referralCode || '')">
-                <p class="text-[8px] font-black text-white/50 uppercase tracking-[0.2em] mb-2">Your Personal Code</p>
-                <div class="flex items-center justify-center gap-2">
+              <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-5 flex flex-col items-center justify-center gap-1 transition-all group hover:bg-white/15">
+                <p class="text-[8px] font-black text-white/50 uppercase tracking-[0.2em]">Your Personal Code</p>
+                <div class="flex items-center gap-2 mb-1">
                   <span class="text-xl font-black tracking-[0.1em]">{{authService.currentUser()?.referralCode}}</span>
-                  <mat-icon class="!w-4 !h-4 !text-[16px] text-white/30">content_copy</mat-icon>
                 </div>
+                <button (click)="copyToClipboard(authService.currentUser()?.referralCode || '')" 
+                        class="px-3 py-1.5 bg-white text-indigo-600 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all active:scale-95 shadow-lg">
+                  <mat-icon class="!w-3 !h-3 !text-[12px]">{{ isCopied() ? 'check_circle' : 'content_copy' }}</mat-icon>
+                  <span>{{ isCopied() ? 'Copied ✅' : 'Copy Code' }}</span>
+                </button>
               </div>
-              <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-5 text-center transition-all">
-                <p class="text-[8px] font-black text-white/50 uppercase tracking-[0.2em] mb-2">Successful Invites</p>
-                <span class="text-xl font-black">{{authService.currentUser()?.referralsCount || 0}}</span>
+              <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-5 text-center transition-all flex flex-col items-center justify-center gap-1 group hover:bg-white/15">
+                <p class="text-[8px] font-black text-white/50 uppercase tracking-[0.2em]">Total Earned</p>
+                <span class="text-2xl font-black">{{ (authService.currentUser()?.referralsCount || 0) * 20 }}</span>
+                <span class="text-[8px] font-black text-white/40 uppercase tracking-widest">AI Credits</span>
               </div>
             </div>
 
             @if (!authService.currentUser()?.referredBy) {
-              <div class="bg-black/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 mb-8">
+              <div class="bg-black/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 mb-8 hover:border-white/20 transition-all">
                 <div class="flex items-center gap-2 mb-4">
-                  <mat-icon class="text-indigo-200 text-sm">redeem</mat-icon>
-                  <h4 class="text-[10px] font-black text-indigo-100 uppercase tracking-widest">Redeem Friend's Code</h4>
+                  <div class="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></div>
+                  <h4 class="text-[10px] font-black text-indigo-100 uppercase tracking-widest">Redeem & Get 20 Credits</h4>
                 </div>
                 
-                <div class="flex gap-2">
+                <div class="flex flex-col gap-3">
                   <input type="text" [(ngModel)]="redeemCode" placeholder="Enter code here" 
-                         class="flex-1 px-5 py-4 bg-white/10 border border-white/10 rounded-2xl font-black placeholder-white/30 focus:outline-none focus:border-white/40 transition-all outline-none text-sm text-white shadow-inner uppercase tracking-widest">
+                         class="w-full px-5 py-4 bg-white/10 border border-white/10 rounded-2xl font-black placeholder-white/30 focus:outline-none focus:border-white/40 transition-all outline-none text-sm text-white shadow-inner uppercase tracking-widest">
                   <button (click)="redeemReferral()" [disabled]="!redeemCode().trim() || isUpdating()"
-                          class="px-6 bg-white text-indigo-600 rounded-2xl font-black shadow-xl hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center">
+                          class="w-full py-4 bg-white text-indigo-600 rounded-2xl font-black shadow-xl hover:shadow-2xl active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center">
                     @if (isUpdating()) {
                       <div class="w-5 h-5 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin"></div>
                     } @else {
-                      Apply
+                      Apply Code
                     }
                   </button>
                 </div>
@@ -287,6 +291,7 @@ export class ProfileComponent {
 
   ans1 = signal('');
   ans2 = signal('');
+  isCopied = signal(false);
 
   genders = [
     { id: 'boy' as const, label: 'Boy' },
@@ -421,11 +426,13 @@ export class ProfileComponent {
   copyToClipboard(text: string) {
     if (isPlatformBrowser(this.platformId) && typeof navigator !== 'undefined') {
       navigator.clipboard.writeText(text);
+      this.isCopied.set(true);
       this.updateMsg.set('Copied to clipboard!');
       this.showReward.set(true);
       setTimeout(() => {
         this.updateMsg.set('');
         this.showReward.set(false);
+        this.isCopied.set(false);
       }, 3000);
     }
   }

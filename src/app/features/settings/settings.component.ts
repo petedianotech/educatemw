@@ -77,11 +77,11 @@ import { CommonModule } from '@angular/common';
             <div class="grid grid-cols-1 gap-3">
               <!-- AI Chat Trigger -->
               <button (click)="openHelp()" class="flex items-center gap-4 p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/20 hover:bg-indigo-100 transition-all active:scale-[0.98] group">
-                <div class="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                  <mat-icon>smart_toy</mat-icon>
+                <div class="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 overflow-hidden">
+                  <img [src]="gemini.EMA_AVATAR" alt="ema AI" class="w-full h-full object-cover avatar-integrated" referrerpolicy="no-referrer">
                 </div>
                 <div class="text-left">
-                  <h4 class="text-sm font-black text-slate-900 dark:text-white leading-none">Help Assistant</h4>
+                  <h4 class="text-sm font-black text-slate-900 dark:text-white leading-none">ema (Help AI)</h4>
                   <p class="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest mt-1.5">Ask about the app</p>
                 </div>
                 <mat-icon class="ml-auto text-slate-300">chevron_right</mat-icon>
@@ -223,12 +223,12 @@ import { CommonModule } from '@angular/common';
           <!-- Panel Header -->
           <header class="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50 pt-safe transition-colors">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white">
-                <mat-icon>smart_toy</mat-icon>
+              <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white overflow-hidden">
+                <img [src]="gemini.EMA_AVATAR" alt="ema AI" class="w-full h-full object-cover avatar-integrated" referrerpolicy="no-referrer">
               </div>
               <div>
-                <h3 class="text-sm font-black text-slate-900 dark:text-white leading-none">Help Assistant</h3>
-                <p class="text-[9px] font-black text-indigo-500 uppercase tracking-widest mt-1">Ready to help</p>
+                <h3 class="text-sm font-black text-slate-900 dark:text-white leading-none">ema (Help)</h3>
+                <p class="text-[9px] font-black text-indigo-500 uppercase tracking-widest mt-1">Ready to assist</p>
               </div>
             </div>
             <button (click)="isHelpOpen.set(false)" class="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/5 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors">
@@ -280,7 +280,7 @@ import { CommonModule } from '@angular/common';
                 <mat-icon class="!w-5 !h-5 !text-[20px]">send</mat-icon>
               </button>
             </div>
-            <p class="text-[9px] text-slate-400 dark:text-slate-500 text-center mt-4 font-bold uppercase tracking-widest">Educate MW Support AI</p>
+            <p class="text-[9px] text-slate-400 dark:text-slate-500 text-center mt-4 font-bold uppercase tracking-widest">ema • Support AI</p>
           </footer>
         </aside>
       </div>
@@ -303,7 +303,7 @@ export class SettingsComponent {
     if (this.helpMessages().length === 0) {
       this.helpMessages.set([{
         role: 'assistant',
-        content: 'Hello! I am your Educate MW help assistant. How can I help you today with the app, payments, or your account?'
+        content: 'Hello! I am ema, your Educate MW help assistant. How can I help you today with the app, payments, or your account?'
       }]);
     }
   }
