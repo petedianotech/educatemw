@@ -195,55 +195,69 @@ import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/comm
         </section>
 
         <!-- Referral System -->
-        <section class="bg-slate-950 rounded-[2rem] p-6 text-white shadow-2xl shadow-indigo-900/20 relative overflow-hidden border border-white/5">
-          <div class="absolute top-0 right-0 w-48 h-48 bg-indigo-600/20 rounded-full -mr-24 -mt-24 blur-[60px]"></div>
+        <section class="bg-indigo-600 dark:bg-indigo-950 rounded-[2rem] p-8 text-white shadow-2xl shadow-indigo-900/30 relative overflow-hidden transition-all duration-500">
+          <!-- Background Decoration -->
+          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-[80px]"></div>
+          <div class="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/10 rounded-full -ml-24 -mb-24 blur-[60px]"></div>
           
           <div class="relative z-10">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-xl flex items-center justify-center text-white shadow-xl shadow-indigo-500/20">
-                <mat-icon class="!w-6 !h-6 !text-[24px]">share</mat-icon>
+            <div class="flex items-center justify-between mb-8">
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center text-white shadow-inner border border-white/20">
+                  <mat-icon class="!w-7 !h-7 !text-[28px]">stars</mat-icon>
+                </div>
+                <div>
+                  <h3 class="text-2xl font-black tracking-tight leading-none mb-1.5">Earn Credits</h3>
+                  <p class="text-[10px] font-black text-indigo-100/60 uppercase tracking-[0.2em]">Malawi's Biggest Reward</p>
+                </div>
               </div>
-              <div>
-                <h3 class="text-xl font-black tracking-tight leading-none">Refer & Earn</h3>
-                <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-1.5">Get 20 AI Credits per friend</p>
+              <div class="flex flex-col items-end">
+                <span class="text-sm font-black text-white/90">20 Bonus</span>
+                <span class="text-[8px] font-black text-white/40 uppercase tracking-widest">per friend</span>
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 mb-6">
-              <div class="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
-                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Your Code</p>
-                <p class="text-xl font-black text-white tracking-wider flex items-center justify-center gap-1 cursor-pointer hover:text-indigo-300 transition-colors" (click)="copyToClipboard(authService.currentUser()?.referralCode || '')" title="Tap to copy">
-                  {{authService.currentUser()?.referralCode}}
-                  <mat-icon class="!w-4 !h-4 !text-[16px] opacity-50">content_copy</mat-icon>
-                </p>
+            <div class="grid grid-cols-2 gap-4 mb-8">
+              <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-5 group cursor-pointer active:scale-95 transition-all text-center" 
+                   (click)="copyToClipboard(authService.currentUser()?.referralCode || '')">
+                <p class="text-[8px] font-black text-white/50 uppercase tracking-[0.2em] mb-2">Your Personal Code</p>
+                <div class="flex items-center justify-center gap-2">
+                  <span class="text-xl font-black tracking-[0.1em]">{{authService.currentUser()?.referralCode}}</span>
+                  <mat-icon class="!w-4 !h-4 !text-[16px] text-white/30">content_copy</mat-icon>
+                </div>
               </div>
-              <div class="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
-                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Referrals</p>
-                <p class="text-xl font-black text-white">{{authService.currentUser()?.referralsCount || 0}}</p>
+              <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-5 text-center transition-all">
+                <p class="text-[8px] font-black text-white/50 uppercase tracking-[0.2em] mb-2">Successful Invites</p>
+                <span class="text-xl font-black">{{authService.currentUser()?.referralsCount || 0}}</span>
               </div>
             </div>
 
             @if (!authService.currentUser()?.referredBy) {
-              <div class="bg-indigo-950/40 border border-indigo-500/30 rounded-2xl p-4 mb-6">
-                <p class="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                  <mat-icon class="!w-4 !h-4 !text-[16px]">stars</mat-icon>
-                  Referred by a friend?
-                </p>
+              <div class="bg-black/20 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 mb-8">
+                <div class="flex items-center gap-2 mb-4">
+                  <mat-icon class="text-indigo-200 text-sm">redeem</mat-icon>
+                  <h4 class="text-[10px] font-black text-indigo-100 uppercase tracking-widest">Redeem Friend's Code</h4>
+                </div>
+                
                 <div class="flex gap-2">
-                  <input type="text" [(ngModel)]="redeemCode" placeholder="Enter referral code" 
-                         class="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl font-bold placeholder-white/40 focus:outline-none focus:border-indigo-400 transition-all outline-none text-sm text-white shadow-sm uppercase">
+                  <input type="text" [(ngModel)]="redeemCode" placeholder="Enter code here" 
+                         class="flex-1 px-5 py-4 bg-white/10 border border-white/10 rounded-2xl font-black placeholder-white/30 focus:outline-none focus:border-white/40 transition-all outline-none text-sm text-white shadow-inner uppercase tracking-widest">
                   <button (click)="redeemReferral()" [disabled]="!redeemCode().trim() || isUpdating()"
-                          class="px-5 bg-indigo-600 text-white rounded-xl font-black shadow-lg shadow-indigo-900/50 hover:bg-indigo-500 disabled:opacity-50 transition-all active:scale-95">
-                    Redeem
+                          class="px-6 bg-white text-indigo-600 rounded-2xl font-black shadow-xl hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center">
+                    @if (isUpdating()) {
+                      <div class="w-5 h-5 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin"></div>
+                    } @else {
+                      Apply
+                    }
                   </button>
                 </div>
               </div>
             }
 
             <button (click)="shareApp()" 
-                    class="w-full py-4 bg-white text-slate-950 rounded-xl font-black shadow-xl hover:bg-slate-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-sm">
-              <mat-icon class="text-sm">share</mat-icon>
-              Share Code
+                    class="w-full py-5 bg-black/30 hover:bg-black/40 text-white rounded-2xl font-black shadow-2xl backdrop-blur-md transition-all active:scale-[0.98] flex items-center justify-center gap-3 border border-white/10 group">
+              <mat-icon class="text-xl group-hover:scale-110 transition-transform">send</mat-icon>
+              Invite Friends Now
             </button>
           </div>
         </section>

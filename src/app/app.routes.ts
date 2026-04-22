@@ -82,6 +82,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'dictionary',
+    loadComponent: () => import('./features/dictionary/dictionary.component').then(m => m.DictionaryComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'admin',
     loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent),
     canActivate: [authGuard, adminGuard]

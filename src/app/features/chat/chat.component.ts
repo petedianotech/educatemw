@@ -107,7 +107,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
           </a>
           <div class="relative">
             <div class="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200 dark:shadow-none overflow-hidden transition-colors">
-              <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+              <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover avatar-integrated" referrerpolicy="no-referrer">
             </div>
           </div>
           <div>
@@ -144,7 +144,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
         @if (gemini.messages().length === 0) {
           <div class="flex flex-col items-center justify-center text-center max-w-md mx-auto px-6 py-12 mt-8">
             <div class="w-20 h-20 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-[2rem] flex items-center justify-center mb-6 border border-indigo-100 dark:border-white/5 shadow-xl overflow-hidden group">
-              <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerpolicy="no-referrer">
+              <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 avatar-integrated" referrerpolicy="no-referrer">
             </div>
             <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">How can I help you today?</h3>
             <p class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">I'm emi, your AI tutor. Ask me anything about your MSCE subjects.</p>
@@ -168,7 +168,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
             <div class="shrink-0 mt-1">
               @if (msg.role === 'model') {
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-100 dark:shadow-none overflow-hidden transition-colors">
-                  <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                  <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover avatar-integrated" referrerpolicy="no-referrer">
                 </div>
               } @else {
                 <img ngSrc="{{authService.currentUser()?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + authService.currentUser()?.uid}}" 
@@ -193,16 +193,16 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
                 @if (msg.role === 'model') {
                   <div class="prose prose-slate max-w-none leading-relaxed text-slate-800 dark:text-slate-200 no-highlight" [innerHTML]="msg.content | markdown | async"></div>
                   
-                  <!-- Actions (Copy & TTS) -->
+                    <!-- Actions (Copy & TTS) -->
                   <div class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100 dark:border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button (click)="copyText(msg.content)" 
                             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95">
                       <mat-icon class="!w-3 !h-3 !text-[14px]">content_copy</mat-icon>
                       <span>Copy</span>
                     </button>
-                    <button (click)="speakText(msg.content)" 
+                    <button (click)="speakText(msg.content, msg.id)" 
                             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95">
-                      <mat-icon class="!w-3 !h-3 !text-[14px]">{{ isSpeaking === msg.id ? 'stop' : (isSpeaking && isSpeaking !== msg.id ? 'volume_up' : 'volume_up') }}</mat-icon>
+                      <mat-icon class="!w-3 !h-3 !text-[14px]">{{ isSpeaking === msg.id ? 'stop' : 'volume_up' }}</mat-icon>
                       <span>{{ isSpeaking === msg.id ? 'Stop' : 'Listen' }}</span>
                     </button>
                   </div>
@@ -220,7 +220,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
           <div class="flex w-full animate-in fade-in duration-300 gap-4 max-w-4xl mx-auto px-2">
             <div class="shrink-0 mt-1">
               <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-100 overflow-hidden">
-                <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover animate-pulse" referrerpolicy="no-referrer">
+                <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover animate-pulse avatar-integrated" referrerpolicy="no-referrer">
               </div>
             </div>
             <div class="flex items-center gap-1.5">
@@ -341,19 +341,26 @@ export class ChatComponent {
 
   copyText(text: string) {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      // Remove markdown for cleaner copy if desired, but usually users want the formatting
+      // Let's just copy the raw content
       navigator.clipboard.writeText(text).then(() => {
-        // Optional: show a temporary toast or change icon
+        // Success feedback
+        this.authService.rewardMessage.set('Copied to clipboard! 📋');
+        setTimeout(() => this.authService.rewardMessage.set(null), 2000);
       });
     }
   }
 
-  speakText(text: string) {
+  speakText(text: string, msgId: string) {
     if (!this.synthesis) return;
 
-    if (this.isSpeaking) {
+    if (this.isSpeaking === msgId) {
       this.stopSpeaking();
       return;
     }
+
+    // Stop any existing speech
+    this.stopSpeaking();
 
     // Clean text from markdown for better speech
     const cleanText = text.replace(/[#*`_~]/g, '').trim();
@@ -376,7 +383,7 @@ export class ChatComponent {
       this.isSpeaking = null;
     };
 
-    this.isSpeaking = 'active'; // Simplified state tracking
+    this.isSpeaking = msgId;
     this.synthesis.speak(utterance);
   }
 

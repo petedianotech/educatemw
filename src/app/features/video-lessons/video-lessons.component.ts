@@ -26,6 +26,25 @@ import { YouTubePlayer } from '@angular/youtube-player';
         </div>
       </header>
 
+      <!-- Subject Filters -->
+      <div class="px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-white/10 transition-colors">
+        @for (cat of categories; track cat) {
+          <button 
+            (click)="selectedCategory.set(cat)"
+            [class.bg-indigo-600]="selectedCategory() === cat"
+            [class.text-white]="selectedCategory() === cat"
+            [class.border-indigo-600]="selectedCategory() === cat"
+            [class.bg-slate-100]="selectedCategory() !== cat && !themeService.isDarkMode()"
+            [class.bg-white/5]="selectedCategory() !== cat && themeService.isDarkMode()"
+            [class.text-slate-600]="selectedCategory() !== cat && !themeService.isDarkMode()"
+            [class.text-slate-400]="selectedCategory() !== cat && themeService.isDarkMode()"
+            [class.border-transparent]="selectedCategory() !== cat"
+            class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all whitespace-nowrap active:scale-95">
+            {{cat}}
+          </button>
+        }
+      </div>
+
       <!-- Video Player Area (Top Half) -->
       <div #playerContainer class="w-full aspect-video bg-black shrink-0 relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-20 group">
         @if (activeVideo()) {
@@ -165,6 +184,13 @@ import { YouTubePlayer } from '@angular/youtube-player';
     .animate-music-bar {
       animation: music-bar 0.8s ease-in-out infinite;
     }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
   `]
 })
 export class VideoLessonsComponent implements OnInit, OnDestroy {
@@ -173,7 +199,10 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
   sanitizer = inject(DomSanitizer);
   
   activeVideo = signal<VideoLesson | null>(null);
+  selectedCategory = signal<string>('All');
   apiLoaded = signal(false);
+
+  categories = ['All', 'Physics', 'Biology', 'Chemistry', 'Agriculture'];
 
   @ViewChild('playerContainer') playerContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('youtubePlayer') youtubePlayer: YouTubePlayer | undefined;
@@ -215,7 +244,14 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
         createdAt: note.createdAt
       }));
     const nativeVideos = this.dataService.videoLessons();
-    return [...nativeVideos, ...notesAsVideos].sort((a, b) => {
+    const allVideos = [...nativeVideos, ...notesAsVideos];
+    
+    // Apply Filtering
+    const filtered = this.selectedCategory() === 'All' 
+      ? allVideos 
+      : allVideos.filter(v => v.category === this.selectedCategory());
+
+    return filtered.sort((a, b) => {
       const db = (b.createdAt as { toMillis?: () => number })?.toMillis?.() || Date.now();
       const da = (a.createdAt as { toMillis?: () => number })?.toMillis?.() || Date.now();
       return db - da; 

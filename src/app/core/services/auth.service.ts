@@ -34,6 +34,7 @@ export interface UserProfile {
   isPro: boolean;
   isGuest?: boolean;
   aiCredits?: number;
+  dictionaryAiCredits?: number;
   streak?: number;
   coins?: number;
   lastCreditReset?: string; // ISO date string
@@ -355,6 +356,7 @@ export class AuthService {
       isPro: false,
       isGuest: user.isAnonymous,
       aiCredits: user.isAnonymous ? 5 : 10,
+      dictionaryAiCredits: user.isAnonymous ? 5 : 10,
       streak: 0,
       coins: 0,
       lastCreditReset: new Date().toISOString(),
@@ -389,6 +391,7 @@ export class AuthService {
         let profile = {
           ...data,
           aiCredits: data['aiCredits'] !== undefined ? data['aiCredits'] : 10,
+          dictionaryAiCredits: data['dictionaryAiCredits'] !== undefined ? data['dictionaryAiCredits'] : 10,
           createdAt: data['createdAt']?.toDate() || new Date()
         } as UserProfile;
 
@@ -402,15 +405,18 @@ export class AuthService {
           // Reset credits
           const dailyAllowance = profile.isGuest ? 5 : 10;
           const newCredits = (profile.aiCredits || 0) < dailyAllowance ? dailyAllowance : profile.aiCredits;
+          const newDictionaryCredits = (profile.dictionaryAiCredits || 0) < dailyAllowance ? dailyAllowance : profile.dictionaryAiCredits;
           
           await updateDoc(userRef, {
             aiCredits: newCredits,
+            dictionaryAiCredits: newDictionaryCredits,
             lastCreditReset: now.toISOString()
           });
           
           profile = {
             ...profile,
             aiCredits: newCredits,
+            dictionaryAiCredits: newDictionaryCredits,
             lastCreditReset: now.toISOString()
           };
           
@@ -623,6 +629,19 @@ export class AuthService {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, { aiCredits: newCredits });
       this.currentUser.set({ ...user, aiCredits: newCredits });
+    }
+  }
+
+  async decrementDictionaryAiCredits() {
+    const user = this.currentUser();
+    if (!user || user.isPro || user.role === 'admin') return;
+    
+    const currentCredits = user.dictionaryAiCredits !== undefined ? user.dictionaryAiCredits : 10;
+    if (currentCredits > 0) {
+      const newCredits = currentCredits - 1;
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { dictionaryAiCredits: newCredits });
+      this.currentUser.set({ ...user, dictionaryAiCredits: newCredits });
     }
   }
 

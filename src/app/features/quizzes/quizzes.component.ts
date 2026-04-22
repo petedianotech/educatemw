@@ -54,7 +54,7 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center overflow-hidden transition-colors">
-                      <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                      <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover avatar-integrated" referrerpolicy="no-referrer">
                     </div>
                     Quiz Generator
                   </h3>
@@ -87,7 +87,7 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
                       Generating...
                     } @else {
                       <div class="w-6 h-6 rounded-lg overflow-hidden">
-                        <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                        <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover avatar-integrated" referrerpolicy="no-referrer">
                       </div>
                       Generate Quiz
                     }

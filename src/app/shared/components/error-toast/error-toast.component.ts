@@ -23,6 +23,14 @@ export class ErrorToastComponent {
   error = signal<string | null>(null);
   private platformId = inject(PLATFORM_ID);
 
+  constructor() {
+    if (isPlatformBrowser(this.platformId)) {
+      window.addEventListener('firestore-error', (event: any) => {
+        this.showError(event.detail.message);
+      });
+    }
+  }
+
   showError(message: string) {
     this.error.set(message);
     if (isPlatformBrowser(this.platformId)) {

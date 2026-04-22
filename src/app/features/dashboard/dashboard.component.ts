@@ -168,7 +168,7 @@ interface Notification {
             <a routerLink="/chat" class="bg-white dark:bg-slate-900 rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
               <div class="absolute inset-0 bg-gradient-to-br from-transparent to-blue-50/50 dark:to-blue-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md shadow-blue-500/30 relative z-10 group-hover:scale-105 transition-transform overflow-hidden">
-                <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
+                <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover avatar-integrated" referrerpolicy="no-referrer">
                 @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 10) <= 0) {
                   <div class="absolute -top-1.5 -right-1.5 bg-slate-900 text-sky-400 p-1 rounded-lg border-2 border-white shadow-sm">
                     <mat-icon class="!w-3 !h-3 !text-[12px]">lock</mat-icon>
@@ -254,6 +254,16 @@ interface Notification {
               </div>
               <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">Flashcards</h3>
               <p class="text-slate-500 dark:text-slate-400 text-[10px] font-medium mt-0.5 relative z-10">Master subjects</p>
+            </a>
+
+            <!-- Dictionary -->
+            <a routerLink="/dictionary" class="bg-white dark:bg-slate-900 rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-orange-50/50 dark:to-orange-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-400 to-amber-500 text-white shadow-md shadow-orange-500/30 relative z-10 group-hover:scale-105 transition-transform">
+                <mat-icon class="!w-6 !h-6 !text-[24px]">menu_book</mat-icon>
+              </div>
+              <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">MSCE Dictionary</h3>
+              <p class="text-slate-500 dark:text-slate-400 text-[10px] font-medium mt-0.5 relative z-10">Word meanings</p>
             </a>
           </div>
 

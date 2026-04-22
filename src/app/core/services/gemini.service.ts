@@ -72,26 +72,26 @@ MANEB EXAM FORMATTING:
 
 Be accurate, encouraging, and concise.`;
 
-  private readonly supportInstruction = `You are the Official Support AI for "Educate MW", Malawi's #1 digital learning platform for MSCE students. 
+  private readonly supportInstruction = `You are the Official Help Desk AI for "Educate MW", Malawi's #1 digital learning platform for MSCE students. 
+
+STRICT SCOPE RULE: You ONLY answer questions related to the Educate MW app, payments, premium benefits, and how to use the platform. 
+IF A USER ASKS ANYTHING ELSE (e.g., "who is a billionaire?", "help with math", "general news", "scientific facts"), you MUST politely decline by saying: "I am a basic help assistant for this app only. I cannot answer general knowledge or subject-specific questions. Please use the 'emi AI' section in the main menu for your MSCE study questions!"
 
 APP OVERVIEW: 
 Educate MW provides:
-1. emi AI Tutor: An AI that helps with MSCE subjects (Biology, Physics, Math, etc.).
+1. emi AI Tutor: An AI that helps with MSCE subjects. (Direct users here for study help!)
 2. Study Library: PDF downloads for past papers and notes.
 3. Video Lessons: Expert-led tutorials.
-4. Practice Quizzes: MANEB-style practice with rewards.
-5. Leaderboard: Rank against other students.
-6. Forum: Discussion community.
-7. Premium (Pro): Unlimited AI credits, no ads, exclusive books. Costs 5,000 MWK per year via PayChangu (Airtel/TNM).
+4. Practice Quizzes: MANEB-style practice.
+5. Premium (Pro): Unlimited AI credits, no ads, exclusive books. Costs 5,000 MWK per year via PayChangu (Airtel/TNM).
 
-COMMON ISSUES:
-- Payment not working: Use the "Upgrade" page. If redirect fails, report to Peter on WhatsApp.
-- Missing AI Credits: Free users get limited daily credits. Refer friends (Settings > Refer & Earn) to get more, or go Pro.
-- Reset Password: Use the security questions in the login screen.
-- Inappropriate Ads: Report them via the "Ad Feedback" link in Settings or Dashboard.
+COMMON SUPPORT TOPICS:
+- Payments: Use the "Upgrade" page. 5000 MWK/year.
+- Missing Credits: Refer friends (Profile > Refer & Earn) or go Pro.
+- Security: Set/Change security questions in Profile.
+- Found a bug? Contact Peter Damiano at +265 987 066 051 on WhatsApp.
 
-YOUR TONE: Reliable, helpful, and concise. 
-URGENT ISSUES: For account recovery or billing failures that you cannot solve, tell users to contact Peter Damiano at +265 987 066 051 on WhatsApp.`;
+YOUR TONE: Professional, efficient, and limited. ALWAYS be short.`;
 
   constructor() {
     if (isPlatformBrowser(this._platformId)) {
@@ -101,29 +101,48 @@ URGENT ISSUES: For account recovery or billing failures that you cannot solve, t
   }
 
   async getSupportResponse(userQuery: string): Promise<string> {
+    return this.callCerebrasWithSystem(this.supportInstruction, userQuery);
+  }
+
+  async getDictionaryExplanation(word: string): Promise<string> {
+    const instruction = `You are emi AI's Dictionary Assistant. Your goal is to explain scientific or complex terms specifically for Malawian MSCE students.
+    - Word to explain: "${word}"
+    - Focus: How this word appears in MSCE subjects (Biology, Physics, Chemistry, Geography, etc.)
+    - Length: Keep it under 60 words.
+    - Style: Very simple English, clear, and student-friendly. Use a helpful tone.
+    - Rule: Do NOT refuse the question. Provide a direct, helpful explanation for a 15-20 year old student.`;
+    
+    return this.callCerebrasWithSystem(instruction, `Explain the word "${word}" for my MSCE studies.`);
+  }
+
+  private async callCerebrasWithSystem(system: string, userQuery: string): Promise<string> {
     const cerebrasKey = this.getCerebrasKey();
-    if (!cerebrasKey) return "I can't answer right now. Please contact Peter on WhatsApp: +265 987 066 051";
+    if (!cerebrasKey) return "AI service unavailable. Contact Peter on WhatsApp.";
 
-    const response = await fetch("https://api.cerebras.ai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${cerebrasKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "model": "llama3.1-8b",
-        "messages": [
-          { role: 'system', content: this.supportInstruction },
-          { role: 'user', content: userQuery }
-        ],
-        "max_completion_tokens": 512,
-        "temperature": 0.3
-      })
-    });
+    try {
+      const response = await fetch("https://api.cerebras.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${cerebrasKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "model": "llama3.1-8b",
+          "messages": [
+            { role: 'system', content: system },
+            { role: 'user', content: userQuery }
+          ],
+          "max_completion_tokens": 512,
+          "temperature": 0.4
+        })
+      });
 
-    if (!response.ok) return "Sorry, I'm having trouble connecting. Reach out on WhatsApp: +265 987 066 051";
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || "I didn't catch that. Try asking about Pro, Credits, or Exams.";
+      if (!response.ok) return "Sorry, I'm having trouble connecting right now.";
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || "I couldn't generate an explanation. Try another word.";
+    } catch (err) {
+      return "Connection error. Please check your internet.";
+    }
   }
 
   private getCerebrasKey(): string {

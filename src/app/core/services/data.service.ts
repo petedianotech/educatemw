@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { db } from '../../../firebase';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, deleteDoc, Timestamp, updateDoc, where, arrayUnion, arrayRemove, increment, limit, getDocs, getCountFromServer } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../../../firebase';
-import { UserProfile } from './auth.service';
+import { UserProfile, AuthService } from './auth.service';
 
 export interface Post {
   id: string;
@@ -161,6 +161,84 @@ export class DataService {
   videoLessons = signal<VideoLesson[]>([]);
   appSettings = signal<AppSettings>({ isAppOfferActive: false });
   
+  private authService = inject(AuthService);
+  private platformId = inject(PLATFORM_ID);
+  
+  constructor() {
+    this.checkAndSeedVideos();
+    this.testFirestoreConnection();
+  }
+
+  async testFirestoreConnection() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      // Small test to verify connection
+      await getDocs(query(collection(db, 'config'), limit(1)));
+    } catch (error: any) {
+      if (error?.message?.includes('offline')) {
+        console.error("Firestore connection issue: Client appears offline. Check Firebase config or network.");
+      }
+    }
+  }
+
+  async checkAndSeedVideos() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    
+    // Wait for auth to be ready
+    const currentUser = this.authService.currentUser();
+    if (!currentUser || currentUser.role !== 'admin') {
+      const adminEmails = ['petedianotech@gmail.com', 'mscepreparation@gmail.com'];
+      if (!currentUser || !adminEmails.includes(currentUser.email)) {
+        return;
+      }
+    }
+    
+    try {
+      const snapshot = await getDocs(collection(db, 'videoLessons'));
+      const existingUrls = new Set(snapshot.docs.map(doc => doc.data()['youtubeUrl']));
+      
+      const starterVideos = [
+        // Physics
+        { title: 'Vectors and Scalars Explained', description: 'Master the difference between scalar and vector quantities with clear examples and practice problems.', youtubeUrl: 'https://www.youtube.com/watch?v=fNm7mHhCHW4', category: 'Physics' },
+        { title: 'Newton\'s Laws of Motion', description: 'Complete guide to the three laws of motion that govern our world.', youtubeUrl: 'https://www.youtube.com/watch?v=kKKM8Y-u7ds', category: 'Physics' },
+        { title: 'Ohm\'s Law & Electrical Circuits', description: 'Learn how voltage, current, and resistance work together in series and parallel circuits.', youtubeUrl: 'https://www.youtube.com/watch?v=8i2V6C6N1O8', category: 'Physics' },
+        { title: 'Reflection and Refraction of Light', description: 'Visual explanation of how light behaves when hitting surfaces and passing through lenses.', youtubeUrl: 'https://www.youtube.com/watch?v=95V8koNtSn8', category: 'Physics' },
+        
+        // Biology
+        { title: 'Introduction to Cells', description: 'Explore the microscopic world of plant and animal cells, their structures, and functions.', youtubeUrl: 'https://www.youtube.com/watch?v=8IlzKri08-A', category: 'Biology' },
+        { title: 'Mendel\'s Laws of Inheritance', description: 'How traits are passed from parents to offspring using Punnett squares.', youtubeUrl: 'https://www.youtube.com/watch?v=zrKdz9qhWpk', category: 'Biology' },
+        { title: 'The Process of Photosynthesis', description: 'Detailed breakdown of how plants convert light into energy.', youtubeUrl: 'https://www.youtube.com/watch?v=SnyOfUsh-Hk', category: 'Biology' },
+        { title: 'Human Transport System (Heart)', description: 'Understand how the human heart pumps blood and oxygen through the body.', youtubeUrl: 'https://www.youtube.com/watch?v=vVndRoc8lTo', category: 'Biology' },
+
+        // Chemistry
+        { title: 'The Periodic Table Explained', description: 'Trends, groups, and periods. Why elements behave the way they do.', youtubeUrl: 'https://www.youtube.com/watch?v=uPkEGAHo78o', category: 'Chemistry' },
+        { title: 'Redox Reactions & Oxidation', description: 'Clear explanation of electron transfer in chemical reactions.', youtubeUrl: 'https://www.youtube.com/watch?v=5rtJdjas-mY', category: 'Chemistry' },
+        { title: 'Introduction to Organic Chemistry', description: 'Alkanes, Alkenes, and the basics of carbon-based molecules.', youtubeUrl: 'https://www.youtube.com/watch?v=t8O_G2HAn0Q', category: 'Chemistry' },
+        { title: 'Electrolysis of Brine Practical', description: 'Step-by-step practical demonstration of the electrolysis process.', youtubeUrl: 'https://www.youtube.com/watch?v=938fLpW_Uic', category: 'Chemistry' },
+        { title: 'Acids, Bases and Salts', description: 'Comprehensive guide to pH, indicators, and neutralization reactions.', youtubeUrl: 'https://www.youtube.com/watch?v=ANi709MYnWg', category: 'Chemistry' },
+
+        // Agriculture
+        { title: 'Soil Texture and Structure', description: 'How to identify different soil types and their importance in farming.', youtubeUrl: 'https://www.youtube.com/watch?v=p4vIie2gI_M', category: 'Agriculture' },
+        { title: 'Successful Mushroom Production', description: 'Guide to growing oyster and button mushrooms in the Malawi context.', youtubeUrl: 'https://www.youtube.com/watch?v=R9_K5qX52jM', category: 'Agriculture' },
+        { title: 'Livestock Nutrition Essentials', description: 'Understanding roughages, concentrates, and balanced rations for animals.', youtubeUrl: 'https://www.youtube.com/watch?v=0hO2r6WcM2o', category: 'Agriculture' },
+        { title: 'Crop Rotation Systems', description: 'Benefits and methods of rotating crops to maintain soil fertility.', youtubeUrl: 'https://www.youtube.com/watch?v=Z7n9tJ_uW1E', category: 'Agriculture' },
+        { title: 'Soil Conservation Techniques', description: 'Practical methods to prevent soil erosion and maintain land productivity.', youtubeUrl: 'https://www.youtube.com/watch?v=f-B6RAnxX6M', category: 'Agriculture' },
+        
+        // More Physics & Biology
+        { title: 'Simple Linear Motion Practical', description: 'Calculating speed, velocity, and acceleration with hands-on experiments.', youtubeUrl: 'https://www.youtube.com/watch?v=12f9VMeEos4', category: 'Physics' },
+        { title: 'Human Digestive System', description: 'Mechanical and chemical digestion processes explained simply.', youtubeUrl: 'https://www.youtube.com/watch?v=pqgcEIaXGME', category: 'Biology' }
+      ];
+
+      for (const v of starterVideos) {
+        if (!existingUrls.has(v.youtubeUrl)) {
+          await this.createVideoLesson(v);
+        }
+      }
+    } catch (err) {
+      console.warn('Initial seed check failed:', err);
+    }
+  }
+
   totalUserCount = signal(0);
   totalProCount = signal(0);
   totalQuizCount = signal(0);
@@ -414,8 +492,6 @@ export class DataService {
       handleFirestoreError(error, OperationType.DELETE, `posts/${postId}`);
     }
   }
-
-  private platformId = inject(PLATFORM_ID);
 
   // --- Notes & Past Papers ---
   subscribeToNotes(category?: string, limitCount = 50) {
