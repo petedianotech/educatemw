@@ -23,9 +23,9 @@ interface CareerPath {
   imports: [FormsModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex flex-col h-full bg-slate-50 overflow-hidden relative">
+    <div class="flex flex-col h-full bg-slate-50 dark:bg-slate-950 overflow-hidden relative transition-colors duration-500">
       <!-- Header -->
-      <div class="bg-gradient-to-r from-rose-600 to-pink-600 px-4 py-6 shrink-0 relative z-10 shadow-md">
+      <div class="bg-gradient-to-r from-rose-600 to-pink-600 dark:from-rose-900 dark:to-pink-900 px-4 py-6 shrink-0 relative z-10 shadow-md transition-colors duration-500">
         <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div class="flex items-center gap-3 relative z-10">
           <button (click)="goBack()" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all">
@@ -45,10 +45,10 @@ interface CareerPath {
         <div class="max-w-2xl mx-auto flex flex-col gap-4">
           
           <!-- MSCE Calculator -->
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative">
-            <div class="p-4 border-b border-slate-100 bg-slate-50/50">
-              <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
-                <mat-icon class="text-rose-500 !w-4 !h-4 !text-[16px]">calculate</mat-icon>
+          <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-white/5 overflow-hidden relative transition-colors duration-500">
+            <div class="p-4 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-800/50 transition-colors duration-500">
+              <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 transition-colors duration-500">
+                <mat-icon class="text-rose-500 dark:text-rose-400 !w-4 !h-4 !text-[16px]">calculate</mat-icon>
                 Points Calculator
               </h3>
             </div>
@@ -57,17 +57,17 @@ interface CareerPath {
               <div class="grid grid-cols-2 gap-x-4 gap-y-3">
                 @for (subject of subjects(); track subject.name; let i = $index) {
                   <div class="flex flex-col gap-1">
-                    <label [for]="'grade-' + i" class="text-[10px] font-bold text-slate-600 flex items-center justify-between">
+                    <label [for]="'grade-' + i" class="text-[10px] font-bold text-slate-600 dark:text-slate-400 flex items-center justify-between transition-colors duration-500">
                       <span class="truncate pr-1">{{subject.name}}</span>
                       @if (subject.isMandatory) {
-                        <span class="text-[8px] font-black uppercase tracking-widest text-rose-500 shrink-0">*Req</span>
+                        <span class="text-[8px] font-black uppercase tracking-widest text-rose-500 dark:text-rose-400 shrink-0">*Req</span>
                       }
                     </label>
                     <select 
                       [id]="'grade-' + i"
                       [ngModel]="subject.grade" 
                       (ngModelChange)="updateGrade(i, $event)"
-                      class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:border-rose-500 outline-none transition-all text-center font-bold text-xs text-slate-900 appearance-none">
+                      class="w-full p-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg focus:border-rose-500 dark:focus:border-rose-400 outline-none transition-all text-center font-bold text-xs text-slate-900 dark:text-white appearance-none">
                       <option [ngValue]="null">-</option>
                       <option [ngValue]="1">1</option>
                       <option [ngValue]="2">2</option>
@@ -83,28 +83,28 @@ interface CareerPath {
                 }
               </div>
 
-              <button (click)="resetCalculator()" class="w-full mt-4 py-2 text-[11px] font-bold text-slate-500 hover:text-rose-600 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-center gap-1">
+              <button (click)="resetCalculator()" class="w-full mt-4 py-2 text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-white/10 flex items-center justify-center gap-1 transition-colors duration-500">
                 <mat-icon class="!w-3 !h-3 !text-[12px]">refresh</mat-icon>
                 Reset
               </button>
             </div>
 
             <!-- Results Panel -->
-            <div class="p-4 bg-rose-50 border-t border-rose-100">
+            <div class="p-4 bg-rose-50 dark:bg-rose-900/20 border-t border-rose-100 dark:border-rose-900/40 transition-colors duration-500">
               <div class="flex items-center justify-between mb-1">
-                <span class="text-rose-900 font-black text-xs">Total Points (Best 6):</span>
-                <div class="text-xl font-black text-rose-600">
+                <span class="text-rose-900 dark:text-rose-200 font-black text-xs transition-colors duration-500">Total Points (Best 6):</span>
+                <div class="text-xl font-black text-rose-600 dark:text-rose-400 transition-colors duration-500">
                   @if (calculatedPoints() !== null) {
                     {{calculatedPoints()}}
                   } @else {
-                    <span class="text-rose-300">--</span>
+                    <span class="text-rose-300 dark:text-rose-700 transition-colors duration-500">--</span>
                   }
                 </div>
               </div>
               @if (calculatedPoints() === null) {
-                <p class="text-[10px] text-rose-500 font-bold">Enter English + 5 subjects.</p>
+                <p class="text-[10px] text-rose-500 dark:text-rose-400 font-bold transition-colors duration-500">Enter English + 5 subjects.</p>
               } @else {
-                <p class="text-[10px] text-rose-800 font-bold leading-tight">
+                <p class="text-[10px] text-rose-800 dark:text-rose-300 font-bold leading-tight transition-colors duration-500">
                   {{getQualificationMessage(calculatedPoints()!)}}
                 </p>
               }
@@ -113,25 +113,25 @@ interface CareerPath {
 
           <!-- Career Paths -->
           <div class="flex items-center justify-between mt-4">
-            <h3 class="text-base font-black text-slate-900">University Programs</h3>
+            <h3 class="text-base font-black text-slate-900 dark:text-white transition-colors duration-500">University Programs</h3>
           </div>
           
           <div class="flex flex-col gap-4">
             @for (career of careers; track career.title) {
-              <div class="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200/80 flex gap-4 items-start relative overflow-hidden group transition-all">
-                <div class="absolute inset-0 bg-gradient-to-br from-transparent to-slate-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/10 flex gap-4 items-start relative overflow-hidden group transition-all duration-500">
+                <div class="absolute inset-0 bg-gradient-to-br from-transparent to-slate-50/50 dark:to-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 
                 <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border shadow-sm relative z-10 group-hover:scale-105 transition-transform" [class]="career.color">
                   <mat-icon class="!w-7 !h-7 !text-[28px]">{{career.icon}}</mat-icon>
                 </div>
                 <div class="flex-1 min-w-0 relative z-10">
-                  <h4 class="text-sm font-black text-slate-900 truncate">{{career.title}}</h4>
-                  <p class="text-xs font-bold text-rose-500 mb-1.5 truncate">{{career.institution}}</p>
+                  <h4 class="text-sm font-black text-slate-900 dark:text-slate-100 truncate transition-colors duration-500">{{career.title}}</h4>
+                  <p class="text-xs font-bold text-rose-500 dark:text-rose-400 mb-1.5 truncate transition-colors duration-500">{{career.institution}}</p>
                   <div class="flex items-center gap-2 mb-1.5">
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Points:</span>
-                    <span class="text-[10px] font-bold text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">{{career.pointsRange}}</span>
+                    <span class="text-[10px] font-bold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-white/10 transition-colors duration-500">{{career.pointsRange}}</span>
                   </div>
-                  <p class="text-xs font-medium text-slate-600 leading-tight line-clamp-2">{{career.requirements}}</p>
+                  <p class="text-xs font-medium text-slate-600 dark:text-slate-400 leading-tight line-clamp-2 transition-colors duration-500">{{career.requirements}}</p>
                 </div>
               </div>
             }

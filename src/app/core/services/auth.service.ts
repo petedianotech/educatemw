@@ -169,6 +169,85 @@ export class AuthService {
     this.currentUser.set(null);
   }
 
+  // Helper method to redeem a referral code manually
+  async redeemReferralCode(code: string): Promise<{success: boolean, message: string}> {
+    const userProfile = this.currentUser();
+    if (!userProfile) return { success: false, message: 'Must be logged in to redeem a code.' };
+    
+    if (userProfile.referredBy) {
+       return { success: false, message: 'You have already redeemed a referral code.' };
+    }
+
+    // Normalize code
+    let normalizedCode = code.trim().toUpperCase();
+    
+    // Auto-prefix with EMI if they forgot
+    if (!normalizedCode.startsWith('EMI')) {
+       normalizedCode = 'EMI' + normalizedCode;
+    }
+
+    if (normalizedCode === userProfile.referralCode?.toUpperCase() || 
+        normalizedCode === ('EMI' + userProfile.referralCode?.toUpperCase())) {
+      return { success: false, message: 'You cannot redeem your own code.' };
+    }
+
+    try {
+      const usersRef = collection(db, 'users');
+      // Look for the exact code (EMI...) or the fallback string (just the sequence)
+      let referrerDoc = null;
+      
+      const qExact = query(usersRef, where('referralCode', '==', normalizedCode));
+      const exactSnapshot = await getDocs(qExact);
+      
+      if (!exactSnapshot.empty) {
+        referrerDoc = exactSnapshot.docs[0];
+      } else {
+        // Try falling back to old format without EMI prefix
+        const fallbackCode = normalizedCode.replace('EMI', '');
+        const qFallback = query(usersRef, where('referralCode', '==', fallbackCode));
+        const fallbackSnapshot = await getDocs(qFallback);
+        if (!fallbackSnapshot.empty) {
+          referrerDoc = fallbackSnapshot.docs[0];
+        } else {
+          // Last try, explicitly check EMI- fallback
+          const qFallbackDash = query(usersRef, where('referralCode', '==', fallbackCode.replace('-', '')));
+          const fallbackSnapshotDash = await getDocs(qFallbackDash);
+          if (!fallbackSnapshotDash.empty) {
+            referrerDoc = fallbackSnapshotDash.docs[0];
+          }
+        }
+      }
+      
+      if (!referrerDoc) {
+        return { success: false, message: 'Invalid referral code.' };
+      }
+      
+      const referredBy = referrerDoc.id;
+      const referrerData = referrerDoc.data();
+      const currentReferrals = referrerData['referralsCount'] || 0;
+      const currentCredits = referrerData['aiCredits'] || 0;
+      
+      // Update referrer
+      await updateDoc(doc(db, 'users', referredBy), {
+        referralsCount: currentReferrals + 1,
+        aiCredits: currentCredits + 20
+      });
+
+      // Update current user
+      const newCredits = (userProfile.aiCredits || 0) + 20;
+      await updateDoc(doc(db, 'users', userProfile.uid), {
+        referredBy: referredBy,
+        aiCredits: newCredits
+      });
+      
+      this.currentUser.update(u => u ? {...u, referredBy, aiCredits: newCredits} : null);
+      return { success: true, message: 'Referral code applied! You received 20 AI credits.' };
+    } catch (error) {
+      console.error('Error redeeming code:', error);
+      return { success: false, message: 'Server error redeeming referral code.' };
+    }
+  }
+
   async sendAdminMagicLink(email: string) {
     const actionCodeSettings = {
       // Use the current origin for the redirect URL
@@ -261,7 +340,7 @@ export class AuthService {
           
           await updateDoc(doc(db, 'users', referredBy), {
             referralsCount: currentReferrals + 1,
-            aiCredits: currentCredits + 10
+            aiCredits: currentCredits + 20
           });
         }
       }
@@ -280,7 +359,7 @@ export class AuthService {
       coins: 0,
       lastCreditReset: new Date().toISOString(),
       lastLoginDate: new Date().toISOString(),
-      referralCode: user.uid.substring(0, 8).toUpperCase(),
+      referralCode: 'EMI' + user.uid.substring(0, 8).toUpperCase(),
       referralsCount: 0,
       createdAt: new Date(),
       gender: 'prefer-not-to-say',
@@ -292,7 +371,7 @@ export class AuthService {
     // Only add referredBy if it has a valid value
     if (referredBy) {
       newUser.referredBy = referredBy;
-      newUser.aiCredits = (newUser.aiCredits || 0) + 10;
+      newUser.aiCredits = (newUser.aiCredits || 0) + 20;
     }
 
     console.log('Creating new user profile:', newUser);

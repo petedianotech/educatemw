@@ -9,7 +9,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, existsSync } from 'node:fs';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, updateDoc, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, doc, updateDoc, collection, addDoc, Firestore } from 'firebase/firestore';
 
 // Safely resolve the config path
 const getFirebaseConfig = () => {
@@ -39,7 +39,7 @@ const getFirebaseConfig = () => {
 };
 
 const firebaseConfig = getFirebaseConfig();
-let db: any = null;
+let db: Firestore | null = null;
 
 if (firebaseConfig && Object.keys(firebaseConfig).length > 0) {
   try {
@@ -172,6 +172,11 @@ app.post('/api/paychangu-webhook', async (req, res) => {
   try {
     const payload = req.body;
     console.log('PayChangu Webhook Received:', payload);
+
+    if (!db) {
+      console.error('Database not initialized');
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
 
     // PayChangu sends status in the payload
     if (payload.status === 'success' || payload.event === 'payment.success') {

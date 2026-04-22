@@ -1,14 +1,24 @@
-import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject, computed } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Capacitor } from '@capacitor/core';
 import { UnityAds } from 'capacitor-unity-ads';
+import { AuthService } from './auth.service';
+
+interface ExtendedUnityAds {
+  loadBanner(options: { placementId: string }): Promise<void>;
+  showBanner(): Promise<void>;
+  hideBanner(): Promise<void>;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class UnityAdsService {
   private platformId = inject(PLATFORM_ID);
+  private authService = inject(AuthService);
   public isReady = false;
+
+  private unityAds = UnityAds as unknown as ExtendedUnityAds;
 
   // Real Unity Game IDs assigned by User
   private gameId = Capacitor.getPlatform() === 'ios' ? '6096322' : '6096323';
@@ -17,6 +27,8 @@ export class UnityAdsService {
   private interstitialAdUnitId = Capacitor.getPlatform() === 'ios' ? 'Interstitial_iOS' : 'Interstitial_Android';
   private rewardedAdUnitId = Capacitor.getPlatform() === 'ios' ? 'Rewarded_iOS' : 'Rewarded_Android';
   private bannerAdUnitId = Capacitor.getPlatform() === 'ios' ? 'Banner_iOS' : 'Banner_Android';
+
+  isPro = computed(() => !!this.authService.currentUser()?.isPro || this.authService.currentUser()?.role === 'admin');
 
   constructor() {
     this.initialize();
@@ -42,10 +54,10 @@ export class UnityAdsService {
   }
 
   async showBanner() {
-    if (!this.isReady || !Capacitor.isNativePlatform()) return;
+    if (!this.isReady || !Capacitor.isNativePlatform() || this.isPro()) return;
     try {
-      await (UnityAds as any).loadBanner({ placementId: this.bannerAdUnitId });
-      await (UnityAds as any).showBanner();
+      await this.unityAds.loadBanner({ placementId: this.bannerAdUnitId });
+      await this.unityAds.showBanner();
     } catch (error) {
       console.error('Failed to load/show Banner Ad:', error);
     }
@@ -54,14 +66,14 @@ export class UnityAdsService {
   async hideBanner() {
     if (!this.isReady || !Capacitor.isNativePlatform()) return;
     try {
-      await (UnityAds as any).hideBanner();
+      await this.unityAds.hideBanner();
     } catch (error) {
       console.error('Failed to hide Banner Ad:', error);
     }
   }
 
   async showInterstitial() {
-    if (!this.isReady || !Capacitor.isNativePlatform()) return;
+    if (!this.isReady || !Capacitor.isNativePlatform() || this.isPro()) return;
     try {
       await UnityAds.loadInterstitial({ placementId: this.interstitialAdUnitId });
       // In a real implementation you'd listen to interstitialLoaded event before showing, 
@@ -73,6 +85,7 @@ export class UnityAdsService {
   }
 
   async showRewarded(): Promise<boolean> {
+    if (this.isPro()) return true; // Instantly reward pro users without video!
     if (!this.isReady || !Capacitor.isNativePlatform()) return false;
     try {
       await UnityAds.loadRewardedVideo({ placementId: this.rewardedAdUnitId });

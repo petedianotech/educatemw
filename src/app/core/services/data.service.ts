@@ -136,6 +136,8 @@ export interface VideoLesson {
   description: string;
   youtubeUrl: string;
   category: string;
+  seoTitle?: string;
+  seoDescription?: string;
   createdAt: Date | Timestamp;
 }
 

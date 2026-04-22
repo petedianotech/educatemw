@@ -16,9 +16,9 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
   imports: [MatIconModule, DatePipe, CommonModule, FormsModule, RouterLink, AdPlaceholderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex flex-col h-full bg-slate-50 relative">
+    <div class="flex flex-col h-full bg-slate-50 dark:bg-slate-950 relative transition-colors duration-500">
       <!-- Premium Header -->
-      <div class="absolute top-0 left-0 right-0 h-56 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-b-[2.5rem] shadow-md z-0">
+      <div class="absolute top-0 left-0 right-0 h-56 bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-900 dark:to-teal-900 rounded-b-[2.5rem] shadow-md z-0 transition-colors">
         <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 rounded-b-[2.5rem]"></div>
       </div>
 
@@ -50,38 +50,38 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
           <!-- AI Generator Modal -->
           @if (showAiGenerator()) {
             <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-              <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 animate-in zoom-in duration-300">
+              <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 animate-in zoom-in duration-300">
                 <div class="flex items-center justify-between mb-6">
-                  <h3 class="text-xl font-black text-slate-900 flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center overflow-hidden">
+                  <h3 class="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center overflow-hidden transition-colors">
                       <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                     </div>
-                    AI Quiz Generator
+                    Quiz Generator
                   </h3>
-                  <button (click)="showAiGenerator.set(false)" class="text-slate-400 hover:text-slate-600">
+                  <button (click)="showAiGenerator.set(false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                     <mat-icon>close</mat-icon>
                   </button>
                 </div>
                 
-                <p class="text-sm text-slate-500 font-medium mb-6">Enter a topic from the MSCE curriculum and emi will generate a custom quiz for you.</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mb-6">Enter a topic and emi AI will generate a custom quiz for you.</p>
                 
                 <div class="space-y-4">
                   <div>
-                    <label for="quizTopic" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Quiz Topic</label>
+                    <label for="quizTopic" class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 ml-1">Quiz Topic</label>
                     <input 
                       id="quizTopic"
                       [ngModel]="quizTopic()"
                       (ngModelChange)="quizTopic.set($event)"
                       type="text" 
                       placeholder="e.g. Photosynthesis, Ohm's Law..."
-                      class="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold text-slate-900"
+                      class="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-white/5 rounded-2xl focus:border-indigo-500 dark:focus:border-indigo-400 focus:bg-white dark:focus:bg-slate-900 outline-none transition-all font-bold text-slate-900 dark:text-white"
                     >
                   </div>
                   
                   <button 
                     (click)="generateAiQuiz()"
                     [disabled]="!quizTopic().trim() || isGenerating()"
-                    class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black shadow-xl shadow-slate-200 hover:bg-indigo-600 disabled:opacity-50 transition-all flex items-center justify-center gap-3">
+                    class="w-full py-4 bg-slate-900 dark:bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-slate-200 dark:shadow-none hover:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-50 transition-all flex items-center justify-center gap-3">
                     @if (isGenerating()) {
                       <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                       Generating...
@@ -103,19 +103,19 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
               <div class="flex items-center gap-2">
                 <button 
                   (click)="filter.set('all')"
-                  [class]="filter() === 'all' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
+                  [class]="filter() === 'all' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/5'"
                   class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
                   All
                 </button>
                 <button 
                   (click)="filter.set('Teacher')"
-                  [class]="filter() === 'Teacher' ? 'bg-indigo-600 text-white shadow-md border-indigo-600' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
+                  [class]="filter() === 'Teacher' ? 'bg-indigo-600 text-white shadow-md border-indigo-600' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/5'"
                   class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
                   Teacher
                 </button>
                 <button 
                   (click)="filter.set('AI')"
-                  [class]="filter() === 'AI' ? 'bg-slate-900 text-white shadow-md border-slate-900' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'"
+                  [class]="filter() === 'AI' ? 'bg-slate-900 dark:bg-indigo-600 text-white shadow-md border-slate-900 dark:border-indigo-600' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/5'"
                   class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
                   AI
                 </button>
@@ -130,39 +130,39 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
                   <app-ad-placeholder type="native-banner" />
                 }
 
-                <div class="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200/80 flex items-center gap-4 active:scale-[0.98] transition-all relative overflow-hidden group">
-                  <div class="absolute inset-0 bg-gradient-to-br from-transparent to-emerald-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 flex items-center gap-4 active:scale-[0.98] transition-all relative overflow-hidden group">
+                  <div class="absolute inset-0 bg-gradient-to-br from-transparent to-emerald-50/50 dark:to-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   
                   <!-- Icon -->
-                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/30 relative z-10">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/30 relative z-10 transition-colors">
                     <mat-icon class="!w-7 !h-7 !text-[28px]">quiz</mat-icon>
                   </div>
                   
                   <!-- Content -->
                   <div class="flex-1 min-w-0 relative z-10">
                     <div class="flex items-center gap-2 mb-1">
-                      <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                      <span class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-500/20 transition-colors">
                         {{quiz.category}}
                       </span>
                       @if (quiz.source) {
-                        <span [class]="quiz.source === 'AI' ? 'bg-slate-900 text-white' : 'bg-indigo-100 text-indigo-700 border-indigo-200'" 
-                              class="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border">
+                        <span [class]="quiz.source === 'AI' ? 'bg-slate-900 dark:bg-indigo-600 text-white' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20'" 
+                              class="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border transition-colors">
                           {{quiz.source}}
                         </span>
                       }
                       @if (quiz.isProOnly) {
-                        <span class="text-[10px] font-black text-white uppercase tracking-widest bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-0.5 rounded-md shadow-sm flex items-center gap-0.5">
+                        <span class="text-[10px] font-black text-white uppercase tracking-widest bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-0.5 rounded-md shadow-sm dark:shadow-none flex items-center gap-0.5">
                           <mat-icon class="!w-3 !h-3 !text-[12px]">workspace_premium</mat-icon> PRO
                         </span>
                       }
                     </div>
-                    <h3 class="font-bold text-base text-slate-900 truncate">{{quiz.title}}</h3>
+                    <h3 class="font-bold text-base text-slate-900 dark:text-white truncate">{{quiz.title}}</h3>
                     <div class="flex items-center gap-3 mt-1">
-                      <span class="text-slate-500 text-xs flex items-center gap-1">
+                      <span class="text-slate-500 dark:text-slate-400 text-xs flex items-center gap-1 transition-colors">
                         <mat-icon class="!w-3.5 !h-3.5 !text-[14px]">help_outline</mat-icon>
                         {{quiz.questions.length}} Qs
                       </span>
-                      <span class="text-slate-500 text-xs flex items-center gap-1">
+                      <span class="text-slate-500 dark:text-slate-400 text-xs flex items-center gap-1 transition-colors">
                         <mat-icon class="!w-3.5 !h-3.5 !text-[14px]">schedule</mat-icon>
                         {{quiz.timeLimit}}m
                       </span>
@@ -172,23 +172,23 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
                   <!-- Action Button -->
                   <div class="shrink-0 relative z-10">
                     @if (quiz.isProOnly && !authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
-                      <button class="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center">
+                      <button class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center transition-colors">
                         <mat-icon class="!w-5 !h-5 !text-[20px]">lock</mat-icon>
                       </button>
                     } @else {
-                      <button (click)="startQuiz(quiz)" class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors shadow-sm">
+                      <button (click)="startQuiz(quiz)" class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:bg-emerald-600 dark:group-hover:bg-emerald-500 group-hover:text-white transition-colors shadow-sm dark:shadow-none">
                         <mat-icon class="!w-5 !h-5 !text-[20px]">play_arrow</mat-icon>
                       </button>
                     }
                   </div>
                 </div>
               } @empty {
-                <div class="text-center py-12 bg-white rounded-2xl border border-slate-200 border-dashed">
-                  <div class="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <mat-icon class="!w-7 !h-7 !text-[28px] text-slate-300">quiz</mat-icon>
+                <div class="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/5 border-dashed transition-colors">
+                  <div class="w-14 h-14 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 transition-colors">
+                    <mat-icon class="!w-7 !h-7 !text-[28px] text-slate-300 dark:text-slate-700">quiz</mat-icon>
                   </div>
-                  <h3 class="text-base font-black text-slate-900 mb-1">No Quizzes Yet</h3>
-                  <p class="text-slate-500 font-medium text-xs">Check back later for assessments.</p>
+                  <h3 class="text-base font-black text-slate-900 dark:text-white mb-1">No Quizzes Yet</h3>
+                  <p class="text-slate-500 dark:text-slate-400 font-medium text-xs">Check back later for assessments.</p>
                 </div>
               }
             </div>
@@ -196,22 +196,22 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
             <!-- Past Results Section -->
             @if (userResults().length > 0) {
               <div class="mt-12">
-                <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                  <mat-icon class="text-indigo-500">history</mat-icon>
-                  Your Recent Results
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <mat-icon class="text-indigo-500 dark:text-indigo-400">history</mat-icon>
+                  Recent Results
                 </h3>
                 <div class="space-y-3">
                   @for (result of userResults(); track result.id) {
-                    <div class="card-modern p-4 flex items-center justify-between">
+                    <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-4 flex items-center justify-between transition-colors">
                       <div>
-                        <h4 class="font-bold text-slate-800">{{result.quizTitle}}</h4>
-                        <p class="text-xs text-slate-500 font-medium">{{getQuizDate(result.completedAt) | date:'medium'}}</p>
+                        <h4 class="font-bold text-slate-800 dark:text-slate-200">{{result.quizTitle}}</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{getQuizDate(result.completedAt) | date:'medium'}}</p>
                       </div>
                       <div class="text-right">
-                        <div class="text-lg font-bold" [class.text-emerald-600]="(result.score / result.total) >= 0.5" [class.text-rose-600]="(result.score / result.total) < 0.5">
+                        <div class="text-lg font-bold transition-colors" [class.text-emerald-600]="(result.score / result.total) >= 0.5" [class.text-rose-600]="(result.score / result.total) < 0.5" [class.dark:text-emerald-400]="(result.score / result.total) >= 0.5" [class.dark:text-rose-400]="(result.score / result.total) < 0.5">
                           {{result.score}} / {{result.total}}
                         </div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ ((result.score / result.total) * 100).toFixed(0) }}% Score</p>
+                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{{ ((result.score / result.total) * 100).toFixed(0) }}% Score</p>
                       </div>
                     </div>
                   }

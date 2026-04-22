@@ -23,24 +23,33 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
       background-color: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      color: #1e293b !important; /* slate-800 */
+      color: inherit !important;
+    }
+    .dark .no-highlight ::ng-deep * {
+      color: #f1f5f9 !important; /* slate-100 */
     }
     .no-highlight ::ng-deep p {
       margin-bottom: 1.25rem !important;
       line-height: 1.75 !important;
       font-size: 1.05rem !important;
+      color: inherit !important;
     }
     .no-highlight ::ng-deep strong {
       color: #0f172a !important; /* slate-900 */
       font-weight: 800 !important;
     }
+    .dark .no-highlight ::ng-deep strong {
+      color: #f8fafc !important; /* slate-50 */
+    }
     .no-highlight ::ng-deep ul, .no-highlight ::ng-deep ol {
       margin-bottom: 1.25rem !important;
       padding-left: 1.5rem !important;
+      color: inherit !important;
     }
     .no-highlight ::ng-deep li {
       margin-bottom: 0.5rem !important;
       line-height: 1.6 !important;
+      color: inherit !important;
     }
     .no-highlight ::ng-deep pre, 
     .no-highlight ::ng-deep code {
@@ -55,12 +64,22 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
       display: block;
       color: #334155 !important;
     }
+    .dark .no-highlight ::ng-deep pre,
+    .dark .no-highlight ::ng-deep code {
+      background-color: #0f172a !important; /* slate-900 */
+      border-color: #1e293b !important; /* slate-800 */
+      color: #cbd5e1 !important; /* slate-300 */
+    }
     .no-highlight ::ng-deep blockquote {
       border-left: 4px solid #e2e8f0 !important; /* slate-200 */
       padding-left: 1.25rem !important;
       margin: 1.5rem 0 !important;
       color: #475569 !important; /* slate-600 */
       font-style: italic;
+    }
+    .dark .no-highlight ::ng-deep blockquote {
+      border-color: #334155 !important; /* slate-700 */
+      color: #94a3b8 !important; /* slate-400 */
     }
     textarea::-webkit-scrollbar {
       display: none;
@@ -79,42 +98,42 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
     }
   `],
   template: `
-    <div class="flex flex-col h-full bg-slate-50 relative">
+    <div class="flex flex-col h-full bg-slate-50 dark:bg-slate-950 relative transition-colors duration-500">
       <!-- Header -->
-      <header class="px-4 py-4 flex justify-between items-center bg-white/95 backdrop-blur-xl text-slate-900 z-20 sticky top-0 border-b border-slate-200/60 shadow-sm">
+      <header class="px-4 py-4 flex justify-between items-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl text-slate-900 dark:text-white z-20 sticky top-0 border-b border-slate-200/60 dark:border-white/5 shadow-sm transition-colors duration-500">
         <div class="flex items-center gap-3">
-          <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:scale-90 transition-all mr-1">
+          <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-90 transition-all mr-1">
             <mat-icon class="text-[22px]">arrow_back</mat-icon>
           </a>
           <div class="relative">
-            <div class="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200 overflow-hidden">
+            <div class="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200 dark:shadow-none overflow-hidden transition-colors">
               <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
             </div>
           </div>
           <div>
-            <h2 class="text-lg font-black tracking-tight leading-tight text-slate-900">emi AI</h2>
+            <h2 class="text-lg font-black tracking-tight leading-tight text-slate-900 dark:text-white transition-colors">emi AI</h2>
             <div class="flex items-center gap-1.5">
               <div class="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pump"></div>
-              <p class="text-[10px] text-emerald-600 font-black uppercase tracking-widest">Intelligent Tutor</p>
+              <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-widest transition-colors">Intelligent Tutor</p>
             </div>
           </div>
         </div>
         <div class="flex items-center gap-3">
           @if (notificationService.permission() === 'default') {
-            <button (click)="notificationService.requestPermission()" class="w-10 h-10 flex items-center justify-center text-blue-600 bg-blue-50 rounded-2xl transition-all hover:bg-blue-100" title="Enable Notifications">
+            <button (click)="notificationService.requestPermission()" class="w-10 h-10 flex items-center justify-center text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-2xl transition-all hover:bg-blue-100 dark:hover:bg-blue-900/40" title="Enable Notifications">
               <mat-icon class="text-[20px]">notifications_active</mat-icon>
             </button>
           }
           @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin') {
             <div class="flex flex-col items-end">
-              <div class="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-xl shadow-xl shadow-slate-200 border border-slate-800">
+              <div class="flex items-center gap-1.5 bg-slate-900 dark:bg-indigo-950 text-white px-3 py-1.5 rounded-xl shadow-xl shadow-slate-200 dark:shadow-none border border-slate-800 dark:border-white/10 transition-colors">
                 <mat-icon class="!w-4 !h-4 !text-[16px] text-sky-400">stars</mat-icon>
                 <span class="text-[11px] font-black tracking-wider">{{ authService.currentUser()?.isPro || authService.currentUser()?.role === 'admin' ? 'UNLIMITED' : ((authService.currentUser()?.aiCredits || 0) + ' CREDITS') }}</span>
               </div>
-              <p class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Daily Balance</p>
+              <p class="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-tighter transition-colors">Daily Balance</p>
             </div>
           }
-          <button (click)="gemini.clearHistory()" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all duration-300">
+          <button (click)="gemini.clearHistory()" class="w-10 h-10 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-2xl transition-all duration-300">
             <mat-icon class="text-[22px]">delete_outline</mat-icon>
           </button>
         </div>
@@ -124,20 +143,20 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
       <div class="flex-1 overflow-y-auto p-4 space-y-8 scroll-smooth" #scrollContainer>
         @if (gemini.messages().length === 0) {
           <div class="flex flex-col items-center justify-center text-center max-w-md mx-auto px-6 py-12 mt-8">
-            <div class="w-20 h-20 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[2rem] flex items-center justify-center mb-6 border border-indigo-100 shadow-xl overflow-hidden group">
+            <div class="w-20 h-20 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-[2rem] flex items-center justify-center mb-6 border border-indigo-100 dark:border-white/5 shadow-xl overflow-hidden group">
               <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerpolicy="no-referrer">
             </div>
-            <h3 class="text-2xl font-black text-slate-900 mb-3 tracking-tight">How can I help you today?</h3>
-            <p class="text-slate-500 text-sm font-medium leading-relaxed mb-8">I'm emi, your AI tutor. Ask me anything about your MSCE subjects.</p>
+            <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">How can I help you today?</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8">I'm emi, your AI tutor. Ask me anything about your MSCE subjects.</p>
             
             <div class="grid grid-cols-1 gap-3 w-full">
-              <button (click)="inputText.set('Explain the difference between plant and animal cells. (Biology)')" class="group p-4 bg-white rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 border border-slate-200 text-left shadow-sm flex items-center justify-between">
+              <button (click)="inputText.set('Explain the difference between plant and animal cells. (Biology)')" class="group p-4 bg-white dark:bg-slate-900 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 border border-slate-200 dark:border-white/5 text-left shadow-sm flex items-center justify-between">
                 <span>"Difference between plant and animal cells"</span>
-                <mat-icon class="text-slate-300 group-hover:text-indigo-600 transition-colors">arrow_forward</mat-icon>
+                <mat-icon class="text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">arrow_forward</mat-icon>
               </button>
-              <button (click)="inputText.set('What is the second law of motion by Newton? (Physics)')" class="group p-4 bg-white rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 border border-slate-200 text-left shadow-sm flex items-center justify-between">
+              <button (click)="inputText.set('What is the second law of motion by Newton? (Physics)')" class="group p-4 bg-white dark:bg-slate-900 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 border border-slate-200 dark:border-white/5 text-left shadow-sm flex items-center justify-between">
                 <span>"Newton's second law of motion"</span>
-                <mat-icon class="text-slate-300 group-hover:text-indigo-600 transition-colors">arrow_forward</mat-icon>
+                <mat-icon class="text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">arrow_forward</mat-icon>
               </button>
             </div>
           </div>
@@ -148,7 +167,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
             <!-- Icon/Avatar -->
             <div class="shrink-0 mt-1">
               @if (msg.role === 'model') {
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-100 overflow-hidden">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-100 dark:shadow-none overflow-hidden transition-colors">
                   <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                 </div>
               } @else {
@@ -156,7 +175,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
                      alt="User Avatar"
                      width="40"
                      height="40"
-                     class="rounded-xl bg-slate-200 border border-slate-100 object-cover shadow-sm" 
+                     class="rounded-xl bg-slate-200 dark:bg-slate-800 border border-slate-100 dark:border-white/5 object-cover shadow-sm transition-colors" 
                      referrerpolicy="no-referrer">
               }
             </div>
@@ -164,32 +183,32 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
             <!-- Content -->
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1.5">
-                <span class="text-[11px] font-black text-slate-900 uppercase tracking-widest">
+                <span class="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-widest">
                   {{msg.role === 'model' ? 'emi AI' : 'You'}}
                 </span>
-                <span class="text-[9px] font-bold text-slate-400">{{msg.timestamp | date:'shortTime'}}</span>
+                <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500">{{msg.timestamp | date:'shortTime'}}</span>
               </div>
               
               <div class="relative group">
                 @if (msg.role === 'model') {
-                  <div class="prose prose-slate max-w-none leading-relaxed text-slate-800 no-highlight" [innerHTML]="msg.content | markdown | async"></div>
+                  <div class="prose prose-slate max-w-none leading-relaxed text-slate-800 dark:text-slate-200 no-highlight" [innerHTML]="msg.content | markdown | async"></div>
                   
                   <!-- Actions (Copy & TTS) -->
-                  <div class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100 dark:border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button (click)="copyText(msg.content)" 
-                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100 transition-all text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95">
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95">
                       <mat-icon class="!w-3 !h-3 !text-[14px]">content_copy</mat-icon>
                       <span>Copy</span>
                     </button>
                     <button (click)="speakText(msg.content)" 
-                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100 transition-all text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95">
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all text-[10px] font-black uppercase tracking-widest shadow-sm active:scale-95">
                       <mat-icon class="!w-3 !h-3 !text-[14px]">{{ isSpeaking === msg.id ? 'stop' : (isSpeaking && isSpeaking !== msg.id ? 'volume_up' : 'volume_up') }}</mat-icon>
                       <span>{{ isSpeaking === msg.id ? 'Stop' : 'Listen' }}</span>
                     </button>
                   </div>
                 } @else {
-                  <div class="bg-white border border-slate-200/80 rounded-2xl rounded-tl-none p-4 shadow-sm">
-                    <p class="whitespace-pre-wrap text-[15px] leading-relaxed font-bold text-slate-900">{{msg.content}}</p>
+                  <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/5 rounded-2xl rounded-tl-none p-4 shadow-sm transition-colors">
+                    <p class="whitespace-pre-wrap text-[15px] leading-relaxed font-bold text-slate-900 dark:text-white">{{msg.content}}</p>
                   </div>
                 }
               </div>
@@ -214,14 +233,14 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
       </div>
 
       <!-- Input Area -->
-      <div class="p-4 bg-white border-t border-slate-200 pb-safe">
+      <div class="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-white/5 pb-safe transition-colors duration-500">
         <div class="max-w-4xl mx-auto">
           @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits || 0) <= 0) {
-            <div class="bg-slate-900 rounded-[2rem] p-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500 relative overflow-hidden">
+            <div class="bg-slate-900 dark:bg-indigo-950 rounded-[2rem] p-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500 relative overflow-hidden">
               <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
               <mat-icon class="text-amber-400 mb-3 !w-10 !h-10 !text-[40px]">workspace_premium</mat-icon>
               <h4 class="font-black text-white text-xl mb-2 tracking-tight">Daily Limit Reached</h4>
-              <p class="text-sm text-slate-400 font-medium mb-6">You have finished your credits for today. Please wait until tomorrow.</p>
+              <p class="text-sm text-slate-400 dark:text-slate-300 font-medium mb-6">You have finished your credits for today. Please wait until tomorrow.</p>
               <a routerLink="/upgrade" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-500 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/30 hover:scale-105 transition-transform">
                 <span>Upgrade Now to have Unlimited Access</span>
                 <mat-icon>arrow_forward</mat-icon>
@@ -229,13 +248,13 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
             </div>
           } @else {
             <div class="flex items-end gap-3">
-              <div class="flex-1 bg-slate-100 rounded-xl focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500 transition-all shadow-inner overflow-hidden">
+              <div class="flex-1 bg-slate-100 dark:bg-slate-800 rounded-xl focus-within:bg-white dark:focus-within:bg-slate-800 focus-within:ring-2 focus-within:ring-indigo-500 dark:focus-within:ring-indigo-500/50 transition-all shadow-inner overflow-hidden transition-colors">
                 <textarea 
                   [ngModel]="inputText()"                
                   (ngModelChange)="inputText.set($event)"
                   (keydown.enter)="handleEnter($event)"
-                  placeholder="Message..."
-                  class="w-full py-3 px-4 bg-transparent border-none focus:ring-0 resize-none outline-none text-[15px] font-medium text-slate-900 placeholder-slate-500"
+                  placeholder="Ask emi anything..."
+                  class="w-full py-3 px-4 bg-transparent border-none focus:ring-0 resize-none outline-none text-[15px] font-medium text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 transition-colors"
                   rows="1"
                   style="min-height: 48px; max-height: 120px; display: block;"
                 ></textarea>
@@ -243,7 +262,7 @@ import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
               <button 
                 (click)="sendMessage()"
                 [disabled]="!inputText().trim() || gemini.isLoading()"
-                class="flex-shrink-0 w-12 h-12 flex items-center justify-center text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-all">
+                class="flex-shrink-0 w-12 h-12 flex items-center justify-center text-white bg-indigo-600 dark:bg-indigo-500 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-50 transition-all shadow-lg shadow-indigo-100 dark:shadow-none">
                 <mat-icon class="scale-100">send</mat-icon>
               </button>
             </div>

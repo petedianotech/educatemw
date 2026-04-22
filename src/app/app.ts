@@ -5,6 +5,7 @@ import {AuthService} from './core/services/auth.service';
 import {LoadingService} from './core/services/loading.service';
 import {DataService} from './core/services/data.service';
 import {GeminiService} from './core/services/gemini.service';
+import {ThemeService} from './core/services/theme.service';
 import {MatIconModule} from '@angular/material/icon';
 import { ErrorToastComponent } from './shared/components/error-toast/error-toast.component';
 
@@ -65,13 +66,13 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
       </div>
     } @else {
       @if (authService.currentUser() && router.url !== '/') {
-        <div class="flex flex-col h-[100dvh] bg-slate-50 font-sans text-slate-900 overflow-hidden relative">
+        <div class="flex flex-col h-[100dvh] bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 overflow-hidden relative">
           
           <!-- Floating Action Buttons (Top Left) -->
           <div class="absolute top-safe left-4 mt-4 z-40 flex gap-2">
             @if (router.url === '/dashboard') {
-              <button (click)="toggleMenu()" class="w-12 h-12 rounded-2xl bg-white/90 backdrop-blur-md shadow-lg border border-white/20 flex items-center justify-center text-slate-800 hover:bg-white active:scale-95 transition-all group">
-                <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
+              <button (click)="toggleMenu()" class="w-12 h-12 rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-lg border border-white/20 dark:border-white/5 flex items-center justify-center text-slate-800 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-900 active:scale-95 transition-all group">
+                <div class="w-8 h-8 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
                   <mat-icon class="scale-90">menu</mat-icon>
                 </div>
               </button>
@@ -79,7 +80,7 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
           </div>
 
           <!-- Main Content Area -->
-          <main class="flex-1 overflow-hidden relative" [class.pb-[calc(env(safe-area-inset-bottom)+4.5rem)]]="router.url === '/dashboard'">
+          <main class="flex-1 overflow-hidden relative transition-colors duration-500" [class.pb-[calc(env(safe-area-inset-bottom)+4.5rem)]]="router.url === '/dashboard'">
             
             <!-- Daily Reward Message -->
             @if (authService.rewardMessage()) {
@@ -121,7 +122,7 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
 
           <!-- TikTok Style Bottom Navigation (Only on Dashboard) -->
           @if (router.url === '/dashboard') {
-            <nav class="fixed bottom-0 left-0 right-0 z-50 bg-slate-950 border-t border-white/10 flex items-center justify-around pt-2 pb-[env(safe-area-inset-bottom)] px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full duration-300">
+            <nav class="fixed bottom-0 left-0 right-0 z-50 bg-slate-950 dark:bg-black border-t border-white/10 flex items-center justify-around pt-2 pb-[env(safe-area-inset-bottom)] px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full duration-300">
               
               <!-- Home -->
               <a routerLink="/dashboard" routerLinkActive="text-white" [routerLinkActiveOptions]="{exact: true}" class="flex flex-col items-center justify-center gap-1 w-16 text-slate-500 hover:text-slate-300 transition-all active:scale-90 group">
@@ -171,7 +172,7 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
           }
           
           <!-- Slide-over Sidebar Menu -->
-          <aside class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-950 shadow-2xl transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col pt-safe border-r border-white/5"
+          <aside class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-950 dark:bg-black shadow-2xl transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col pt-safe border-r border-white/5"
                  [class.translate-x-0]="isMobileMenuOpen()"
                  [class.-translate-x-full]="!isMobileMenuOpen()">
             
@@ -334,6 +335,7 @@ export class App implements OnInit {
   loadingService = inject(LoadingService);
   dataService = inject(DataService);
   router = inject(Router);
+  themeService = inject(ThemeService);
   platformId = inject(PLATFORM_ID);
   isMobileMenuOpen = signal(false);
   isControlsHidden = signal(false);

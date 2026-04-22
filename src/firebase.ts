@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
 import { getPerformance } from 'firebase/performance';
@@ -13,7 +13,14 @@ if (typeof window !== 'undefined') {
   setPersistence(auth, browserLocalPersistence).catch(console.error);
 }
 
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = typeof window !== 'undefined'
+  ? initializeFirestore(
+      app,
+      { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) },
+      firebaseConfig.firestoreDatabaseId
+    )
+  : getFirestore(app, firebaseConfig.firestoreDatabaseId);
+
 export const storage = getStorage(app);
 
 import { Analytics } from 'firebase/analytics';

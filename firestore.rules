@@ -208,11 +208,21 @@ service cloud.firestore {
       allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
                     isOwner(userId) && request.resource.data.uid == userId;
       allow update: if isAuthenticated() && isValidUser(request.resource.data) &&
-                    ((isOwner(userId) && request.resource.data.uid == resource.data.uid && 
-                      request.resource.data.role == resource.data.role && 
-                      request.resource.data.isPro == resource.data.isPro &&
-                      request.resource.data.createdAt == resource.data.createdAt &&
-                      (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'gender', 'avatarStyle', 'lastLoginDate', 'pwaInstalled', 'hasClaimedAppInstallReward', 'referralsCount', 'streak', 'coins', 'aiCredits', 'lastCreditReset']))) || isAdmin());
+                    (
+                      (isOwner(userId) && request.resource.data.uid == resource.data.uid && 
+                       request.resource.data.role == resource.data.role && 
+                       request.resource.data.isPro == resource.data.isPro &&
+                       request.resource.data.createdAt == resource.data.createdAt &&
+                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'gender', 'avatarStyle', 'lastLoginDate', 'pwaInstalled', 'hasClaimedAppInstallReward', 'referralsCount', 'referredBy', 'streak', 'coins', 'aiCredits', 'lastCreditReset']))
+                      ) || 
+                      (!isOwner(userId) && request.resource.data.uid == resource.data.uid &&
+                       request.resource.data.role == resource.data.role && 
+                       request.resource.data.isPro == resource.data.isPro &&
+                       request.resource.data.createdAt == resource.data.createdAt &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['referralsCount', 'aiCredits'])
+                      ) || 
+                      isAdmin()
+                    );
     }
 
     match /recovery/{identifier} {

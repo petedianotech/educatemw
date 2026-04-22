@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, O
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DataService, Quiz, QuizQuestion, Note, AppUpdate } from '../../core/services/data.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { GeminiService } from '../../core/services/gemini.service';
 import { Timestamp } from 'firebase/firestore';
 import { MatIconModule } from '@angular/material/icon';
@@ -24,24 +25,24 @@ interface ChartData {
   schemas: [NO_ERRORS_SCHEMA],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex h-screen bg-slate-50 overflow-hidden">
+    <div class="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden transition-colors duration-500">
       <!-- Admin Sidebar -->
-      <aside class="bg-slate-900 text-white flex flex-col shrink-0 z-30 transition-all duration-300"
+      <aside class="bg-slate-900 dark:bg-black text-white flex flex-col shrink-0 z-30 transition-all duration-300 border-r border-white/5"
              [class.w-64]="isSidebarOpen()"
              [class.w-0]="!isSidebarOpen()"
              [class.opacity-0]="!isSidebarOpen()"
              [class.overflow-hidden]="!isSidebarOpen()">
-        <div class="p-6 border-b border-slate-800 flex items-center justify-between w-64">
+        <div class="p-6 border-b border-slate-800 dark:border-white/5 flex items-center justify-between w-64 transition-colors">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
               <mat-icon>security</mat-icon>
             </div>
             <div>
-              <h1 class="text-lg font-black tracking-tight leading-none">Admin</h1>
+              <h1 class="text-lg font-black tracking-tight leading-none text-white">Admin</h1>
               <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Control Center</p>
             </div>
           </div>
-          <button (click)="isSidebarOpen.set(false)" class="text-slate-400 hover:text-white">
+          <button (click)="isSidebarOpen.set(false)" class="text-slate-400 hover:text-white transition-colors">
             <mat-icon>chevron_left</mat-icon>
           </button>
         </div>
@@ -153,105 +154,109 @@ interface ChartData {
       <!-- Main Content -->
       <main class="flex-1 flex flex-col overflow-hidden">
         <!-- Top Bar -->
-        <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
+        <header class="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-white/5 flex items-center justify-between px-8 shrink-0 transition-colors">
           <div class="flex items-center gap-4">
             @if (!isSidebarOpen()) {
-              <button (click)="isSidebarOpen.set(true)" class="text-slate-500 hover:text-indigo-600">
+              <button (click)="isSidebarOpen.set(true)" class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                 <mat-icon>menu</mat-icon>
               </button>
             }
-            <h2 class="text-xl font-black text-slate-900 tracking-tight capitalize">{{ activeTab() }}</h2>
+            <h2 class="text-xl font-black text-slate-900 dark:text-white tracking-tight capitalize transition-colors">{{ activeTab() }}</h2>
           </div>
           <div class="flex items-center gap-4">
             <div class="flex flex-col items-end">
-              <span class="text-sm font-black text-slate-900">Administrator</span>
-              <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Full Access</span>
+              <span class="text-sm font-black text-slate-900 dark:text-white transition-colors">Administrator</span>
+              <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest transition-colors">Full Access</span>
             </div>
-            <div class="w-10 h-10 bg-slate-100 rounded-full border border-slate-200 flex items-center justify-center text-slate-400">
+            <div class="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-white/5 flex items-center justify-center text-slate-400 transition-colors">
               <mat-icon>person</mat-icon>
             </div>
           </div>
         </header>
 
         <!-- Tab Content -->
-        <div class="flex-1 overflow-y-auto p-8">
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
           
           @if (activeTab() === 'overview') {
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
-                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4">
+              <div class="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-sm transition-colors">
+                <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-4 transition-colors">
                   <mat-icon>people</mat-icon>
                 </div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Students</p>
-                <h3 class="text-3xl font-black text-slate-900">{{ totalStudents() }}</h3>
+                <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 transition-colors">Total Students</p>
+                <h3 class="text-3xl font-black text-slate-900 dark:text-white transition-colors">{{ totalStudents() }}</h3>
               </div>
-              <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
-                <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center mb-4">
+              <div class="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-sm transition-colors">
+                <div class="w-12 h-12 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-2xl flex items-center justify-center mb-4 transition-colors">
                   <mat-icon>workspace_premium</mat-icon>
                 </div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Pro Members</p>
-                <h3 class="text-3xl font-black text-slate-900">{{ proSubscribers() }}</h3>
+                <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 transition-colors">Pro Members</p>
+                <h3 class="text-3xl font-black text-slate-900 dark:text-white transition-colors">{{ proSubscribers() }}</h3>
               </div>
-              <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
-                <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-4">
+              <div class="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-sm transition-colors">
+                <div class="w-12 h-12 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center mb-4 transition-colors">
                   <mat-icon>quiz</mat-icon>
                 </div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Quizzes</p>
-                <h3 class="text-3xl font-black text-slate-900">{{ totalQuizzes() }}</h3>
+                <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 transition-colors">Total Quizzes</p>
+                <h3 class="text-3xl font-black text-slate-900 dark:text-white transition-colors">{{ totalQuizzes() }}</h3>
               </div>
-              <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
-                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4">
+              <div class="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-sm transition-colors">
+                <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-4 transition-colors">
                   <mat-icon>payments</mat-icon>
                 </div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Revenue</p>
-                <h3 class="text-3xl font-black text-slate-900">MWK {{ totalRevenue() | number }}</h3>
+                <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 transition-colors">Total Revenue</p>
+                <h3 class="text-3xl font-black text-slate-900 dark:text-white transition-colors">MWK {{ totalRevenue() | number }}</h3>
               </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                <h3 class="text-lg font-black text-slate-900 mb-6 uppercase tracking-tight">System Health</h3>
+              <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-white/5 shadow-sm transition-colors">
+                <h3 class="text-lg font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight transition-colors">System Health</h3>
                 <div class="space-y-4">
-                  <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-white/5 transition-colors">
                     <div class="flex items-center gap-3">
                       <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                      <span class="text-sm font-bold text-slate-700">Firestore Database</span>
+                      <span class="text-sm font-bold text-slate-700 dark:text-slate-300 transition-colors">Firestore Database</span>
                     </div>
-                    <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Active</span>
+                    <span class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest transition-colors">Active</span>
                   </div>
-                  <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-white/5 transition-colors">
                     <div class="flex items-center gap-3">
                       <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                      <span class="text-sm font-bold text-slate-700">Gemini AI API</span>
+                      <span class="text-sm font-bold text-slate-700 dark:text-slate-300 transition-colors">Gemini AI API</span>
                     </div>
-                    <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Connected</span>
+                    <span class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest transition-colors">Connected</span>
                   </div>
-                  <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-white/5 transition-colors">
                     <div class="flex items-center gap-3">
                       <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                      <span class="text-sm font-bold text-slate-700">Auth Service</span>
+                      <span class="text-sm font-bold text-slate-700 dark:text-slate-300 transition-colors">Auth Service</span>
                     </div>
-                    <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Operational</span>
+                    <span class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest transition-colors">Operational</span>
                   </div>
                 </div>
               </div>
 
-              <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+              <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-white/5 shadow-sm transition-colors">
                 <div class="flex items-center justify-between mb-2">
-                  <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Growth & Revenue Trend</h3>
-                  <div class="flex p-1 bg-slate-100 rounded-xl">
+                  <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight transition-colors">Growth & Revenue Trend</h3>
+                  <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl transition-colors">
                     <button (click)="chartRange.set('7d')" 
                             [class.bg-white]="chartRange() === '7d'" 
+                            [class.dark:bg-slate-700]="chartRange() === '7d' && themeService.isDarkMode()"
                             [class.shadow-sm]="chartRange() === '7d'"
                             class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
                             [class.text-indigo-600]="chartRange() === '7d'"
-                            [class.text-slate-500]="chartRange() !== '7d'">7D</button>
+                            [class.text-slate-500]="chartRange() !== '7d' && !themeService.isDarkMode()"
+                            [class.dark:text-slate-400]="chartRange() !== '7d' && themeService.isDarkMode()">7D</button>
                     <button (click)="chartRange.set('30d')" 
                             [class.bg-white]="chartRange() === '30d'" 
+                            [class.dark:bg-slate-700]="chartRange() === '30d' && themeService.isDarkMode()"
                             [class.shadow-sm]="chartRange() === '30d'"
                             class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
                             [class.text-indigo-600]="chartRange() === '30d'"
-                            [class.text-slate-500]="chartRange() !== '30d'">30D</button>
+                            [class.text-slate-500]="chartRange() !== '30d' && !themeService.isDarkMode()"
+                            [class.dark:text-slate-400]="chartRange() !== '30d' && themeService.isDarkMode()">30D</button>
                     <button (click)="chartRange.set('year')" 
                             [class.bg-white]="chartRange() === 'year'" 
                             [class.shadow-sm]="chartRange() === 'year'"
@@ -891,6 +896,28 @@ interface ChartData {
                   <p class="text-[10px] font-medium text-slate-400 mt-2 ml-1">Paste a standard YouTube link, short, or list URL.</p>
                 </div>
                 
+                <!-- SEO Section for Video -->
+                <div class="pt-6 border-t border-slate-100 mt-4">
+                  <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-xs font-black text-slate-900 uppercase tracking-tight">Video SEO (emi SEO)</h4>
+                    <button (click)="generateVideoSEO()" 
+                            [disabled]="isGeneratingVideoSEO() || !videoTitle()"
+                            class="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-indigo-100 transition-all disabled:opacity-50">
+                      @if (isGeneratingVideoSEO()) {
+                        <div class="w-3 h-3 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin"></div>
+                        <span>Analyzing...</span>
+                      } @else {
+                        <mat-icon class="!w-3 !h-3 !text-[12px]">auto_awesome</mat-icon>
+                        <span>emi SEO</span>
+                      }
+                    </button>
+                  </div>
+                  <div>
+                    <input type="text" [ngModel]="videoSeoTitle()" (ngModelChange)="videoSeoTitle.set($event)" placeholder="SEO Optimized Title" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl mb-2 text-sm font-bold text-slate-900">
+                    <textarea [ngModel]="videoDescription()" (ngModelChange)="videoDescription.set($event)" rows="2" placeholder="SEO Optimized Description for Malawi Form 1-4 students." class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 resize-none"></textarea>
+                  </div>
+                </div>
+
                 <button (click)="saveVideo()" [disabled]="isSubmitting() || !videoTitle().trim() || !videoUrl().trim()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-6">
                   {{ isSubmitting() ? 'Publishing...' : 'Publish Video Lesson' }}
                 </button>
@@ -1083,6 +1110,7 @@ interface ChartData {
 export class AdminComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   geminiService = inject(GeminiService);
+  themeService = inject(ThemeService);
   router = inject(Router);
   
   isSidebarOpen = signal(false);
@@ -1405,6 +1433,32 @@ export class AdminComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Video SEO State
+  videoSeoTitle = signal('');
+  videoSeoDescription = signal('');
+  isGeneratingVideoSEO = signal(false);
+
+  async generateVideoSEO() {
+    if (!this.videoTitle().trim() || this.isGeneratingVideoSEO()) return;
+    this.isGeneratingVideoSEO.set(true);
+    try {
+      const result = await this.geminiService.generateSEO(
+        this.videoTitle(),
+        this.videoCategory(),
+        this.videoDescription() || 'Video lesson for Malawian students.'
+      );
+      if (result) {
+        this.videoSeoTitle.set(result.seoTitle);
+        this.videoDescription.set(result.seoDescription);
+      }
+    } catch (error) {
+      console.error('SEO Generation failed:', error);
+      this.showNotification('Failed to generate SEO.', 'error');
+    } finally {
+      this.isGeneratingVideoSEO.set(false);
+    }
+  }
+
   async saveVideo() {
     if (!this.videoTitle().trim() || !this.videoUrl().trim() || this.isSubmitting()) return;
     this.isSubmitting.set(true);
@@ -1413,11 +1467,14 @@ export class AdminComponent implements OnInit, OnDestroy {
         title: this.videoTitle(),
         description: this.videoDescription(),
         youtubeUrl: this.videoUrl(),
-        category: this.videoCategory()
+        category: this.videoCategory(),
+        seoTitle: this.videoSeoTitle().trim(),
+        seoDescription: this.videoDescription().trim()
       });
       this.videoTitle.set('');
       this.videoDescription.set('');
       this.videoUrl.set('');
+      this.videoSeoTitle.set('');
       this.showNotification('Video lesson published successfully!');
     } catch (error) {
       console.error(error);

@@ -5,6 +5,7 @@ import { DataService } from '../../core/services/data.service';
 import { AuthService, UserProfile } from '../../core/services/auth.service';
 import { signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Capacitor } from '@capacitor/core';
 import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.component';
 
 @Component({
@@ -13,13 +14,13 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
   imports: [CommonModule, MatIconModule, RouterLink, NgOptimizedImage, AdPlaceholderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-slate-50 pb-safe">
+    <div class="min-h-screen bg-slate-50 dark:bg-slate-950 pb-safe transition-colors duration-500">
       <!-- Header -->
-      <header class="px-4 py-3 flex items-center gap-3 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm sticky top-0 z-10 pt-safe">
-        <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:scale-90 transition-all">
+      <header class="px-4 py-3 flex items-center gap-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-white/5 shadow-sm sticky top-0 z-10 pt-safe transition-colors">
+        <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-90 transition-all">
           <mat-icon class="text-[22px]">arrow_back</mat-icon>
         </a>
-        <h1 class="text-xl font-black text-slate-900 tracking-tight">Leaderboard</h1>
+        <h1 class="text-xl font-black text-slate-900 dark:text-white tracking-tight">Leaderboard</h1>
       </header>
 
       <div class="p-4 max-w-3xl mx-auto space-y-6">
@@ -39,7 +40,7 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
 
         <!-- Top 3 Podium -->
         <div class="flex items-end justify-center gap-2 pt-8 pb-4">
-          <!-- 2nd Place -->
+           <!-- 2nd Place -->
           @if (topStudents().length > 1) {
             <div class="flex flex-col items-center gap-2 animate-in slide-in-from-bottom-10 duration-700 delay-100">
               <div class="relative">
@@ -47,15 +48,15 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
                      alt="2nd Place"
                      width="64"
                      height="64"
-                     class="rounded-2xl border-4 border-slate-300 shadow-lg object-cover" referrerpolicy="no-referrer">
+                     class="rounded-2xl border-4 border-slate-300 dark:border-slate-700 shadow-lg object-cover" referrerpolicy="no-referrer">
                 <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-slate-400 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm">2nd</div>
               </div>
               <div class="text-center">
-                <p class="text-xs font-bold text-slate-700 truncate w-20">{{topStudents()[1].displayName}}</p>
-                <p class="text-[10px] font-black text-indigo-600">{{topStudents()[1].coins || 0}} coins</p>
+                <p class="text-xs font-bold text-slate-700 dark:text-slate-300 truncate w-20">{{topStudents()[1].displayName}}</p>
+                <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400">{{topStudents()[1].coins || 0}} coins</p>
                 <div class="flex items-center justify-center gap-0.5 mt-0.5">
                   <mat-icon class="!w-3 !h-3 !text-[12px] text-orange-500">local_fire_department</mat-icon>
-                  <span class="text-[10px] font-black text-orange-600">{{topStudents()[1].streak || 0}}</span>
+                  <span class="text-[10px] font-black text-orange-600 dark:text-orange-400">{{topStudents()[1].streak || 0}}</span>
                 </div>
               </div>
             </div>
@@ -72,15 +73,15 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
                      alt="1st Place"
                      width="96"
                      height="96"
-                     class="rounded-3xl border-4 border-amber-400 shadow-xl shadow-amber-200/50 object-cover" referrerpolicy="no-referrer">
+                     class="rounded-3xl border-4 border-amber-400 shadow-xl shadow-amber-200/50 dark:shadow-none object-cover" referrerpolicy="no-referrer">
                 <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-amber-400 text-white text-[12px] font-black px-3 py-1 rounded-full shadow-md">1st</div>
               </div>
               <div class="text-center">
-                <p class="text-sm font-black text-slate-900 truncate w-24">{{topStudents()[0].displayName}}</p>
-                <p class="text-xs font-black text-indigo-600">{{topStudents()[0].coins || 0}} coins</p>
+                <p class="text-sm font-black text-slate-900 dark:text-white truncate w-24">{{topStudents()[0].displayName}}</p>
+                <p class="text-xs font-black text-indigo-600 dark:text-indigo-400">{{topStudents()[0].coins || 0}} coins</p>
                 <div class="flex items-center justify-center gap-0.5 mt-0.5">
                   <mat-icon class="!w-4 !h-4 !text-[14px] text-orange-500">local_fire_department</mat-icon>
-                  <span class="text-xs font-black text-orange-600">{{topStudents()[0].streak || 0}}</span>
+                  <span class="text-xs font-black text-orange-600 dark:text-orange-400">{{topStudents()[0].streak || 0}}</span>
                 </div>
               </div>
             </div>
@@ -94,15 +95,15 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
                      alt="3rd Place"
                      width="64"
                      height="64"
-                     class="rounded-2xl border-4 border-orange-300 shadow-lg object-cover" referrerpolicy="no-referrer">
+                     class="rounded-2xl border-4 border-orange-300 dark:border-orange-800 shadow-lg object-cover" referrerpolicy="no-referrer">
                 <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-orange-400 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm">3rd</div>
               </div>
               <div class="text-center">
-                <p class="text-xs font-bold text-slate-700 truncate w-20">{{topStudents()[2].displayName}}</p>
-                <p class="text-[10px] font-black text-indigo-600">{{topStudents()[2].coins || 0}} coins</p>
+                <p class="text-xs font-bold text-slate-700 dark:text-slate-300 truncate w-20">{{topStudents()[2].displayName}}</p>
+                <p class="text-[10px] font-black text-indigo-600 dark:text-indigo-400">{{topStudents()[2].coins || 0}} coins</p>
                 <div class="flex items-center justify-center gap-0.5 mt-0.5">
                   <mat-icon class="!w-3 !h-3 !text-[12px] text-orange-500">local_fire_department</mat-icon>
-                  <span class="text-[10px] font-black text-orange-600">{{topStudents()[2].streak || 0}}</span>
+                  <span class="text-[10px] font-black text-orange-600 dark:text-orange-400">{{topStudents()[2].streak || 0}}</span>
                 </div>
               </div>
             </div>
@@ -110,38 +111,38 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
         </div>
 
         <!-- Leaderboard List -->
-        <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-y-auto max-h-[400px]">
-          <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
-            <h2 class="text-sm font-black text-slate-500 uppercase tracking-widest">Global Ranking</h2>
-            <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">Top 100</span>
+        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 overflow-y-auto max-h-[400px] transition-colors">
+          <div class="px-6 py-5 border-b border-slate-50 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
+            <h2 class="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Global Ranking</h2>
+            <span class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-lg">Top 100</span>
           </div>
 
-          <div class="divide-y divide-slate-50">
+          <div class="divide-y divide-slate-50 dark:divide-white/5">
             @for (student of topStudents(); track student.uid; let i = $index) {
               @if (i >= 3) {
                 <!-- Ad Placeholder within leaderboard list -->
                 @if (!isNative() && i > 3 && i % 10 === 0) {
-                  <div class="p-2 border-b border-slate-50">
+                  <div class="p-2 border-b border-slate-50 dark:border-white/5">
                     <app-ad-placeholder type="native-banner" />
                   </div>
                 }
 
-                <div class="flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors group">
-                  <div class="w-8 font-black text-slate-300 group-hover:text-indigo-400 transition-colors text-center text-sm">{{i + 1}}</div>
+                <div class="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
+                  <div class="w-8 font-black text-slate-300 dark:text-slate-600 group-hover:text-indigo-400 transition-colors text-center text-sm">{{i + 1}}</div>
                   <img ngSrc="{{student.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + student.uid}}" 
                        alt="Student Avatar"
                        width="40"
                        height="40"
-                       class="rounded-xl bg-slate-100 border border-slate-100 object-cover" referrerpolicy="no-referrer">
+                       class="rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-100 dark:border-white/10 object-cover" referrerpolicy="no-referrer">
                   <div class="flex-1 min-w-0">
-                    <p class="font-bold text-slate-900 truncate text-sm">{{student.displayName}}</p>
+                    <p class="font-bold text-slate-900 dark:text-white truncate text-sm">{{student.displayName || 'Anonymous'}}</p>
                     <div class="flex items-center gap-2 mt-0.5">
-                      <span class="text-[10px] font-black text-indigo-500 uppercase tracking-tighter">{{student.coins || 0}} coins</span>
+                      <span class="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-tighter">{{student.coins || 0}} coins</span>
                     </div>
                   </div>
-                  <div class="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-lg">
+                  <div class="flex items-center gap-1 bg-orange-50 dark:bg-orange-950/30 px-2 py-1 rounded-lg">
                     <mat-icon class="!w-3 !h-3 !text-[14px] text-orange-500">local_fire_department</mat-icon>
-                    <span class="text-[10px] font-black text-orange-600">{{student.streak || 0}}</span>
+                    <span class="text-[10px] font-black text-orange-600 dark:text-orange-400">{{student.streak || 0}}</span>
                   </div>
                 </div>
               }
@@ -189,7 +190,7 @@ export class LeaderboardComponent implements OnInit {
   isNative = signal(false);
 
   async ngOnInit() {
-    this.isNative.set(isPlatformBrowser(this.platformId) && (window as any).Capacitor?.isNativePlatform);
+    this.isNative.set(isPlatformBrowser(this.platformId) && Capacitor.isNativePlatform());
     
     await this.loadMore();
   }

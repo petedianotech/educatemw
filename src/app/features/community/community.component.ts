@@ -38,29 +38,29 @@ import { RouterLink } from '@angular/router';
     }
   `],
   template: `
-    <div class="flex flex-col h-full bg-slate-50 relative overflow-hidden">
+    <div class="flex flex-col h-full bg-slate-50 dark:bg-slate-950 relative overflow-hidden transition-colors duration-500">
       <!-- Header -->
-      <header class="px-4 py-4 flex justify-between items-center bg-white/95 backdrop-blur-xl text-slate-900 z-20 sticky top-0 border-b border-slate-200/60 shadow-sm">
+      <header class="px-4 py-4 flex justify-between items-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl text-slate-900 z-20 sticky top-0 border-b border-slate-200/60 dark:border-white/5 shadow-sm transition-colors duration-500">
         <div class="flex items-center gap-3">
-          <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:scale-90 transition-all mr-1">
+          <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-90 transition-all mr-1">
             <mat-icon class="text-[22px]">arrow_back</mat-icon>
           </a>
           <div class="relative">
-            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-500 to-sky-400 flex items-center justify-center text-white shadow-lg shadow-indigo-200 overflow-hidden">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-500 to-sky-400 dark:from-indigo-900 dark:via-blue-800 dark:to-sky-700 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none overflow-hidden transition-colors">
               <mat-icon class="scale-110">groups</mat-icon>
             </div>
           </div>
           <div>
-            <h2 class="text-lg font-black tracking-tight leading-tight text-slate-900">Community Chat</h2>
+            <h2 class="text-lg font-black tracking-tight leading-tight text-slate-900 dark:text-white transition-colors">Community Chat</h2>
             <div class="flex items-center gap-1.5">
               <div class="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pump"></div>
-              <p class="text-[10px] text-emerald-600 font-black uppercase tracking-widest">Live Discussion</p>
+              <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-widest transition-colors">Live Discussion</p>
             </div>
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <div class="bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-            <span class="text-[11px] font-black text-slate-600 uppercase tracking-wider">{{dataService.messages().length}} MSGS</span>
+          <div class="bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 transition-colors">
+            <span class="text-[11px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider transition-colors">{{dataService.messages().length}} MSGS</span>
           </div>
         </div>
       </header>
@@ -78,7 +78,7 @@ import { RouterLink } from '@angular/router';
             
             <!-- Avatar -->
             <div class="shrink-0">
-              <div class="w-9 h-9 rounded-xl overflow-hidden bg-slate-200 border border-white shadow-sm ring-2 ring-slate-100">
+              <div class="w-9 h-9 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 border border-white dark:border-slate-700 shadow-sm ring-2 ring-slate-100 dark:ring-slate-900 transition-colors">
                 <img [src]="msg.authorPhoto || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + msg.authorId" 
                      alt="Avatar"
                      class="w-full h-full object-cover">
@@ -89,20 +89,26 @@ import { RouterLink } from '@angular/router';
             <div class="flex flex-col max-w-[80%]"
                  [class.items-end]="msg.authorId === authService.currentUser()?.uid">
               <div class="flex items-center gap-2 mb-1 px-1">
-                <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">{{msg.authorName}}</span>
+                <span class="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-wider transition-colors">{{msg.authorName}}</span>
                 @if (msg.authorId === teacherUid()) {
-                  <span class="bg-blue-100 text-blue-700 text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-tighter shadow-sm border border-blue-200">Teacher</span>
+                  <span class="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-tighter shadow-sm border border-blue-200 dark:border-blue-800 transition-colors">Teacher</span>
                 }
-                <span class="text-[8px] font-bold text-slate-300">{{getMessageDate(msg.createdAt) | date:'shortTime'}}</span>
+                <span class="text-[8px] font-bold text-slate-300 dark:text-slate-600 transition-colors">{{getMessageDate(msg.createdAt) | date:'shortTime'}}</span>
               </div>
               
               <div class="p-3.5 rounded-2xl shadow-sm border relative group transition-all"
                    [class.bg-white]="msg.authorId !== authService.currentUser()?.uid"
+                   [class.dark:bg-slate-900]="msg.authorId !== authService.currentUser()?.uid"
                    [class.border-slate-200]="msg.authorId !== authService.currentUser()?.uid"
+                   [class.dark:border-white/5]="msg.authorId !== authService.currentUser()?.uid"
+                   [class.text-slate-900]="msg.authorId !== authService.currentUser()?.uid"
+                   [class.dark:text-slate-100]="msg.authorId !== authService.currentUser()?.uid"
                    [class.rounded-tl-none]="msg.authorId !== authService.currentUser()?.uid"
                    [class.bg-indigo-600]="msg.authorId === authService.currentUser()?.uid"
+                   [class.dark:bg-indigo-500]="msg.authorId === authService.currentUser()?.uid"
                    [class.text-white]="msg.authorId === authService.currentUser()?.uid"
                    [class.border-indigo-500]="msg.authorId === authService.currentUser()?.uid"
+                   [class.dark:border-indigo-400]="msg.authorId === authService.currentUser()?.uid"
                    [class.rounded-tr-none]="msg.authorId === authService.currentUser()?.uid">
                 
                 @if (msg.type === 'audio') {
@@ -121,26 +127,26 @@ import { RouterLink } from '@angular/router';
             </div>
           </div>
         } @empty {
-          <div class="flex flex-col items-center justify-center h-full text-center p-8 opacity-50">
-            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-              <mat-icon class="text-slate-400 scale-125">chat_bubble_outline</mat-icon>
+          <div class="flex flex-col items-center justify-center h-full text-center p-8 opacity-50 transition-colors">
+            <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 transition-colors">
+              <mat-icon class="text-slate-400 dark:text-slate-500 scale-125">chat_bubble_outline</mat-icon>
             </div>
-            <p class="text-slate-500 font-bold">No messages yet.</p>
-            <p class="text-slate-400 text-xs mt-1">Be the first to start the discussion!</p>
+            <p class="text-slate-500 dark:text-slate-400 font-bold transition-colors">No messages yet.</p>
+            <p class="text-slate-400 dark:text-slate-600 text-xs mt-1 transition-colors">Be the first to start the discussion!</p>
           </div>
         }
       </div>
 
       <!-- Input Area wrapper -->
-      <div class="p-4 bg-white border-t border-slate-200 pb-safe">
+      <div class="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-white/5 pb-safe transition-colors duration-500">
         <div class="max-w-4xl mx-auto flex items-end gap-3">
           
           <!-- Normal Input or Recording State -->
-          <div class="flex-1 bg-slate-100/80 rounded-2xl transition-all shadow-inner overflow-hidden border border-transparent relative">
+          <div class="flex-1 bg-slate-100/80 dark:bg-slate-800/80 rounded-2xl transition-all shadow-inner overflow-hidden border border-transparent relative transition-colors">
             
             @if (isRecording()) {
               <!-- Recording Controls -->
-              <div class="flex items-center justify-between px-4 py-3 bg-red-50/50 animate-in slide-in-from-left-2">
+              <div class="flex items-center justify-between px-4 py-3 bg-red-50/50 dark:bg-red-950/20 animate-in slide-in-from-left-2 transition-colors">
                 <div class="flex items-center gap-3">
                   <div class="w-2.5 h-2.5 bg-red-600 rounded-full animate-recording-red"></div>
                   <span class="text-sm font-black text-red-600 font-mono">{{ formatTime(recordingTime()) }}</span>
@@ -156,8 +162,9 @@ import { RouterLink } from '@angular/router';
               </div>
             } @else if (previewAudioUrl()) {
               <!-- Playback Controls -->
-              <div class="flex items-center justify-between px-3 py-2 bg-indigo-50/50 animate-in slide-in-from-bottom-2">
-                <audio [src]="previewAudioUrl()" controls class="h-10 grow mr-2"></audio>
+              <div class="flex items-center justify-between px-3 py-2 bg-indigo-50/50 dark:bg-indigo-900/20 animate-in slide-in-from-bottom-2 transition-colors">
+                <audio [src]="previewAudioUrl()" controls class="h-10 grow mr-2"
+                       [style.filter]="'none'"></audio>
                 <button (click)="resetRecordingUI()" class="p-2 text-slate-400 hover:text-rose-500">
                   <mat-icon>close</mat-icon>
                 </button>
@@ -168,7 +175,7 @@ import { RouterLink } from '@angular/router';
                 [(ngModel)]="newMessage"                
                 (keydown.enter)="handleEnter($event)"
                 placeholder="Type your message..."
-                class="w-full py-3.5 px-5 bg-transparent border-none focus:ring-0 resize-none outline-none text-[15px] font-medium text-slate-900 placeholder-slate-400"
+                class="w-full py-3.5 px-5 bg-transparent border-none focus:ring-0 resize-none outline-none text-[15px] font-medium text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 transition-colors"
                 rows="1"
                 style="min-height: 52px; max-height: 150px; display: block;"
               ></textarea>
@@ -179,11 +186,13 @@ import { RouterLink } from '@angular/router';
           <button 
             (click)="handleAction()"
             [disabled]="isSubmitting()"
-            class="flex-shrink-0 w-13 h-13 flex items-center justify-center text-white rounded-2xl active:scale-95 disabled:opacity-50 transition-all shadow-lg overflow-hidden shrink-0"
+            class="flex-shrink-0 w-13 h-13 flex items-center justify-center text-white rounded-2xl active:scale-95 disabled:opacity-50 transition-all shadow-lg dark:shadow-none overflow-hidden shrink-0"
             [class.bg-indigo-600]="newMessage.trim() || previewAudioUrl()"
+            [class.dark:bg-indigo-500]="newMessage.trim() || previewAudioUrl()"
             [class.bg-slate-900]="!newMessage.trim() && !previewAudioUrl() && !isRecording()"
+            [class.dark:bg-slate-800]="!newMessage.trim() && !previewAudioUrl() && !isRecording()"
             [class.bg-red-600]="isRecording()"
-            [class.shadow-indigo-100]="newMessage.trim() || previewAudioUrl()">
+            [class.shadow-indigo-100]="(newMessage.trim() || previewAudioUrl()) && !authService.currentUser()?.uid">
             
             @if (isSubmitting()) {
               <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

@@ -359,10 +359,11 @@ export class LoginComponent implements OnInit {
         await this.authService.loginWithEmail(this.email, this.password);
       }
       this.router.navigate(['/dashboard']);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Auth error', error);
-      const code = error?.code || '';
-      const message = error?.message || 'Authentication failed';
+      const authError = error as { code?: string; message?: string };
+      const code = authError?.code || '';
+      const message = authError?.message || 'Authentication failed';
       
       if (code === 'auth/invalid-credential' || 
           code === 'auth/wrong-password' || 

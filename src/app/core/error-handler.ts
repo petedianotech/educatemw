@@ -10,6 +10,13 @@ export class GlobalErrorHandler implements ErrorHandler {
     const errorStr = String(error);
     const message = error instanceof Error ? error.message : errorStr;
     
+    // Auto-reload on chunk load failure (vite dev server clears chunks on compile)
+    if (message.includes('Failed to fetch dynamically imported module') || message.includes('Loading chunk') || message.includes('chunk')) {
+       console.warn('Chunk loading failed. Refreshing page to get latest bundle...');
+       window.location.reload();
+       return;
+    }
+
     // Ignore fetch errors which are often non-critical (blocked analytics, network flakiness)
     const silentErrors = [
       'Failed to fetch',

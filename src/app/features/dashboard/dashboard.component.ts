@@ -8,6 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { Timestamp } from 'firebase/firestore';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 
+import { ThemeService } from '../../core/services/theme.service';
+
 interface Notification {
   id: string;
   title: string;
@@ -23,7 +25,7 @@ interface Notification {
   imports: [RouterLink, MatIconModule, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="h-full bg-slate-50 relative flex flex-col overflow-hidden">
+    <div class="h-full bg-slate-50 dark:bg-slate-950 relative flex flex-col overflow-hidden transition-colors duration-500">
       <!-- Payment Success Message -->
       @if (paymentSuccess()) {
         <div class="fixed top-20 left-4 right-4 z-[60] animate-in slide-in-from-top-10 duration-500">
@@ -70,21 +72,34 @@ interface Notification {
               </p>
             </div>
           </div>
-          <button aria-label="Notifications" class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-sm hover:bg-white/20 transition-all hover:scale-105 active:scale-95">
-            <mat-icon class="!w-6 !h-6 !text-[24px]">notifications_none</mat-icon>
-          </button>
+          <div class="flex items-center gap-2">
+            <!-- Theme Toggle Button -->
+            <button (click)="themeService.toggleDarkMode()" 
+                    class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-sm hover:bg-white/20 transition-all hover:scale-105 active:scale-95"
+                    aria-label="Toggle Theme">
+              <mat-icon class="!w-5 !h-5 !text-[20px]">{{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+            </button>
+            
+            @if (hasActiveNotifications()) {
+              <!-- Notification Bell -->
+              <button aria-label="Notifications" class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-sm hover:bg-white/20 transition-all hover:scale-105 active:scale-95 relative">
+                <mat-icon class="!w-6 !h-6 !text-[24px]">notifications_none</mat-icon>
+                <span class="absolute top-2.5 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse-once border-2 border-slate-900 shadow-sm"></span>
+              </button>
+            }
+          </div>
         </div>
 
         <!-- Guest Banner -->
         @if (authService.currentUser()?.isGuest) {
           <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
-            <div class="bg-amber-50 rounded-2xl p-4 shadow-sm border border-amber-200/80 flex items-center gap-4">
-              <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center shrink-0 border border-amber-200">
+            <div class="bg-amber-50 dark:bg-amber-900/10 rounded-2xl p-4 shadow-sm border border-amber-200/80 dark:border-amber-900/30 flex items-center gap-4">
+              <div class="w-10 h-10 bg-amber-100 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center shrink-0 border border-amber-200 dark:border-amber-900/30">
                 <mat-icon class="!w-5 !h-5 !text-[20px]">account_circle</mat-icon>
               </div>
               <div class="flex-1 min-w-0">
-                <h4 class="text-sm font-black text-amber-900">Guest Account</h4>
-                <p class="text-[10px] text-amber-700 font-bold mt-0.5">Create an account for 5 AI credits per day and to save your progress!</p>
+                <h4 class="text-sm font-black text-amber-900 dark:text-amber-200">Guest Account</h4>
+                <p class="text-[10px] text-amber-700 dark:text-amber-400 font-bold mt-0.5">Create an account for 5 AI credits per day and to save your progress!</p>
               </div>
               <a routerLink="/login" aria-label="Sign up" class="bg-amber-600 text-white px-3 py-1.5 rounded-lg font-black text-[10px] shadow-sm active:scale-95 transition-all hover:scale-105">
                 Sign Up
@@ -96,22 +111,22 @@ interface Notification {
       <!-- Announcements Section -->
       @if (isLoading()) {
         <div class="mb-6 shrink-0">
-          <app-skeleton className="w-full h-24 rounded-2xl"></app-skeleton>
+          <app-skeleton className="w-full h-24 rounded-2xl dark:bg-slate-800"></app-skeleton>
         </div>
       } @else if (announcements().length > 0 && !isDismissed(announcements()[0].id)) {
         <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
-          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-all hover:scale-[1.01] active:scale-95" 
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-200/80 dark:border-white/5 flex items-center gap-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:scale-[1.01] active:scale-95" 
                (click)="viewNotification(announcements()[0])"
                (keydown.enter)="viewNotification(announcements()[0])"
                tabindex="0"
                role="button"
                aria-label="View announcement">
-            <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 border border-indigo-100">
+            <div class="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-800/30">
               <mat-icon class="!w-5 !h-5 !text-[20px]">campaign</mat-icon>
             </div>
             <div class="flex-1 min-w-0">
-              <h4 class="text-sm font-black text-slate-900 truncate">{{ announcements()[0].title }}</h4>
-              <p class="text-xs text-slate-500 truncate mt-0.5">{{ announcements()[0].content }}</p>
+              <h4 class="text-sm font-black text-slate-900 dark:text-white truncate">{{ announcements()[0].title }}</h4>
+              <p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{{ announcements()[0].content }}</p>
             </div>
             <mat-icon class="text-slate-300 !w-5 !h-5 !text-[20px]">chevron_right</mat-icon>
           </div>
@@ -150,8 +165,8 @@ interface Notification {
           <div class="grid grid-cols-2 gap-3 mb-4 shrink-0">
             
             <!-- emi AI Tutor -->
-            <a routerLink="/chat" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <a routerLink="/chat" class="bg-white dark:bg-slate-900 rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-blue-50/50 dark:to-blue-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md shadow-blue-500/30 relative z-10 group-hover:scale-105 transition-transform overflow-hidden">
                 <img [src]="gemini.EMI_AVATAR" alt="emi AI" class="w-full h-full object-cover" referrerpolicy="no-referrer">
                 @if (!authService.currentUser()?.isPro && authService.currentUser()?.role !== 'admin' && (authService.currentUser()?.aiCredits ?? 10) <= 0) {
@@ -160,85 +175,85 @@ interface Notification {
                   </div>
                 }
               </div>
-              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">emi AI Tutor</h3>
-              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Interactive learning</p>
+              <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">emi AI Tutor</h3>
+              <p class="text-slate-500 dark:text-slate-400 text-[10px] font-medium mt-0.5 relative z-10">Interactive learning</p>
             </a>
 
             <!-- Video Lessons -->
-            <a routerLink="/video-lessons" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-rose-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <a routerLink="/video-lessons" class="bg-white dark:bg-slate-900 rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-rose-50/50 dark:to-rose-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-md shadow-rose-500/30 relative z-10 group-hover:scale-105 transition-transform">
                 <mat-icon class="!w-6 !h-6 !text-[24px]">play_circle_outline</mat-icon>
               </div>
-              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Video Lessons</h3>
-              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Visual tutorials</p>
+              <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">Video Lessons</h3>
+              <p class="text-slate-500 dark:text-slate-400 text-[10px] font-medium mt-0.5 relative z-10">Visual tutorials</p>
             </a>
 
             <!-- Study Library -->
-            <a routerLink="/notes" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-sky-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <a routerLink="/notes" class="bg-white dark:bg-slate-900 rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-sky-50/50 dark:to-sky-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-md shadow-sky-500/30 relative z-10 group-hover:scale-105 transition-transform">
                 <mat-icon class="!w-6 !h-6 !text-[24px]">library_books</mat-icon>
               </div>
-              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Study Library</h3>
-              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Past papers & notes</p>
+              <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">Study Library</h3>
+              <p class="text-slate-500 dark:text-slate-400 text-[10px] font-medium mt-0.5 relative z-10">Past papers & notes</p>
             </a>
 
             <!-- Practice Quizzes -->
-            <a routerLink="/quizzes" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-emerald-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <a routerLink="/quizzes" class="bg-white dark:bg-slate-900 rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-emerald-50/50 dark:to-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-emerald-400 to-teal-600 text-white shadow-md shadow-emerald-500/30 relative z-10 group-hover:scale-105 transition-transform">
                 <mat-icon class="!w-6 !h-6 !text-[24px]">quiz</mat-icon>
               </div>
-              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Practice Quizzes</h3>
-              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Test your knowledge</p>
+              <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">Practice Quizzes</h3>
+              <p class="text-slate-500 dark:text-slate-400 text-[10px] font-medium mt-0.5 relative z-10">Test your knowledge</p>
             </a>
 
             <!-- Exam Countdown -->
-            <a routerLink="/exam-countdown" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-rose-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <a routerLink="/exam-countdown" class="bg-white dark:bg-slate-900 rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-rose-50/50 dark:to-rose-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/30 relative z-10 group-hover:scale-105 transition-transform">
                 <mat-icon class="!w-6 !h-6 !text-[24px]">timer</mat-icon>
               </div>
-              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Exam Dates</h3>
+              <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">Exam Dates</h3>
               <div class="mt-1 relative z-10">
                 @let nextExam = getNextExam();
                 @if (nextExam) {
-                  <p class="text-blue-600 text-[10px] font-black uppercase tracking-tighter">{{ nextExam.name }} in {{ getExamDays(nextExam.date!) }} Days</p>
+                  <p class="text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-tighter">{{ nextExam.name }} in {{ getExamDays(nextExam.date!) }} Days</p>
                 } @else {
-                  <p class="text-blue-600 text-[10px] font-black uppercase tracking-tighter">No Exams Scheduled</p>
+                  <p class="text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-tighter">No Exams Scheduled</p>
                 }
               </div>
             </a>
 
             <!-- Community Chat -->
-            <a routerLink="/community" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <a routerLink="/community" class="bg-white dark:bg-slate-900 rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-purple-50/50 dark:to-purple-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-md shadow-purple-500/30 relative z-10 group-hover:scale-105 transition-transform">
                 <mat-icon class="!w-6 !h-6 !text-[24px]">groups</mat-icon>
               </div>
-              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Community Chat</h3>
-              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Live study discussion</p>
+              <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">Community Chat</h3>
+              <p class="text-slate-500 dark:text-slate-400 text-[10px] font-medium mt-0.5 relative z-10">Live study discussion</p>
             </a>
 
             <!-- Career Guidance -->
-            <a routerLink="/career-guidance" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-orange-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <a routerLink="/career-guidance" class="bg-white dark:bg-slate-900 rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-orange-50/50 dark:to-orange-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-400 to-amber-500 text-white shadow-md shadow-orange-500/30 relative z-10 group-hover:scale-105 transition-transform">
                 <mat-icon class="!w-6 !h-6 !text-[24px]">explore</mat-icon>
               </div>
-              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Career Guidance</h3>
-              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">MSCE points calculator</p>
+              <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">Career Guidance</h3>
+              <p class="text-slate-500 dark:text-slate-400 text-[10px] font-medium mt-0.5 relative z-10">MSCE points calculator</p>
             </a>
 
             <!-- Flashcards -->
-            <a routerLink="/flashcards" class="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-indigo-50/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <a routerLink="/flashcards" class="bg-white dark:bg-slate-900 rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-indigo-50/50 dark:to-indigo-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-500/30 relative z-10 group-hover:scale-105 transition-transform">
                 <mat-icon class="!w-6 !h-6 !text-[24px]">style</mat-icon>
               </div>
-              <h3 class="font-bold text-xs text-slate-900 leading-tight relative z-10">Flashcards</h3>
-              <p class="text-slate-500 text-[10px] font-medium mt-0.5 relative z-10">Master subjects</p>
+              <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">Flashcards</h3>
+              <p class="text-slate-500 dark:text-slate-400 text-[10px] font-medium mt-0.5 relative z-10">Master subjects</p>
             </a>
           </div>
 
@@ -250,12 +265,12 @@ interface Notification {
             </div>
             <div class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar snap-x">
               @for (note of recentNotes(); track note.id) {
-                <a [routerLink]="['/books', note.slug || note.id]" class="min-w-[200px] bg-white rounded-2xl p-4 border border-slate-200 shadow-sm snap-start hover:border-indigo-200 transition-all group">
-                  <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                <a [routerLink]="['/books', note.slug || note.id]" class="min-w-[200px] bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-white/5 shadow-sm snap-start hover:border-indigo-200 transition-all group">
+                  <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-all">
                     <mat-icon class="!w-5 !h-5 !text-[20px]">description</mat-icon>
                   </div>
-                  <h4 class="text-xs font-black text-slate-900 line-clamp-2 mb-1">{{ note.title }}</h4>
-                  <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ note.category }}</p>
+                  <h4 class="text-xs font-black text-slate-900 dark:text-white line-clamp-2 mb-1">{{ note.title }}</h4>
+                  <p class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{{ note.category }}</p>
                 </a>
               }
             </div>
@@ -295,16 +310,16 @@ interface Notification {
       <!-- Notification Detail Modal -->
       @if (selectedNotification()) {
         <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" 
+          <div class="absolute inset-0 bg-slate-950/60 dark:bg-black/80 backdrop-blur-sm" 
                (click)="selectedNotification.set(null)"
                (keydown.escape)="selectedNotification.set(null)"
                role="button"
                tabindex="0"
                aria-label="Close notification"></div>
-          <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-300">
+          <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-300">
             <div class="p-8">
               <div class="flex items-center justify-between mb-6">
-                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
+                <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center">
                   <mat-icon>{{ selectedNotification()?.type ? 'system_update' : 'campaign' }}</mat-icon>
                 </div>
                 <button (click)="selectedNotification.set(null)" class="text-slate-300 hover:text-slate-500 transition-colors">
@@ -312,23 +327,23 @@ interface Notification {
                 </button>
               </div>
               
-              <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-4">{{ selectedNotification()?.title }}</h3>
+              <h3 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-4">{{ selectedNotification()?.title }}</h3>
               <div class="max-h-60 overflow-y-auto custom-scrollbar mb-8">
-                <p class="text-slate-600 leading-relaxed font-medium">{{ selectedNotification()?.content }}</p>
+                <p class="text-slate-600 dark:text-slate-300 leading-relaxed font-medium">{{ selectedNotification()?.content }}</p>
               </div>
 
               @if (selectedNotification()?.driveUrl) {
-                <a [href]="selectedNotification()?.driveUrl" target="_blank" class="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 mb-4 hover:bg-indigo-700 transition-all">
+                <a [href]="selectedNotification()?.driveUrl" target="_blank" class="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 dark:shadow-none mb-4 hover:bg-indigo-700 transition-all">
                   <mat-icon>open_in_new</mat-icon>
                   View Attachment
                 </a>
               }
 
               <div class="flex flex-col gap-3">
-                <button (click)="selectedNotification.set(null)" class="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-black hover:bg-slate-200 transition-all">
+                <button (click)="selectedNotification.set(null)" class="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-black hover:bg-slate-200 dark:hover:bg-slate-750 transition-all">
                   Close
                 </button>
-                <button (click)="dontShowAgain(selectedNotification()?.id || '')" class="w-full py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors">
+                <button (click)="dontShowAgain(selectedNotification()?.id || '')" class="w-full py-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:text-rose-500 transition-colors">
                   Don't show this again
                 </button>
               </div>
@@ -345,6 +360,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   unityAdsService = inject(UnityAdsService);
   route = inject(ActivatedRoute);
+  themeService = inject(ThemeService);
   
   updateDismissed = signal(false);
   isLoading = signal(true);
@@ -365,6 +381,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return dateB - dateA;
       })
       .slice(0, 10);
+  });
+
+  hasActiveNotifications = computed(() => {
+    const apps = this.dataService.appUpdates();
+    const anns = this.announcements();
+    return anns.some(a => !this.isDismissed(a.id)) || apps.some(a => !this.isDismissed(a.id));
   });
 
   ngOnInit() {
