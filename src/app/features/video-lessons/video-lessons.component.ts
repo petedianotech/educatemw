@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, computed, ViewChild, ElementRef, HostListener, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, computed, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { DataService, VideoLesson } from '../../core/services/data.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { MatIconModule } from '@angular/material/icon';
@@ -57,22 +57,17 @@ import { YouTubePlayer } from '@angular/youtube-player';
       <!-- Active Video Info -->
       @if (activeVideo()) {
         <div class="p-5 shrink-0 bg-white dark:bg-slate-900/50 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 z-10 transition-colors">
-          <div class="flex items-start justify-between gap-4">
-            <div class="flex-1">
-              <h2 class="text-slate-900 dark:text-white font-black text-base leading-tight transition-colors">{{activeVideo()!.title}}</h2>
-              <div class="flex items-center gap-2 mt-2">
-                <span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded text-[9px] font-black uppercase tracking-widest border border-indigo-200 dark:border-indigo-500/20 transition-colors">
-                  Malawi Curriculum
-                </span>
-                <span class="text-slate-400 dark:text-slate-500 text-[10px] font-bold">•</span>
-                <span class="text-slate-400 dark:text-slate-500 text-[10px] font-bold transition-colors">Official MANEB Prep</span>
-              </div>
+          <div class="flex flex-col gap-2">
+            <h2 class="text-slate-900 dark:text-white font-black text-base leading-tight transition-colors">{{activeVideo()!.title}}</h2>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded text-[9px] font-black uppercase tracking-widest border border-indigo-200 dark:border-indigo-500/20 transition-colors">
+                Malawi Curriculum
+              </span>
+              <span class="text-slate-400 dark:text-slate-500 text-[10px] font-bold">•</span>
+              <span class="text-slate-400 dark:text-slate-500 text-[10px] font-bold transition-colors">Official MANEB Prep</span>
             </div>
-            <button class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-600 dark:text-white border border-slate-200 dark:border-white/10 transition-colors">
-              <mat-icon class="text-sm">bookmark_border</mat-icon>
-            </button>
+            <p class="text-slate-600 dark:text-slate-400 text-xs mt-1 leading-relaxed line-clamp-2 font-medium transition-colors">{{activeVideo()!.description}}</p>
           </div>
-          <p class="text-slate-600 dark:text-slate-400 text-xs mt-3 leading-relaxed line-clamp-2 font-medium transition-colors">{{activeVideo()!.description}}</p>
         </div>
       }
 
@@ -181,10 +176,10 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
   apiLoaded = signal(false);
 
   @ViewChild('playerContainer') playerContainer!: ElementRef<HTMLDivElement>;
-  @ViewChild('youtubePlayer') youtubePlayer: any;
+  @ViewChild('youtubePlayer') youtubePlayer: YouTubePlayer | undefined;
   
-  playerWidth = signal(800);
-  playerHeight = signal(450);
+  playerWidth = signal(0);
+  playerHeight = signal(0);
   
   // Player state
   isPlaying = signal(false);
@@ -194,9 +189,12 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
   volume = signal(100);
   isMuted = signal(false);
   
-  private timeUpdateInterval: any;
+  private timeUpdateInterval: ReturnType<typeof setInterval> | undefined;
+  private resizeObserver: ResizeObserver | undefined;
+  
   playerVars = {
     controls: 1,
+    autoplay: 1,
     disablekb: 0,
     modestbranding: 1,
     rel: 0,
@@ -234,19 +232,29 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
       tag.id = 'youtube-iframe-api';
       tag.src = 'https://www.youtube.com/iframe_api';
       document.body.appendChild(tag);
-      
-      // YT uses a global callback for when API is ready, but @angular/youtube-player handles it itself
     }
     
-    // Check repeatedly if API is ready because angular youtube player might not load correctly without it
+    // Check repeatedly if API is ready
     const checkApi = setInterval(() => {
-      if ((window as any).YT && (window as any).YT.Player) {
+      const win = window as any;
+      if (win.YT && win.YT.Player) {
         clearInterval(checkApi);
         this.apiLoaded.set(true);
       }
     }, 100);
 
-    // Auto-select first video when data loads
+    // Initial resize
+    setTimeout(() => this.onResize(), 100);
+
+    // Resize Observer for reactive width/height
+    if (typeof ResizeObserver !== 'undefined' && this.playerContainer?.nativeElement) {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.onResize();
+      });
+      this.resizeObserver.observe(this.playerContainer.nativeElement);
+    }
+
+    // Auto-select first video
     setTimeout(() => {
       const videos = this.videoNotes();
       if (videos.length > 0 && !this.activeVideo()) {
@@ -258,8 +266,10 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
   @HostListener('window:resize')
   onResize() {
     if (this.playerContainer?.nativeElement) {
-      this.playerWidth.set(this.playerContainer.nativeElement.clientWidth);
-      this.playerHeight.set(this.playerContainer.nativeElement.clientHeight);
+      const w = this.playerContainer.nativeElement.clientWidth;
+      const h = this.playerContainer.nativeElement.clientHeight;
+      if (w > 0) this.playerWidth.set(w);
+      if (h > 0) this.playerHeight.set(h);
     }
   }
 
@@ -267,11 +277,11 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
     this.activeVideo.set(video);
   }
 
-  onPlayerReady(event: YT.PlayerEvent) {
+  onPlayerReady(_event: any) {
     this.onResize();
   }
 
-  onStateChange(event: YT.OnStateChangeEvent) {
+  onStateChange(_event: any) {
     // Optional tracking logic can go here
   }
 
@@ -280,6 +290,9 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
     this.dataService.unsubscribeFromNotes();
     if (this.timeUpdateInterval) {
       clearInterval(this.timeUpdateInterval);
+    }
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
     }
   }
 

@@ -160,48 +160,6 @@ import { CommonModule } from '@angular/common';
           </div>
         </section>
 
-        <!-- Admin Access Section -->
-        <section class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl shadow-slate-200/40 dark:shadow-none border border-slate-100 dark:border-white/5 overflow-hidden transition-colors duration-500">
-          <div class="p-5 border-b border-slate-50 dark:border-white/5">
-            <h3 class="font-black text-slate-900 dark:text-white text-sm flex items-center gap-2">
-              <mat-icon class="text-indigo-600 dark:text-indigo-400 text-sm">admin_panel_settings</mat-icon>
-              Team Access
-            </h3>
-          </div>
-          <div class="p-5">
-            @if (!isAdmin()) {
-              <div class="space-y-4">
-                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-tight px-1 uppercase tracking-widest text-center">Admin Team Only</p>
-                <div class="flex flex-col gap-3">
-                  <input type="password" [ngModel]="adminPassword()" (ngModelChange)="adminPassword.set($event)" placeholder="Enter Team Password" 
-                         class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 rounded-xl font-bold placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all outline-none text-sm text-slate-700 dark:text-slate-200 shadow-sm">
-                  
-                  @if (adminErrorMsg()) {
-                    <div class="p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/30 rounded-xl flex items-start gap-2">
-                      <mat-icon class="text-rose-500 !w-4 !h-4 !text-[16px]">error_outline</mat-icon>
-                      <span class="text-rose-700 dark:text-rose-300 text-[10px] font-bold leading-tight">{{adminErrorMsg()}}</span>
-                    </div>
-                  }
-                  <button (click)="submitAdminLogin()" [disabled]="aiSupportLoading() || !adminPassword()" 
-                          class="w-full py-4 bg-slate-900 dark:bg-indigo-950 text-white rounded-xl font-black shadow-lg shadow-slate-200 dark:shadow-none hover:bg-slate-800 dark:hover:bg-indigo-900 disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2">
-                    <mat-icon class="text-sm">send</mat-icon>
-                    Get Admin Access
-                  </button>
-                </div>
-              </div>
-            } @else {
-              <div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl flex flex-col items-center text-center gap-3">
-                <mat-icon class="text-indigo-600 dark:text-indigo-400 !w-10 !h-10 !text-[40px]">verified_user</mat-icon>
-                <div>
-                  <p class="text-indigo-900 dark:text-indigo-200 font-black text-sm">Admin Access Active</p>
-                  <p class="text-indigo-600 dark:text-indigo-400 text-[10px] font-bold mt-1">You can now access the Admin Dashboard.</p>
-                </div>
-                <a routerLink="/admin" class="mt-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-xs shadow-md hover:bg-indigo-700">Go to Dashboard</a>
-              </div>
-            }
-          </div>
-        </section>
-
         <!-- Terms and Privacy -->
         <div class="flex flex-col items-center gap-4 py-8">
           <div class="flex items-center justify-center gap-6">
@@ -225,15 +183,6 @@ export class SettingsComponent {
   aiSupportLoading = signal(false);
   aiSupportMessage = signal<string | null>(null);
 
-  adminPassword = signal('');
-  adminErrorMsg = signal('');
-  adminSuccessMsg = signal('');
-
-  isAdmin(): boolean {
-    const user = this.authService.currentUser();
-    return !!user && user.role === 'admin';
-  }
-
   async askSupportAi() {
     const query = this.helpQuery().trim();
     if (!query) return;
@@ -248,30 +197,6 @@ export class SettingsComponent {
     } catch (error) {
       console.error('AI support failed', error);
       this.aiSupportMessage.set('Support AI offline. Use WhatsApp.');
-    } finally {
-      this.aiSupportLoading.set(false);
-    }
-  }
-
-  async submitAdminLogin() {
-    this.adminErrorMsg.set('');
-    const user = this.authService.currentUser();
-    if (!user || !user.email) return;
-
-    // Fixed internal team password for quick entry
-    if (this.adminPassword() !== 'team3admins.mw') {
-      this.adminErrorMsg.set('Incorrect team password.');
-      return;
-    }
-
-    this.aiSupportLoading.set(true);
-    try {
-      await this.authService.sendAdminMagicLink(user.email);
-      alert('Magic link sent to your email!');
-      this.adminPassword.set('');
-    } catch (err) {
-      console.error('Admin login failed', err);
-      this.adminErrorMsg.set('Failed to send link.');
     } finally {
       this.aiSupportLoading.set(false);
     }
