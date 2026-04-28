@@ -3,12 +3,12 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { DataService } from '../../core/services/data.service';
 import { GeminiService } from '../../core/services/gemini.service';
-import { UnityAdsService } from '../../core/services/unity-ads.service';
 import { MatIconModule } from '@angular/material/icon';
 import { Timestamp } from 'firebase/firestore';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 
 import { ThemeService } from '../../core/services/theme.service';
+import { Capacitor } from '@capacitor/core';
 
 interface Notification {
   id: string;
@@ -46,7 +46,7 @@ interface Notification {
 
       <div class="relative z-10 pt-safe pb-32 px-5 flex flex-col h-full overflow-y-auto custom-scrollbar">
         <!-- Top Bar -->
-        <div class="pt-4 pb-8 flex items-center justify-between shrink-0">
+        <div class="pt-4 pb-4 flex items-center justify-between shrink-0">
           <div class="flex items-center gap-3">
             <a routerLink="/dashboard" class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-sm hover:bg-white/20 transition-all active:scale-95">
               <mat-icon class="!w-6 !h-6 !text-[24px]">arrow_back</mat-icon>
@@ -89,6 +89,45 @@ interface Notification {
             }
           </div>
         </div>
+
+        <!-- Android App Install Banner -->
+        @if (!isAppInstallDismissed()) {
+          <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div class="relative bg-gradient-to-r from-emerald-500 to-teal-600 rounded-[1.5rem] p-5 shadow-lg border border-emerald-400 overflow-hidden group">
+              <!-- Background Effects -->
+              <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+              <div class="absolute right-[-10%] top-[-20%] w-32 h-32 bg-white/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+              
+              <!-- Content -->
+              <div class="relative z-10 flex items-center gap-4">
+                <div class="w-12 h-12 bg-white rounded-xl shadow-inner flex items-center justify-center shrink-0 animate-bounce shadow-emerald-900/20">
+                  <mat-icon class="!w-7 !h-7 !text-[28px] text-emerald-600 text-gradient">phone_android</mat-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1">
+                    <h4 class="text-base font-black text-white tracking-tight leading-tight">Get the App</h4>
+                    <span class="bg-amber-400 text-amber-950 text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-widest">+50 AI Credits</span>
+                  </div>
+                  <p class="text-emerald-50 text-[11px] font-semibold leading-tight pr-4">Download our Android APK for a faster experience & free 50 credits automatically!</p>
+                </div>
+              </div>
+              
+              <!-- Actions -->
+              <div class="relative z-10 flex items-center gap-3 mt-4">
+                <a href="https://github.com/peterdiano12/educate-mw/releases" 
+                   target="_blank"
+                   (click)="claimInstallCredits()"
+                   class="flex-1 bg-white text-emerald-700 font-black text-xs py-2.5 rounded-xl shadow-md active:scale-95 hover:bg-emerald-50 transition-all text-center flex items-center justify-center gap-1.5 uppercase tracking-wider">
+                  <mat-icon class="!w-4 !h-4 !text-[16px]">download</mat-icon>
+                  Download APK
+                </a>
+                <button (click)="dismissAppBanner()" class="w-10 h-10 rounded-xl bg-emerald-700/50 text-emerald-100 flex items-center justify-center hover:bg-emerald-700 transition-colors">
+                  <mat-icon class="!w-5 !h-5 !text-[20px]">close</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
 
         <!-- Guest Banner -->
         @if (authService.currentUser()?.isGuest) {
@@ -207,23 +246,6 @@ interface Notification {
               </div>
               <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">Practice Quizzes</h3>
               <p class="text-slate-500 dark:text-slate-400 text-[10px] font-medium mt-0.5 relative z-10">Test your knowledge</p>
-            </a>
-
-            <!-- Exam Countdown -->
-            <a routerLink="/exam-countdown" class="bg-white dark:bg-slate-900 rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-transparent to-rose-50/50 dark:to-rose-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div class="w-12 h-12 mb-2 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/30 relative z-10 group-hover:scale-105 transition-transform">
-                <mat-icon class="!w-6 !h-6 !text-[24px]">timer</mat-icon>
-              </div>
-              <h3 class="font-bold text-xs text-slate-900 dark:text-white leading-tight relative z-10">Exam Dates</h3>
-              <div class="mt-1 relative z-10">
-                @let nextExam = getNextExam();
-                @if (nextExam) {
-                  <p class="text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-tighter">{{ nextExam.name }} in {{ getExamDays(nextExam.date!) }} Days</p>
-                } @else {
-                  <p class="text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-tighter">No Exams Scheduled</p>
-                }
-              </div>
             </a>
 
             <!-- Community Chat -->
@@ -368,7 +390,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   gemini = inject(GeminiService);
   dataService = inject(DataService);
-  unityAdsService = inject(UnityAdsService);
   route = inject(ActivatedRoute);
   themeService = inject(ThemeService);
   
@@ -377,6 +398,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   paymentSuccess = signal(false);
   selectedNotification = signal<Notification | null>(null);
   dismissedIds = signal<string[]>([]);
+  isAppInstallDismissed = signal(false);
 
   announcements = computed(() => {
     return this.dataService.notes().filter(note => note.destination === 'announcements');
@@ -400,7 +422,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
-    this.unityAdsService.showBanner();
     this.dataService.subscribeToAppUpdates();
     this.dataService.subscribeToExamDates();
     this.dataService.subscribeToNotes();
@@ -409,6 +430,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const saved = localStorage.getItem('dismissed_notifications');
     if (saved) {
       this.dismissedIds.set(JSON.parse(saved));
+    }
+    
+    // Check if app banner is dismissed or app install is already claimed
+    if (localStorage.getItem('app_install_dismissed') === 'true' || localStorage.getItem('app_install_claimed') === 'true') {
+      this.isAppInstallDismissed.set(true);
     }
     
     // Simulate loading for demonstration
@@ -443,6 +469,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
         // Optionally show a message to the user
       }
     });
+
+    // Auto-claim App Install reward if running exclusively natively
+    if (Capacitor.isNativePlatform()) {
+      const user = this.authService.currentUser();
+      if (user && !user.isGuest && !user.hasClaimedAppInstallReward) {
+        this.authService.claimAppInstallReward();
+      }
+    }
   }
 
   officialExams = [
@@ -468,7 +502,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.unityAdsService.hideBanner();
     this.dataService.unsubscribeFromAppUpdates();
     this.dataService.unsubscribeFromExamDates();
     this.dataService.unsubscribeFromNotes();
@@ -476,6 +509,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   dismissUpdate() {
     this.updateDismissed.set(true);
+  }
+
+  dismissAppBanner() {
+    this.isAppInstallDismissed.set(true);
+    localStorage.setItem('app_install_dismissed', 'true');
+  }
+
+  claimInstallCredits() {
+    if (!localStorage.getItem('app_install_claimed')) {
+      const user = this.authService.currentUser();
+      if (user && !user.isGuest) {
+        this.authService.claimAppInstallReward();
+      } else {
+        this.authService.rewardMessage.set('Guest accounts cannot receive permanent rewards. Sign up later to claim!');
+        setTimeout(() => this.authService.rewardMessage.set(null), 6000);
+      }
+      localStorage.setItem('app_install_claimed', 'true');
+      this.isAppInstallDismissed.set(true);
+    }
   }
 
   viewNotification(notif: Notification) {

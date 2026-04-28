@@ -679,8 +679,9 @@ export class AuthService {
     const currentCoins = user.coins || 0;
     const currentCredits = user.aiCredits || 0;
     
+    // According to recent updates, App Install should reward 50 AI Credits
     const newCoins = currentCoins + 50;
-    const newCredits = currentCredits + 20;
+    const newCredits = currentCredits + 50;
 
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, { 
@@ -696,7 +697,7 @@ export class AuthService {
       hasClaimedAppInstallReward: true 
     });
     
-    this.rewardMessage.set('Congratulations! You received 50 coins and 20 AI credits for installing our app! 🚀');
+    this.rewardMessage.set('Congratulations! You received 50 coins and 50 AI credits for getting the app! 🚀');
     setTimeout(() => this.rewardMessage.set(null), 5000);
   }
 

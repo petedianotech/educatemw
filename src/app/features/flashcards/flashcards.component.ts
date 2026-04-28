@@ -7,12 +7,11 @@ import { AuthService } from '../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
-import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.component';
 
 @Component({
   selector: 'app-flashcards',
   standalone: true,
-  imports: [MatIconModule, CommonModule, FormsModule, AdPlaceholderComponent],
+  imports: [MatIconModule, CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
@@ -46,11 +45,6 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
       <div class="flex-1 overflow-y-auto p-4 md:p-8">
         <div class="max-w-6xl mx-auto">
           
-          @if (!selectedSet() && !isNative()) {
-            <app-ad-placeholder type="banner" size="728x90" />
-            <div class="mb-4"></div>
-          }
-
           @if (selectedSet()) {
             <!-- Flashcard View -->
             <div class="mb-8 flex items-center justify-between">
@@ -131,13 +125,6 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               @for (set of dataService.flashcardSets(); track set.id; let i = $index) {
                 
-                <!-- Ad Placeholder within grid -->
-                @if (!isNative() && i > 0 && i % 3 === 0) {
-                  <div class="col-span-1 md:col-span-2 lg:col-span-3">
-                    <app-ad-placeholder type="native-banner" />
-                  </div>
-                }
-
                 <div (click)="selectSet(set)" 
                      (keydown.enter)="selectSet(set)"
                      tabindex="0"

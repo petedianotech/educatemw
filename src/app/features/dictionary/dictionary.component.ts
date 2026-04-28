@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -198,7 +198,7 @@ export class DictionaryComponent {
     try {
       const results = await this.dictionaryService.getDefinition(word);
       this.definitions.set(results);
-    } catch (err) {
+    } catch {
       this.error.set(true);
     } finally {
       this.isLoading.set(false);
@@ -223,7 +223,7 @@ export class DictionaryComponent {
       const response = await this.geminiService.getDictionaryExplanation(word);
       this.aiExplanation.set(response);
       await this.auth.decrementDictionaryAiCredits();
-    } catch (err) {
+    } catch {
       this.aiExplanation.set('Could not fetch AI context at this time.');
     } finally {
       this.aiLoading.set(false);

@@ -268,6 +268,11 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
                 <span class="text-sm">Leaderboard</span>
               </a>
 
+              <a routerLink="/exam-countdown" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
+                <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">timer</mat-icon>
+                <span class="text-sm">Exam Dates</span>
+              </a>
+
               <a routerLink="/community" (click)="closeMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-4 py-3 text-slate-300 font-bold rounded-xl hover:bg-white/5 transition-all group">
                 <mat-icon class="!w-5 !h-5 !text-[20px] group-hover:text-indigo-400 transition-colors">people_outline</mat-icon>
                 <span class="text-sm">Forum</span>

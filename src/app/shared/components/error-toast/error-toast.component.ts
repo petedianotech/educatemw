@@ -25,8 +25,10 @@ export class ErrorToastComponent {
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
-      window.addEventListener('firestore-error', (event: any) => {
-        this.showError(event.detail.message);
+      window.addEventListener('firestore-error', (event: Event | CustomEvent) => {
+        if ('detail' in event && event.detail?.message) {
+          this.showError((event as CustomEvent).detail.message);
+        }
       });
     }
   }

@@ -174,8 +174,8 @@ export class DataService {
     try {
       // Small test to verify connection
       await getDocs(query(collection(db, 'config'), limit(1)));
-    } catch (error: any) {
-      if (error?.message?.includes('offline')) {
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('offline')) {
         console.error("Firestore connection issue: Client appears offline. Check Firebase config or network.");
       }
     }

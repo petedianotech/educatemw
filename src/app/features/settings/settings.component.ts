@@ -179,25 +179,7 @@ import { CommonModule } from '@angular/common';
           </div>
         </section>
 
-        <!-- Ad Feedback Section -->
-        <section class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl shadow-slate-200/40 dark:shadow-none border border-slate-100 dark:border-white/5 overflow-hidden transition-colors duration-500">
-          <div class="p-5 border-b border-slate-50 dark:border-white/5 flex items-center justify-between">
-            <h3 class="font-black text-slate-900 dark:text-white text-sm flex items-center gap-2">
-              <mat-icon class="text-indigo-600 dark:text-indigo-400 text-sm">ad_units</mat-icon>
-              Ad Feedback
-            </h3>
-          </div>
-          <div class="p-5 space-y-4">
-            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed px-1">
-              Report inappropriate or non-educational ads here.
-            </p>
-            <a href="https://wa.me/265987066051?text=Hello%20Peter,%20I%20am%20reporting%20an%20ad%20in%20Educate%20MW." 
-               target="_blank"
-               class="w-full py-4 bg-emerald-500 text-white rounded-xl font-black shadow-lg shadow-emerald-100 dark:shadow-none hover:bg-emerald-600 transition-all active:scale-[0.98] flex items-center justify-center gap-3 text-xs">
-              Report Ads to Peter
-            </a>
-          </div>
-        </section>
+
 
         <!-- Terms and Privacy -->
         <div class="flex flex-col items-center gap-4 py-8">
@@ -216,7 +198,12 @@ import { CommonModule } from '@angular/common';
       <div class="fixed inset-0 z-[100] flex justify-end">
         <!-- Backdrop -->
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" 
-             (click)="isHelpOpen.set(false)"></div>
+             (click)="isHelpOpen.set(false)"
+             (keydown.escape)="isHelpOpen.set(false)"
+             (keydown.enter)="isHelpOpen.set(false)"
+             tabindex="0"
+             role="button"
+             aria-label="Close help"></div>
         
         <!-- Panel -->
         <aside class="relative w-full sm:w-[400px] lg:w-[420px] h-full bg-white dark:bg-slate-950 shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 cubic-bezier(0.4, 0, 0.2, 1) border-l border-white/10">

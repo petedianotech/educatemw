@@ -2,18 +2,16 @@ import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, 
 import { DataService, Quiz, QuizResult } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
 import { GeminiService, GeneratedQuiz } from '../../core/services/gemini.service';
-import { UnityAdsService } from '../../core/services/unity-ads.service';
 import { MatIconModule } from '@angular/material/icon';
 import { DatePipe, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Timestamp } from 'firebase/firestore';
 import { RouterLink } from '@angular/router';
-import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.component';
 
 @Component({
   selector: 'app-quizzes',
   standalone: true,
-  imports: [MatIconModule, DatePipe, CommonModule, FormsModule, RouterLink, AdPlaceholderComponent],
+  imports: [MatIconModule, DatePipe, CommonModule, FormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full bg-slate-50 dark:bg-slate-950 relative transition-colors duration-500">
@@ -125,11 +123,6 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
             <div class="flex flex-col gap-4 max-w-2xl mx-auto">
               @for (quiz of filteredQuizzes(); track quiz.id; let i = $index) {
                 
-                <!-- Adsterra Native Banner Placeholder -->
-                @if (i === 1 || (i > 1 && i % 4 === 0)) {
-                  <app-ad-placeholder type="native-banner" />
-                }
-
                 <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200/80 dark:border-white/5 flex items-center gap-4 active:scale-[0.98] transition-all relative overflow-hidden group">
                   <div class="absolute inset-0 bg-gradient-to-br from-transparent to-emerald-50/50 dark:to-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   
@@ -405,26 +398,9 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
                   </div>
                 </div>
 
-                <!-- Ad Reward Option -->
+                <!-- Return Home Button -->
                 <div class="mt-8 pt-8 border-t border-slate-100 flex flex-col items-center">
-                  @if (unityAdsService.isReady && !rewardClaimed()) {
-                    <div class="text-center">
-                       <button (click)="watchRewardAd()" [disabled]="watchingAd()" class="btn-primary w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-orange-500/30">
-                         <mat-icon>{{ watchingAd() ? 'hourglass_empty' : 'play_circle_filled' }}</mat-icon>
-                         {{ watchingAd() ? 'Loading Video...' : 'Watch Video (+50 Coins)' }}
-                       </button>
-                       <p class="text-[10px] text-slate-400 mt-2 uppercase tracking-wide">Sponsored by Unity Ads</p>
-                    </div>
-                  } @else if (rewardClaimed()) {
-                    <div class="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-full flex items-center gap-2 font-bold text-sm">
-                      <mat-icon class="text-emerald-500">check_circle</mat-icon>
-                      Reward Claimed! 
-                    </div>
-                  } @else {
-                    <div class="italic text-slate-400 text-xs">
-                      <p>Ad rewards are currently unavailable.</p>
-                    </div>
-                  }
+                  <p class="text-slate-400 text-xs text-center">Thanks for practicing!</p>
                 </div>
 
               </div>
@@ -449,7 +425,6 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   authService = inject(AuthService);
   gemini = inject(GeminiService);
-  unityAdsService = inject(UnityAdsService);
   String = String;
 
   view = signal<'list' | 'taking' | 'result'>('list');
@@ -510,28 +485,6 @@ export class QuizzesComponent implements OnInit, OnDestroy {
 
   async goBackToList() {
     this.view.set('list');
-    // Show interstitial ad when returning to list if user didn't watch a rewarded ad
-    if (!this.rewardClaimed()) {
-      await this.unityAdsService.showInterstitial();
-    }
-  }
-
-  async watchRewardAd() {
-    if (this.watchingAd() || this.rewardClaimed()) return;
-    this.watchingAd.set(true);
-    
-    const success = await this.unityAdsService.showRewarded();
-    
-    if (success) {
-      // Award the user 50 coins using the DataService
-      const user = this.authService.currentUser();
-      if (user) {
-        await this.dataService.addCoins(user.uid, 50);
-      }
-      this.rewardClaimed.set(true);
-    }
-    
-    this.watchingAd.set(false);
   }
 
   getQuizDate(createdAt: Date | Timestamp | string | null): Date | null {

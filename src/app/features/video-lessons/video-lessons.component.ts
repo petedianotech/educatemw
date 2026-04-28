@@ -55,8 +55,8 @@ import { YouTubePlayer } from '@angular/youtube-player';
               [playerVars]="playerVars"
               [width]="playerWidth()"
               [height]="playerHeight()"
-              (stateChange)="onStateChange($event)"
-              (ready)="onPlayerReady($event)"
+              (stateChange)="onStateChange()"
+              (ready)="onPlayerReady()"
             ></youtube-player>
           } @else {
             <div class="absolute inset-0 flex items-center justify-center bg-slate-900">
@@ -272,7 +272,7 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
     
     // Check repeatedly if API is ready
     const checkApi = setInterval(() => {
-      const win = window as any;
+      const win = window as unknown as { YT: { Player: unknown } };
       if (win.YT && win.YT.Player) {
         clearInterval(checkApi);
         this.apiLoaded.set(true);
@@ -313,11 +313,11 @@ export class VideoLessonsComponent implements OnInit, OnDestroy {
     this.activeVideo.set(video);
   }
 
-  onPlayerReady(_event: any) {
+  onPlayerReady() {
     this.onResize();
   }
 
-  onStateChange(_event: any) {
+  onStateChange() {
     // Optional tracking logic can go here
   }
 

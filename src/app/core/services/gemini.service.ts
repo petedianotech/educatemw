@@ -84,7 +84,7 @@ Educate MW provides:
 2. Study Library: PDF downloads for past papers and notes.
 3. Video Lessons: Expert-led tutorials.
 4. Practice Quizzes: MANEB-style practice.
-5. Premium (Pro): Unlimited AI credits, no ads, exclusive books. Costs 5,000 MWK per year via PayChangu (Airtel/TNM).
+5. Premium (Pro): Unlimited AI credits and exclusive books. Costs 5,000 MWK per year via PayChangu (Airtel/TNM).
 
 COMMON SUPPORT TOPICS:
 - Payments: Use the "Upgrade" page. 5000 MWK/year.
@@ -141,7 +141,7 @@ YOUR TONE: Professional, efficient, and limited. ALWAYS be short.`;
       if (!response.ok) return "Sorry, I'm having trouble connecting right now.";
       const data = await response.json();
       return data.choices?.[0]?.message?.content || "I couldn't generate an explanation. Try another word.";
-    } catch (err) {
+    } catch {
       return "Connection error. Please check your internet.";
     }
   }

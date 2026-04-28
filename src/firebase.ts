@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDocFromCache, getDocFromServer } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDocFromServer } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
 import { getPerformance } from 'firebase/performance';
@@ -39,12 +39,13 @@ if (typeof window !== 'undefined') {
       });
       
       console.log('Firestore connection verified');
-    } catch (error: any) {
-      console.warn(`Firestore connection attempt ${retryCount + 1} failed:`, error.message);
+    } catch (error: Error | unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      console.warn(`Firestore connection attempt ${retryCount + 1} failed:`, msg);
       
       if (retryCount < 2) {
         testConnection(retryCount + 1);
-      } else if (error.message.includes('the client is offline') || error.message.includes('Could not reach Cloud Firestore backend')) {
+      } else if (msg.includes('the client is offline') || msg.includes('Could not reach Cloud Firestore backend')) {
         console.error("CRITICAL: Firestore backend unreachable. Check your internet connection.");
       }
     }
@@ -115,7 +116,7 @@ export interface FirestoreErrorInfo {
   }
 }
 
-export function handleFirestoreError(error: any, operationType: OperationType, path: string | null) {
+export function handleFirestoreError(error: Error | unknown, operationType: OperationType, path: string | null) {
   console.error('Firestore Error: ', error);
   
   const errorMessage = error instanceof Error ? error.message : String(error);

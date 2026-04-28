@@ -6,12 +6,11 @@ import { AuthService, UserProfile } from '../../core/services/auth.service';
 import { signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
-import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.component';
 
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
-  imports: [CommonModule, MatIconModule, RouterLink, NgOptimizedImage, AdPlaceholderComponent],
+  imports: [CommonModule, MatIconModule, RouterLink, NgOptimizedImage],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-950 pb-safe transition-colors duration-500">
@@ -24,10 +23,6 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
       </header>
 
       <div class="p-4 max-w-3xl mx-auto space-y-6">
-
-        @if (!isNative()) {
-          <app-ad-placeholder type="banner" size="320x50" />
-        }
 
         <!-- Info Card -->
         <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200 flex items-center justify-between gap-4 overflow-hidden relative group">
@@ -120,13 +115,6 @@ import { AdPlaceholderComponent } from '../../core/components/ad-placeholder.com
           <div class="divide-y divide-slate-50 dark:divide-white/5">
             @for (student of topStudents(); track student.uid; let i = $index) {
               @if (i >= 3) {
-                <!-- Ad Placeholder within leaderboard list -->
-                @if (!isNative() && i > 3 && i % 10 === 0) {
-                  <div class="p-2 border-b border-slate-50 dark:border-white/5">
-                    <app-ad-placeholder type="native-banner" />
-                  </div>
-                }
-
                 <div class="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
                   <div class="w-8 font-black text-slate-300 dark:text-slate-600 group-hover:text-indigo-400 transition-colors text-center text-sm">{{i + 1}}</div>
                   <img ngSrc="{{student.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + student.uid}}" 
