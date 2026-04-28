@@ -92,7 +92,7 @@ interface Notification {
         </div>
 
         <!-- Android App Install Banner (Web/PWA ONLY) -->
-        @if (!isAppInstallDismissed() && !isNative) {
+        @if (!isAppInstallDismissed() && !isNative && dataService.appSettings().isAppOfferActive) {
           <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
             <div class="relative bg-gradient-to-r from-emerald-500 to-teal-600 rounded-[1.5rem] p-5 shadow-lg border border-emerald-400 overflow-hidden group">
               <!-- Background Effects -->
@@ -101,8 +101,8 @@ interface Notification {
               
               <!-- Content -->
               <div class="relative z-10 flex items-center gap-4">
-                <div class="w-12 h-12 bg-white rounded-xl shadow-inner flex items-center justify-center shrink-0 animate-bounce shadow-emerald-900/20">
-                  <mat-icon class="!w-7 !h-7 !text-[28px] text-emerald-600 text-gradient">phone_android</mat-icon>
+                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl shadow-inner flex items-center justify-center shrink-0 animate-bounce shadow-emerald-900/20">
+                  <mat-icon class="!w-7 !h-7 !text-[28px] text-emerald-600 dark:text-emerald-400 drop-shadow-md">android</mat-icon>
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 mb-1">
@@ -115,7 +115,7 @@ interface Notification {
               
               <!-- Actions -->
               <div class="relative z-10 flex items-center gap-3 mt-4">
-                <a href="https://github.com/peterdiano12/educate-mw/releases" 
+                <a [href]="dataService.appSettings().appDownloadUrl || 'https://github.com/peterdiano12/educate-mw/releases'" 
                    target="_blank"
                    (click)="dismissAppBanner()"
                    class="flex-1 bg-white text-emerald-700 font-black text-xs py-2.5 rounded-xl shadow-md active:scale-95 hover:bg-emerald-50 transition-all text-center flex items-center justify-center gap-1.5 uppercase tracking-wider">
@@ -401,8 +401,13 @@ interface Notification {
 
               @if (selectedNotification()?.driveUrl) {
                 <a [href]="selectedNotification()?.driveUrl" target="_blank" class="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 dark:shadow-none mb-4 hover:bg-indigo-700 transition-all">
-                  <mat-icon>open_in_new</mat-icon>
-                  View Attachment
+                  @if (selectedNotification()?.type) {
+                    <mat-icon>file_download</mat-icon>
+                    Download Update (< 7MB)
+                  } @else {
+                    <mat-icon>open_in_new</mat-icon>
+                    View Attachment
+                  }
                 </a>
               }
 

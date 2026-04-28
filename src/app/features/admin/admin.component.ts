@@ -1023,6 +1023,15 @@ interface ChartData {
                     Use the button below to control whether students see the APK download/update reward banner. When activated, web users will see the 50 Credits APK install offer, and APK users will see Update notifications when available.
                   </p>
                   
+                  <div class="mb-4">
+                    <label for="app-download-url" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">App Drive URL</label>
+                    <input id="app-download-url" type="text" 
+                           [value]="dataService.appSettings().appDownloadUrl" 
+                           (blur)="updateAppDownloadUrl($event)"
+                           placeholder="Google Drive APK URL..." 
+                           class="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-white placeholder:text-slate-500">
+                  </div>
+
                   <div class="mb-6">
                     <button (click)="toggleAppOffer()" 
                             [class]="dataService.appSettings().isAppOfferActive ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600'"
@@ -1033,9 +1042,15 @@ interface ChartData {
                   </div>
 
                   <div class="space-y-3">
-                    <div class="flex items-center gap-3 bg-white/10 p-3 rounded-2xl border border-white/10 opacity-50">
-                      <mat-icon class="text-slate-400">block</mat-icon>
-                      <span class="text-xs font-bold text-slate-400 line-through">Rewards Paused</span>
+                    <div class="flex items-center gap-3 bg-white/10 p-3 rounded-2xl border border-white/10 transition-colors duration-300" 
+                         [class.opacity-50]="!dataService.appSettings().isAppOfferActive">
+                      <mat-icon [class]="dataService.appSettings().isAppOfferActive ? 'text-emerald-400' : 'text-slate-400'">
+                        {{ dataService.appSettings().isAppOfferActive ? 'check_circle' : 'block' }}
+                      </mat-icon>
+                      <span class="text-xs font-bold" 
+                            [class]="dataService.appSettings().isAppOfferActive ? 'text-emerald-400' : 'text-slate-400 line-through'">
+                        Rewards {{ dataService.appSettings().isAppOfferActive ? 'Active' : 'Paused' }}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1055,10 +1070,21 @@ interface ChartData {
                         <option value="maintenance">Maintenance</option>
                       </select>
                     </div>
-                    <div>
-                      <label for="update-content" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Content</label>
-                      <textarea id="update-content" [ngModel]="updateContent()" (ngModelChange)="updateContent.set($event)" rows="4" placeholder="Update details..." class="w-full p-6 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 resize-none"></textarea>
+                    <div class="flex items-center justify-between mb-2">
+                       <label for="update-content" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Content</label>
+                       <button (click)="aiRewriteUpdate()" 
+                               [disabled]="isRewritingUpdate() || !updateContent()"
+                               class="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-indigo-100 disabled:opacity-50">
+                         @if (isRewritingUpdate()) {
+                           <div class="w-2 h-2 border border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin"></div>
+                           <span>Rewriting...</span>
+                         } @else {
+                           <mat-icon class="!w-3 !h-3 !text-[12px]">auto_awesome</mat-icon>
+                           <span>AI Rewrite</span>
+                         }
+                       </button>
                     </div>
+                    <textarea id="update-content" [ngModel]="updateContent()" (ngModelChange)="updateContent.set($event)" rows="4" placeholder="Update details..." class="w-full p-6 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900 resize-none"></textarea>
                     <div>
                       <label for="update-drive-url" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Drive URL (Optional)</label>
                       <input id="update-drive-url" type="text" [ngModel]="updateDriveUrl()" (ngModelChange)="updateDriveUrl.set($event)" placeholder="https://drive.google.com/..." class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold text-slate-900">
@@ -1327,6 +1353,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   updateTitle = signal('');
   updateContent = signal('');
   updateDriveUrl = signal('');
+  isRewritingUpdate = signal(false);
   updateType = signal<'feature' | 'maintenance' | 'announcement'>('feature');
 
   // Exam Dates State
@@ -1418,10 +1445,39 @@ export class AdminComponent implements OnInit, OnDestroy {
     await this.dataService.updateUserProStatus(userId, isPro);
   }
 
+  async updateAppDownloadUrl(event: Event) {
+    const input = event.target as HTMLInputElement;
+    await this.dataService.updateSetting('appDownloadUrl', input.value);
+  }
+
   async toggleAppOffer() {
     const currentState = this.dataService.appSettings().isAppOfferActive;
+    const downloadUrl = this.dataService.appSettings().appDownloadUrl;
+    
+    if (!currentState && (!downloadUrl || !downloadUrl.includes('drive.google.com'))) {
+      this.showNotification('Please provide a valid Google Drive URL before activating.', 'error');
+      return;
+    }
+
     await this.dataService.updateSetting('isAppOfferActive', !currentState);
     this.showNotification(`App Offer ${!currentState ? 'Activated' : 'Paused'}`);
+  }
+
+  async aiRewriteUpdate() {
+    if (!this.updateContent().trim() || this.isRewritingUpdate()) return;
+    this.isRewritingUpdate.set(true);
+    try {
+      const result = await this.geminiService.rewriteUpdateContent(this.updateTitle(), this.updateContent());
+      if (result) {
+        this.updateContent.set(result);
+        this.showNotification('AI has polished your update message!');
+      }
+    } catch (error) {
+      console.error(error);
+      this.showNotification('AI Rewrite failed.', 'error');
+    } finally {
+      this.isRewritingUpdate.set(false);
+    }
   }
 
   async postUpdate() {

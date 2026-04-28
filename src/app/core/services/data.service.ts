@@ -143,6 +143,7 @@ export interface VideoLesson {
 
 export interface AppSettings {
   isAppOfferActive: boolean;
+  appDownloadUrl?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -159,7 +160,7 @@ export class DataService {
   flashcards = signal<Flashcard[]>([]);
   messages = signal<ChatMessage[]>([]);
   videoLessons = signal<VideoLesson[]>([]);
-  appSettings = signal<AppSettings>({ isAppOfferActive: false });
+  appSettings = signal<AppSettings>({ isAppOfferActive: false, appDownloadUrl: '' });
   
   private authService = inject(AuthService);
   private platformId = inject(PLATFORM_ID);
@@ -307,7 +308,9 @@ export class DataService {
         this.appSettings.set(snapshot.data() as AppSettings);
       } else {
         // Initialize if not exists
+        const docRef = doc(db, 'config', 'appSettings');
         this.updateSetting('isAppOfferActive', false);
+        this.updateSetting('appDownloadUrl', 'https://github.com/peterdiano12/educate-mw/releases');
       }
     }, (error) => {
       // Don't log missing doc as error for public users

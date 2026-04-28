@@ -365,4 +365,25 @@ Return ONLY valid JSON matching this schema:
       return null;
     }
   }
+
+  async rewriteUpdateContent(title: string, content: string): Promise<string | null> {
+    const prompt = `You are a professional App Communication Assistant for "Educate MW", Malawi's #1 digital learning platform.
+    Your goal is to rewrite an app update description to be professional, grammatically correct, and engaging for Malawian secondary school students (MSCE).
+    
+    TONE: Professional, encouraging, and clear.
+    GOAL: Correct any grammar errors and make it sound like a top-tier educational app improvement announcement.
+    LIMIT: Keep it under 200 words.
+    
+    Input Title: ${title}
+    Input Content: ${content}
+    
+    Return ONLY the rewritten text. No meta-talk, no conversational filler.`;
+
+    try {
+      return await this.callCerebras(prompt, 'user');
+    } catch (error) {
+      console.error('Error rewriting update content:', error);
+      return null;
+    }
+  }
 }
