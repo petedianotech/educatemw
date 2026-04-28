@@ -45,7 +45,7 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidUser(data) {
-      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'isGuest', 'aiCredits', 'dictionaryAiCredits', 'streak', 'coins', 'lastCreditReset', 'lastLoginDate', 'pwaInstalled', 'hasClaimedAppInstallReward', 'referralCode', 'referredBy', 'referralsCount', 'createdAt', 'securityQuestions', 'gender', 'avatarStyle', 'deviceId']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'isPro', 'isGuest', 'aiCredits', 'dictionaryAiCredits', 'streak', 'coins', 'lastCreditReset', 'lastLoginDate', 'pwaInstalled', 'hasClaimedAppInstallReward', 'referralCode', 'referredBy', 'referralsCount', 'fcmToken', 'createdAt', 'securityQuestions', 'gender', 'avatarStyle', 'deviceId']) &&
              hasRequiredFields(['uid', 'email', 'role', 'isPro', 'createdAt']) &&
              data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
              data.email is string && data.email.size() >= 0 && data.email.size() < 100 &&
@@ -66,6 +66,7 @@ service cloud.firestore {
              (!('referralCode' in data) || data.referralCode is string) &&
              (!('referredBy' in data) || data.referredBy is string) &&
              (!('referralsCount' in data) || data.referralsCount is number) &&
+             (!('fcmToken' in data) || (data.fcmToken is string && data.fcmToken.size() < 1000)) &&
              (!('securityQuestions' in data) || data.securityQuestions is list) &&
              isValidOptionalString('gender', 1, 50) &&
              isValidOptionalString('avatarStyle', 1, 50) &&
@@ -214,7 +215,7 @@ service cloud.firestore {
                        request.resource.data.role == resource.data.role && 
                        request.resource.data.isPro == resource.data.isPro &&
                        request.resource.data.createdAt == resource.data.createdAt &&
-                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'gender', 'avatarStyle', 'lastLoginDate', 'pwaInstalled', 'hasClaimedAppInstallReward', 'referralsCount', 'referredBy', 'streak', 'coins', 'aiCredits', 'dictionaryAiCredits', 'lastCreditReset']))
+                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'gender', 'avatarStyle', 'lastLoginDate', 'pwaInstalled', 'hasClaimedAppInstallReward', 'referralsCount', 'referredBy', 'streak', 'coins', 'aiCredits', 'dictionaryAiCredits', 'lastCreditReset', 'fcmToken']))
                       ) || 
                       (!isOwner(userId) && request.resource.data.uid == resource.data.uid &&
                        request.resource.data.role == resource.data.role && 

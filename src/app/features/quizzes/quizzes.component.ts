@@ -440,10 +440,6 @@ export class QuizzesComponent implements OnInit, OnDestroy {
   
   lastResult = signal<QuizResult | null>(null);
   
-  // Ad state
-  watchingAd = signal(false);
-  rewardClaimed = signal(false);
-
   // AI Generator state
   showAiGenerator = signal(false);
   quizTopic = signal('');
@@ -498,8 +494,6 @@ export class QuizzesComponent implements OnInit, OnDestroy {
     this.activeQuiz.set(quiz);
     this.currentQuestionIndex.set(0);
     this.userAnswers.set({});
-    this.rewardClaimed.set(false);
-    this.watchingAd.set(false);
     this.view.set('taking');
     this.timeLeft.set(quiz.timeLimit * 60);
     this.startTimer();

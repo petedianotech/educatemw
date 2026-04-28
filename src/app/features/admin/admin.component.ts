@@ -1016,11 +1016,11 @@ interface ChartData {
                 <div class="bg-gradient-to-br from-indigo-900 to-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
                   <div class="absolute right-0 top-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
                   <h3 class="text-xl font-black mb-4 flex items-center gap-2">
-                    <mat-icon class="text-indigo-400">install_mobile</mat-icon>
-                    PWA Installation
+                    <mat-icon class="text-indigo-400">system_update</mat-icon>
+                    App & APK Distribution
                   </h3>
                   <p class="text-slate-300 text-sm font-medium leading-relaxed mb-6">
-                    Use the button below to control whether students see the APK download reward banner. When activated, users will see the offer and can claim rewards upon downloading.
+                    Use the button below to control whether students see the APK download/update reward banner. When activated, web users will see the 50 Credits APK install offer, and APK users will see Update notifications when available.
                   </p>
                   
                   <div class="mb-6">

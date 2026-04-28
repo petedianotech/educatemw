@@ -18,7 +18,7 @@ import { Capacitor } from '@capacitor/core';
       <!-- Header -->
       <div class="bg-slate-950 px-6 py-6 shrink-0 relative z-10 shadow-lg">
         <div class="max-w-7xl mx-auto">
-          <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-4">
               <a routerLink="/dashboard" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white active:scale-90 transition-all border border-white/10">
                 <mat-icon>arrow_back</mat-icon>
@@ -27,6 +27,12 @@ import { Capacitor } from '@capacitor/core';
                 <h1 class="text-2xl font-black text-white tracking-tight">Study Library</h1>
               </div>
             </div>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="mb-4 relative">
+            <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">search</mat-icon>
+            <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); currentPage.set(1)" placeholder="Search by title, subject, or content..." class="w-full bg-white/10 border border-white/10 rounded-xl text-white font-bold text-sm pl-10 pr-4 py-3 outline-none focus:bg-white/20 transition-colors placeholder:text-white/40">
           </div>
 
           <!-- Compact Filter Bar -->
@@ -185,6 +191,7 @@ export class NotesComponent implements OnInit {
   authService = inject(AuthService);
   Math = Math;
 
+  searchQuery = signal('');
   selectedSubject = signal('All');
   selectedLevel = signal('All');
   selectedForm = signal('All');
@@ -207,6 +214,16 @@ export class NotesComponent implements OnInit {
 
   filteredNotes = computed(() => {
     let notes = [...this.allNotes()];
+
+    // Filter by search query
+    const query = this.searchQuery().toLowerCase().trim();
+    if (query) {
+      notes = notes.filter(n => 
+        (n.title && n.title.toLowerCase().includes(query)) || 
+        (n.content && n.content.toLowerCase().includes(query)) ||
+        (n.category && n.category.toLowerCase().includes(query))
+      );
+    }
 
     // Filter by subject
     if (this.selectedSubject() !== 'All') {

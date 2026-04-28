@@ -652,26 +652,6 @@ export class AuthService {
     }
   }
 
-  async claimPwaReward() {
-    const user = this.currentUser();
-    if (!user || user.pwaInstalled) return;
-
-    const currentCredits = user.aiCredits !== undefined ? user.aiCredits : 2;
-    const newCredits = currentCredits + 10;
-    const userRef = doc(db, 'users', user.uid);
-    
-    await updateDoc(userRef, { 
-      aiCredits: newCredits,
-      pwaInstalled: true
-    });
-    
-    this.currentUser.set({ 
-      ...user, 
-      aiCredits: newCredits,
-      pwaInstalled: true 
-    });
-  }
-
   async claimAppInstallReward() {
     const user = this.currentUser();
     if (!user || user.hasClaimedAppInstallReward) return;

@@ -8,6 +8,7 @@ import { Timestamp } from 'firebase/firestore';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 
 import { ThemeService } from '../../core/services/theme.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { Capacitor } from '@capacitor/core';
 
 interface Notification {
@@ -90,8 +91,8 @@ interface Notification {
           </div>
         </div>
 
-        <!-- Android App Install Banner -->
-        @if (!isAppInstallDismissed()) {
+        <!-- Android App Install Banner (Web/PWA ONLY) -->
+        @if (!isAppInstallDismissed() && !isNative) {
           <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
             <div class="relative bg-gradient-to-r from-emerald-500 to-teal-600 rounded-[1.5rem] p-5 shadow-lg border border-emerald-400 overflow-hidden group">
               <!-- Background Effects -->
@@ -105,10 +106,10 @@ interface Notification {
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 mb-1">
-                    <h4 class="text-base font-black text-white tracking-tight leading-tight">Get the App</h4>
+                    <h4 class="text-base font-black text-white tracking-tight leading-tight">Install APK (< 7MB)</h4>
                     <span class="bg-amber-400 text-amber-950 text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-widest">+50 AI Credits</span>
                   </div>
-                  <p class="text-emerald-50 text-[11px] font-semibold leading-tight pr-4">Download our Android APK for a faster experience & free 50 credits automatically!</p>
+                  <p class="text-emerald-50 text-[10px] font-medium leading-relaxed pr-4">You must <strong>install and open</strong> the app to get your reward automatically. Just downloading won't work!</p>
                 </div>
               </div>
               
@@ -116,13 +117,55 @@ interface Notification {
               <div class="relative z-10 flex items-center gap-3 mt-4">
                 <a href="https://github.com/peterdiano12/educate-mw/releases" 
                    target="_blank"
-                   (click)="claimInstallCredits()"
+                   (click)="dismissAppBanner()"
                    class="flex-1 bg-white text-emerald-700 font-black text-xs py-2.5 rounded-xl shadow-md active:scale-95 hover:bg-emerald-50 transition-all text-center flex items-center justify-center gap-1.5 uppercase tracking-wider">
                   <mat-icon class="!w-4 !h-4 !text-[16px]">download</mat-icon>
                   Download APK
                 </a>
                 <button (click)="dismissAppBanner()" class="w-10 h-10 rounded-xl bg-emerald-700/50 text-emerald-100 flex items-center justify-center hover:bg-emerald-700 transition-colors">
                   <mat-icon class="!w-5 !h-5 !text-[20px]">close</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Native App Update Banner (APK ONLY) -->
+        @if (isNative && dataService.appUpdates().length > 0 && !isDismissed(dataService.appUpdates()[0].id)) {
+          <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div class="relative bg-gradient-to-r from-blue-600 to-indigo-700 rounded-[1.5rem] p-5 shadow-lg border border-blue-400 overflow-hidden group">
+              <!-- Background Effects -->
+              <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+              <div class="absolute right-[-10%] top-[-20%] w-32 h-32 bg-white/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+              
+              <!-- Content -->
+              <div class="relative z-10 flex items-center gap-4">
+                <div class="w-12 h-12 bg-white rounded-xl shadow-inner flex items-center justify-center shrink-0 shadow-blue-900/20 group-hover:animate-pulse">
+                  <mat-icon class="!w-7 !h-7 !text-[28px] text-blue-600 text-gradient">system_update</mat-icon>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1">
+                    <h4 class="text-base font-black text-white tracking-tight leading-tight">Update Available!</h4>
+                    <span class="bg-indigo-300 text-indigo-950 text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-widest">New Version</span>
+                  </div>
+                  <h5 class="text-blue-100 text-xs font-bold leading-tight">{{ dataService.appUpdates()[0].title }}</h5>
+                  <p class="text-blue-200 text-[10px] font-medium leading-relaxed pr-4 mt-0.5 truncate">{{ dataService.appUpdates()[0].content }}</p>
+                </div>
+              </div>
+              
+              <!-- Actions -->
+              <div class="relative z-10 flex flex-col gap-2 mt-4">
+                @if (dataService.appUpdates()[0].driveUrl) {
+                  <a [href]="dataService.appUpdates()[0].driveUrl" 
+                     target="_blank"
+                     (click)="dontShowAgain(dataService.appUpdates()[0].id)"
+                     class="flex-1 bg-white text-blue-700 font-black text-xs py-2.5 rounded-xl shadow-md active:scale-95 hover:bg-blue-50 transition-all text-center flex items-center justify-center gap-1.5 uppercase tracking-wider">
+                    <mat-icon class="!w-4 !h-4 !text-[16px]">file_download</mat-icon>
+                    Update Now (< 7MB)
+                  </a>
+                }
+                <button (click)="dontShowAgain(dataService.appUpdates()[0].id)" class="text-[10px] text-blue-200 font-bold hover:text-white uppercase tracking-widest transition-colors py-1">
+                  Later
                 </button>
               </div>
             </div>
@@ -172,8 +215,8 @@ interface Notification {
         </div>
       }
 
-      <!-- App Updates Section (Fallback if no announcements) -->
-      @if (!isLoading() && announcements().length === 0 && dataService.appUpdates().length > 0 && !isDismissed(dataService.appUpdates()[0].id)) {
+      <!-- App Updates Section (Fallback if no announcements) - For Web/PWA only -->
+      @if (!isNative && !isLoading() && announcements().length === 0 && dataService.appUpdates().length > 0 && !isDismissed(dataService.appUpdates()[0].id)) {
         <div class="mb-6 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
           <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-all hover:scale-[1.01] active:scale-95" 
                (click)="viewNotification(dataService.appUpdates()[0])"
@@ -328,15 +371,7 @@ interface Notification {
           </div>
         }
 
-        <!-- Ad Report Link -->
-        <div class="mt-4 pb-8 flex justify-center">
-          <a href="https://wa.me/265987066051?text=Hello%20Peter,%20I%20am%20reporting%20an%20ad%20I%20saw%20in%20Educate%20MW." 
-             target="_blank"
-             class="flex items-center gap-2 group transition-all">
-            <mat-icon class="text-slate-300 group-hover:text-amber-500 !w-4 !h-4 !text-[16px] transition-colors">info_outline</mat-icon>
-            <span class="text-[9px] font-black text-slate-400 group-hover:text-slate-600 uppercase tracking-[0.15em] transition-colors">See an inappropriate ad? Report it</span>
-          </a>
-        </div>
+
       </div>
 
       <!-- Notification Detail Modal -->
@@ -392,6 +427,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
   route = inject(ActivatedRoute);
   themeService = inject(ThemeService);
+  notificationService = inject(NotificationService);
+  
+  isNative = Capacitor.isNativePlatform();
   
   updateDismissed = signal(false);
   isLoading = signal(true);
@@ -475,6 +513,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const user = this.authService.currentUser();
       if (user && !user.isGuest && !user.hasClaimedAppInstallReward) {
         this.authService.claimAppInstallReward();
+      }
+      
+      // Request Push Notification Permissions (Silent token capture or prompt)
+      // and schedule our Local Daily reminder
+      try {
+        this.notificationService.requestPermission();
+      } catch(e) {
+        console.warn('Failed to init push', e);
       }
     }
   }

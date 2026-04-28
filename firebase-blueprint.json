@@ -18,6 +18,7 @@
         "referralCode": { "type": "string", "description": "Unique code for referrals." },
         "referredBy": { "type": "string", "description": "UID of the user who referred this user." },
         "referralsCount": { "type": "number", "description": "Number of successful referrals." },
+        "fcmToken": { "type": "string", "description": "Firebase Cloud Messaging token for push notifications." },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["uid", "email", "role", "isPro", "createdAt"]

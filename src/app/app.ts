@@ -92,31 +92,6 @@ import { ErrorToastComponent } from './shared/components/error-toast/error-toast
               </div>
             }
 
-            <!-- Floating Download Reward Banner -->
-            @if (dataService.appSettings().isAppOfferActive && authService.currentUser() && !isBannerDismissed() && router.url === '/dashboard') {
-              <div class="fixed bottom-24 left-4 right-4 z-40 animate-in slide-in-from-bottom-10 duration-700">
-                <div class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-800 rounded-[2rem] p-5 shadow-2xl border border-white/20 relative overflow-hidden group">
-                  <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-                  
-                  <button (click)="isBannerDismissed.set(true)" class="absolute top-3 right-3 text-white/60 hover:text-white transition-colors z-10 p-1">
-                    <mat-icon class="!w-4 !h-4 !text-[16px]">close</mat-icon>
-                  </button>
-                  
-                  <div class="flex items-center gap-4 relative z-10">
-                    <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shrink-0 shadow-inner">
-                      <mat-icon class="!w-7 !h-7 !text-[28px]">install_mobile</mat-icon>
-                    </div>
-                    <div class="flex-1">
-                      <h4 class="text-base font-black text-white leading-tight">Install App (PWA)</h4>
-                      <p class="text-[10px] text-white/80 font-medium mt-1 leading-tight">Install our app for a faster, better experience.</p>
-                    </div>
-                    <button (click)="installPwa()" class="bg-white text-indigo-700 px-5 py-3 rounded-2xl font-black text-xs shadow-xl active:scale-95 transition-all hover:scale-105 hover:bg-slate-50">
-                      Install
-                    </button>
-                  </div>
-                </div>
-              </div>
-            }
             <router-outlet></router-outlet>
           </main>
 
@@ -359,27 +334,7 @@ export class App implements OnInit {
   showInstallPopup = signal(false);
 
   constructor() {
-    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
-      window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent the mini-infobar from appearing on mobile
-        e.preventDefault();
-        // Stash the event so it can be triggered later.
-        this.deferredPrompt.set(e as BeforeInstallPromptEvent);
-        // Update UI notify the user they can install the PWA
-        if (this.authService.currentUser() && !this.authService.currentUser()?.pwaInstalled) {
-          this.showInstallPopup.set(true);
-        }
-      });
-
-      window.addEventListener('appinstalled', () => {
-        // Log install to analytics
-        console.log('INSTALL: Success');
-        this.deferredPrompt.set(null);
-        this.showInstallPopup.set(false);
-        // Reward disabled by user request
-        // this.authService.claimPwaReward();
-      });
-    }
+    // PWA Install handlers removed to focus on APK
   }
 
   ngOnInit() {
