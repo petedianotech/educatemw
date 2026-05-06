@@ -17,8 +17,7 @@ export const db = typeof window !== 'undefined'
   ? initializeFirestore(
       app,
       { 
-        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-        experimentalForceLongPolling: true // More stable in restricted network environments
+        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
       },
       firebaseConfig.firestoreDatabaseId
     )

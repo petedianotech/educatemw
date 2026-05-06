@@ -63,10 +63,11 @@ export class AuthService {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         await this.loadUserProfile(user);
+        this.isAuthReady.set(true);
       } else {
         this.currentUser.set(null);
+        this.isAuthReady.set(true);
       }
-      this.isAuthReady.set(true);
     });
   }
 
@@ -388,92 +389,107 @@ export class AuthService {
     this.currentUser.set(newUser);
   }
 
-  private async loadUserProfile(user: FirebaseUser) {
-    try {
+  private async loadUserProfile(user: FirebaseUser): Promise<void> {
+    return new Promise((resolve) => {
+      let isFirstEvent = true;
       const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
+      
+      import('firebase/firestore').then(({ onSnapshot }) => {
+        onSnapshot(userRef, async (userSnap) => {
+          try {
+            if (userSnap.exists()) {
+              const data = userSnap.data();
+              let profile = {
+                ...data,
+                aiCredits: data['aiCredits'] !== undefined ? data['aiCredits'] : 10,
+                dictionaryAiCredits: data['dictionaryAiCredits'] !== undefined ? data['dictionaryAiCredits'] : 10,
+                createdAt: data['createdAt']?.toDate() || new Date()
+              } as UserProfile;
 
-      if (userSnap.exists()) {
-        const data = userSnap.data();
-        let profile = {
-          ...data,
-          aiCredits: data['aiCredits'] !== undefined ? data['aiCredits'] : 10,
-          dictionaryAiCredits: data['dictionaryAiCredits'] !== undefined ? data['dictionaryAiCredits'] : 10,
-          createdAt: data['createdAt']?.toDate() || new Date()
-        } as UserProfile;
+              // Daily Credit Reset Logic (UTC Midnight)
+              const now = new Date();
+              const startOfTodayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+              const lastReset = profile.lastCreditReset ? new Date(profile.lastCreditReset) : new Date(0);
 
-        // Daily Credit Reset Logic (UTC Midnight)
-        const now = new Date();
-        const startOfTodayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+              if (lastReset.getTime() < startOfTodayUTC.getTime()) {
+                const dailyAllowance = profile.isGuest ? 5 : 10;
+                const newCredits = (profile.aiCredits || 0) < dailyAllowance ? dailyAllowance : profile.aiCredits;
+                const newDictionaryCredits = (profile.dictionaryAiCredits || 0) < dailyAllowance ? dailyAllowance : profile.dictionaryAiCredits;
+                
+                await updateDoc(userRef, {
+                  aiCredits: newCredits,
+                  dictionaryAiCredits: newDictionaryCredits,
+                  lastCreditReset: now.toISOString()
+                }).catch(err => console.warn('Offline: wait for sync to reset daily credits', err));
+                
+                profile = {
+                  ...profile,
+                  aiCredits: newCredits,
+                  dictionaryAiCredits: newDictionaryCredits,
+                  lastCreditReset: now.toISOString()
+                };
+                
+                if (isFirstEvent) {
+                  this.rewardMessage.set('Your daily credits has been rewarded successfully! 🎁');
+                  setTimeout(() => this.rewardMessage.set(null), 5000);
+                }
+              }
 
-        const lastReset = profile.lastCreditReset ? new Date(profile.lastCreditReset) : new Date(0);
+              // Streak Logic
+              const lastLogin = profile.lastLoginDate ? new Date(profile.lastLoginDate) : new Date(0);
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const lastLoginDate = new Date(lastLogin);
+              lastLoginDate.setHours(0, 0, 0, 0);
 
-        if (lastReset.getTime() < startOfTodayUTC.getTime()) {
-          // Reset credits
-          const dailyAllowance = profile.isGuest ? 5 : 10;
-          const newCredits = (profile.aiCredits || 0) < dailyAllowance ? dailyAllowance : profile.aiCredits;
-          const newDictionaryCredits = (profile.dictionaryAiCredits || 0) < dailyAllowance ? dailyAllowance : profile.dictionaryAiCredits;
-          
-          await updateDoc(userRef, {
-            aiCredits: newCredits,
-            dictionaryAiCredits: newDictionaryCredits,
-            lastCreditReset: now.toISOString()
-          });
-          
-          profile = {
-            ...profile,
-            aiCredits: newCredits,
-            dictionaryAiCredits: newDictionaryCredits,
-            lastCreditReset: now.toISOString()
-          };
-          
-          this.rewardMessage.set('Your daily credits has been rewarded successfully! 🎁');
-          setTimeout(() => this.rewardMessage.set(null), 5000);
-        }
+              const diffTime = Math.abs(today.getTime() - lastLoginDate.getTime());
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        // Streak Logic
-        const lastLogin = profile.lastLoginDate ? new Date(profile.lastLoginDate) : new Date(0);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const lastLoginDate = new Date(lastLogin);
-        lastLoginDate.setHours(0, 0, 0, 0);
+              if (diffDays === 1) {
+                profile.streak = (profile.streak || 0) + 1;
+                updateDoc(userRef, { streak: profile.streak, lastLoginDate: now.toISOString() }).catch(() => {});
+              } else if (diffDays > 1) {
+                profile.streak = 1;
+                updateDoc(userRef, { streak: profile.streak, lastLoginDate: now.toISOString() }).catch(() => {});
+              }
 
-        const diffTime = Math.abs(today.getTime() - lastLoginDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              // Device limit check
+              if (!profile.isPro && profile.deviceId) {
+                const q = query(collection(db, 'users'), where('deviceId', '==', profile.deviceId));
+                getDocs(q).then(querySnapshot => {
+                  const isDeviceLimited = querySnapshot.docs.some(doc => (doc.data()['aiCredits'] || 0) <= 0);
+                  if (isDeviceLimited && (profile.aiCredits || 0) > 0) {
+                    updateDoc(userRef, { aiCredits: 0 }).catch(() => {});
+                    profile.aiCredits = 0;
+                    this.currentUser.set(profile);
+                  }
+                }).catch(() => {});
+              }
 
-        if (diffDays === 1) {
-          // Logged in yesterday, increment streak
-          profile.streak = (profile.streak || 0) + 1;
-          await updateDoc(userRef, { streak: profile.streak, lastLoginDate: now.toISOString() });
-        } else if (diffDays > 1) {
-          // Logged in more than a day ago, reset streak
-          profile.streak = 1;
-          await updateDoc(userRef, { streak: profile.streak, lastLoginDate: now.toISOString() });
-        } else if (diffDays === 0) {
-          // Logged in today, do nothing
-        }
-
-        // Device limit check
-        if (!profile.isPro && profile.deviceId) {
-          const q = query(collection(db, 'users'), where('deviceId', '==', profile.deviceId));
-          const querySnapshot = await getDocs(q);
-          const isDeviceLimited = querySnapshot.docs.some(doc => (doc.data()['aiCredits'] || 0) <= 0);
-          
-          if (isDeviceLimited && (profile.aiCredits || 0) > 0) {
-            await updateDoc(userRef, { aiCredits: 0 });
-            profile.aiCredits = 0;
+              this.currentUser.set(profile);
+            } else {
+              console.log('User profile not found for:', user.uid);
+              if (isFirstEvent) {
+                await this.createNewUserProfile(user, user.isAnonymous ? 'Guest' : (user.displayName || 'Student'));
+              }
+            }
+          } catch (error) {
+            handleFirestoreError(error, OperationType.GET, `users/${user.uid}`);
+          } finally {
+            if (isFirstEvent) {
+              isFirstEvent = false;
+              resolve();
+            }
           }
-        }
-
-        this.currentUser.set(profile);
-      } else {
-        console.log('User profile not found for:', user.uid);
-        // Fallback if profile doesn't exist (e.g., Google login first time or Guest login)
-        await this.createNewUserProfile(user, user.isAnonymous ? 'Guest' : (user.displayName || 'Student'));
-      }
-    } catch (error) {
-      handleFirestoreError(error, OperationType.GET, `users/${user.uid}`);
-    }
+        }, (error) => {
+          handleFirestoreError(error, OperationType.GET, `users/${user.uid}`);
+          if (isFirstEvent) {
+            isFirstEvent = false;
+            resolve();
+          }
+        });
+      });
+    });
   }
 
   async updateUsername(newUsername: string) {
